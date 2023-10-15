@@ -15,3 +15,25 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
+
+@layer components {
+  .icon {
+    @apply text-lg cursor-pointer;
+  }
+}
+
+body {
+  height: 100vh;
+  background: #f3f3f3;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

@@ -6,6 +6,7 @@ const config: Config = {
     files: [
       "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
       "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+      "./src/container/**/*.{js,ts,jsx,tsx,mdx}",
       "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     ],
   },
@@ -16,22 +17,22 @@ const config: Config = {
       sm: "576px",
       md: "768px",
       lg: "992px",
-      xl: "1230px",
-      "2xl": "1536px",
+      xl: "1200px",
+      "2xl": "1400px",
     },
     container: {
       center: true,
       padding: {
-        DEFAULT: "2rem",
+        DEFAULT: "0rem",
       },
     },
     colors: {
-      "primary-color": "#1fb6ff",
+      "primary-color": "#8c52ff",
+      "text-color": "#e5e5e5",
+      background: "#F3F3F3",
+      "text-light-color": "#999",
+      "border-color": "#e5e5e5",
       ...colors,
-    },
-    fontFamily: {
-      sans: ["Graphik", "sans-serif"],
-      serif: ["Merriweather", "serif"],
     },
     extend: {
       spacing: {
@@ -51,8 +52,6 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)"],
-        mono: ["var(--font-roboto-mono)"],
-        montserrat: ["var(--font-montserrat)"],
       },
     },
   },

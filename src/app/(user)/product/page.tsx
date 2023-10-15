@@ -1,6 +1,6 @@
 import React from "react";
 
-const ProductPage = () => {
+const ProductPage = async () => {
   return <div>ProductPage</div>;
 };
 
