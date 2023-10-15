@@ -1,7 +1,7 @@
-import React from "react";
+import React, { ReactNode } from "react";
 
-const UserLayout = () => {
-  return <div>UserLayout</div>;
+const UserLayout = ({ children }: { children: ReactNode }) => {
+  return <div>{children}</div>;
 };
 
 export default UserLayout;

@@ -1,12 +1,7 @@
-import { Montserrat, Roboto_Mono } from "next/font/google";
-export const montserrat = Montserrat({
-  subsets: ["vietnamese"],
-  weight: "400",
-  variable: "--font-montserrat",
-});
+import { Inter } from "next/font/google";
 
-export const roboto_mono = Roboto_Mono({
+export const inter = Inter({
   subsets: ["latin"],
-  display: "swap",
-  variable: "--font-roboto-mono",
+  weight: "400",
+  variable: "--font-inter",
 });

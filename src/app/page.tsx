@@ -1,34 +1,24 @@
 "use client";
-import { img1 } from "@/assests/images";
 import Header from "@/components/header/header";
-import Button from "@/components/button";
-import dynamic from "next/dynamic";
-import Image from "next/image";
 import { ReactNode } from "react";
 import Footer from "@/components/footer/footer";
+import { CartStateProvider } from "@/store/globalState";
 
-const imageLoader = ({
-  src,
-  width,
-  quality,
-}: {
-  src: string;
-  width: number;
-  quality?: number;
-}) => {
+const imageLoader = ({ src, width }: { src: string; width: number }) => {
   return `${src}?w=${width}`;
 };
 
-const HomePage = ({ children }: { children: ReactNode }) => {
-  return;
-  <>
-    <Header></Header>
-    <main className="container p-4 font-sans">
-      <div className="grid gap-4 place-content-center	grid-cols-1 md:p-3 md:grid-cols-3 lg:grid-cols-4 mb-144">
-        {children}
-      </div>
-    </main>
-    <Footer></Footer>
-  </>;
+const Home = ({ children }: { children: ReactNode }) => {
+  return (
+    <CartStateProvider>
+      <Header></Header>
+      <main className="container font-montserrat min-h-full">
+        <div className="grid gap-4 place-content-center	grid-cols-1 md:grid-cols-3 lg:grid-cols-4 bg-background">
+          {children}
+        </div>
+      </main>
+      <Footer></Footer>
+    </CartStateProvider>
+  );
 };
-export default HomePage;
+export default Home;
