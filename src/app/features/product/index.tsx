@@ -1,3 +1,3 @@
-import { onlyNumbers, MaxAmounts } from "./FilterAmount";
+import { onlyNumbers, MaxAmounts } from "../../../features/product";
 
 export { onlyNumbers, MaxAmounts };

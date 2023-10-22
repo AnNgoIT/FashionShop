@@ -1,7 +1,10 @@
+import Header from "@/components/header/header";
 import { inter } from "./fonts";
 import "./globals.css";
 import "@fortawesome/fontawesome-svg-core/styles.css"; // import Font Awesome CSS
 import type { Metadata } from "next";
+import Footer from "@/components/footer/footer";
+import { CartStateProvider } from "@/store/globalState";
 
 export const metadata: Metadata = {
   title: "Fashion Shop",
@@ -19,7 +22,15 @@ export default function RootLayout({
       className={`${inter.variable}`}
       suppressHydrationWarning={true}
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning={true}>
+        <CartStateProvider>
+          <Header></Header>
+          <main className="font-montserrat min-h-full bg-white ssm:mt-[110px] xl:mt-[130px] min-[1400px]:mt-[146px]">
+            {children}
+          </main>
+          <Footer></Footer>
+        </CartStateProvider>
+      </body>
     </html>
   );
 }

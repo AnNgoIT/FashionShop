@@ -1,23 +1,16 @@
 "use client";
-import Header from "@/components/header/header";
-import { ReactNode } from "react";
-import Footer from "@/components/footer/footer";
 import { CartStateProvider } from "@/store/globalState";
+import dynamic from "next/dynamic";
 
-const imageLoader = ({ src, width }: { src: string; width: number }) => {
-  return `${src}?w=${width}`;
-};
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 
-const Home = ({ children }: { children: ReactNode }) => {
+const Header = dynamic(() => import("@/components/header/header"));
+const Container = dynamic(() => import("@/container/container"));
+const Footer = dynamic(() => import("@/components/footer/footer"));
+const Home = () => {
   return (
     <CartStateProvider>
-      <Header></Header>
-      <main className="container font-montserrat min-h-full">
-        <div className="grid gap-4 place-content-center	grid-cols-1 md:grid-cols-3 lg:grid-cols-4 bg-background">
-          {children}
-        </div>
-      </main>
-      <Footer></Footer>
+      <Container></Container>
     </CartStateProvider>
   );
 };
