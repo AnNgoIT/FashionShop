@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer components {
+  .icon {
+    @apply text-lg cursor-pointer;
+  }
+  .myarrow {
+    @apply absolute z-[2] cursor-pointer bottom-[50%] bg-background w-14 h-14 rounded-full
+    md:grid place-items-center translate-y-10 transition-all hidden;
+  }
+  .subbanner-shadow {
+    @apply relative overflow-hidden;
+  }
+  .subbanner-shadow:before {
+    @apply absolute cursor-pointer top-0 -left-[85%] z-[2] block content-[""] w-[50%] h-full bg-gradient-to-r 
+    from-transparent to-[rgba(255,255,255,0.3)] transform skew-x-[-25deg] opacity-0;
+  }
+  .subbanner-shadow:hover:before {
+    @apply opacity-100 animate-shine;
+  }
+  .product-title {
+    @apply text-[1.5rem] md:text-[2rem] font-extrabold px-4 uppercase text-[#333]
+      relative max-md:before:hidden max-md:after:hidden before:bg-primary-color 
+      before:absolute before:top-6 before:w-24 before:right-full
+      before:h-0.5 after:bg-primary-color after:absolute 
+      after:top-6 after:w-24 after:left-full after:h-0.5;
+  }
+}
+
+body {
+  height: 100vh;
+  /* width: 100vw; */
+  background: #f3f3f3;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Ovveride CSS */
+.carousel.carousel-slider {
+  position: relative;
+  margin: 0;
+  overflow: visible !important;
+}
+.carousel .control-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  bottom: -3px !important;
+}
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
