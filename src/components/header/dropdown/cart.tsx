@@ -5,10 +5,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import React, { useContext } from "react";
 import { CartContext, cartItem } from "@/store/globalState";
-import { Total } from "@/app/features/cart/TotalPrice";
-import { MaxAmounts, onlyNumbers } from "@/app/features/product";
-import { FormatPrice } from "@/app/features/product/FilterAmount";
+import { Total } from "@/features/cart/TotalPrice";
 import Button from "@mui/material/Button";
+import { MaxAmounts, onlyNumbers } from "@/features/product";
+import { FormatPrice } from "@/features/product/FilterAmount";
 
 const CartDropdown = () => {
   const { cartItems, setCartItems } = useContext(CartContext);
@@ -53,10 +53,14 @@ const CartDropdown = () => {
                       href={`/product/${item.id}`}
                       className="border-b-2 border-b-border-color"
                     >
-                      <Image alt="productImage" src={img1}></Image>
+                      <Image
+                        className="h-auto"
+                        alt="productImage"
+                        src={img1}
+                      ></Image>
                     </Link>
                     <div className="grid">
-                      <span className="transition-color flex justify-center pb-1">
+                      <span className="transition-color flex justify-center pb-1 gap-x-2">
                         <Link
                           className="hover:text-primary-color text-text-light-color transition-colors"
                           href={`/product/detail/${item.id}`}
@@ -104,12 +108,12 @@ const CartDropdown = () => {
           </div>
           <div className="mt-5 flex justify-between items-center font-bold">
             <Link href="/cart">
-              <Button className="text-white rounded-md bg-primary-color py-[14px] px-[26px] text-center transition-colors duration-200 hover:bg-text-color">
+              <Button className="text-white rounded-md bg-primary-color py-[14px] px-[26px] text-center transition-colors duration-200 hover:bg-[#333]">
                 Cart
               </Button>
             </Link>
             <Link href="/cart/checkout">
-              <Button className="text-white rounded-md bg-primary-color py-[14px] px-[26px] text-center transition-colors duration-200 hover:bg-text-color">
+              <Button className="text-white rounded-md bg-primary-color py-[14px] px-[26px] text-center transition-colors duration-200 hover:bg-[#333]">
                 Checkout
               </Button>
             </Link>

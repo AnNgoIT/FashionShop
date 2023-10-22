@@ -1,3 +1,4 @@
+"use client";
 import React, { createContext, useState } from "react";
 
 export type cartItem = {
@@ -26,13 +27,13 @@ export const CartStateProvider = ({ children }: any) => {
       quantity: 1,
       maxQuantity: 2,
     },
-    // {
-    //   id: 2,
-    //   name: "Women's Cape Jacket",
-    //   price: 150000,
-    //   quantity: 1,
-    //   maxQuantity: 1,
-    // },
+    {
+      id: 2,
+      name: "Women's Cape Jacket",
+      price: 150000,
+      quantity: 1,
+      maxQuantity: 1,
+    },
     // {
     //   id: 3,
     //   name: "Men's Regular Fit T-Shirt",

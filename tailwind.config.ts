@@ -14,11 +14,12 @@ const config: Config = {
   blocklist: [],
   theme: {
     screens: {
+      ssm: "499px",
       sm: "576px",
       md: "768px",
       lg: "992px",
-      xl: "1200px",
-      "2xl": "1400px",
+      xl: "1230px",
+      // "2xl": "1400px",
     },
     container: {
       center: true,
@@ -27,8 +28,9 @@ const config: Config = {
       },
     },
     colors: {
-      "primary-color": "#8c52ff",
-      "text-color": "#e5e5e5",
+      "primary-color": "#639df1",
+      "secondary-color": "#f22a59",
+      "text-color": "#333",
       background: "#F3F3F3",
       "text-light-color": "#999",
       "border-color": "#e5e5e5",
@@ -52,6 +54,28 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)"],
+      },
+      keyframes: {
+        shine: {
+          "100%": {
+            left: "125%",
+          },
+        },
+        appear: {
+          "0%": {
+            opacity: "0",
+          },
+          "100%": {
+            opacity: "1",
+          },
+        },
+      },
+      animation: {
+        shine: "shine 0.85s ease",
+        appear: "appear 0.8s ease",
+      },
+      boxShadow: {
+        sd: "0 35px 60px -15px rgba(0, 0, 0, 0.3)",
       },
     },
   },

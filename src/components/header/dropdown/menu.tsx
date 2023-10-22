@@ -82,15 +82,16 @@ const Menu = ({
         {buttonChildren}
       </Button>
       <StyledPopper
+        className="relative z-20"
         {...bindPopper(popupState)}
         placement="bottom-end"
         modifiers={[
           {
             name: "arrow",
             enabled: true,
-            options: {
-              element: arrowRef,
-            },
+            // options: {
+            //   element: arrowRef,
+            // },
           },
         ]}
         transition
@@ -109,7 +110,7 @@ const Menu = ({
                     display: "block",
                     width: 0,
                     height: 0,
-                    borderStyle: "solid",
+                    transform: "translateX(105px)",
                     borderLeftWidth: "8px",
                     borderRightWidth: "8px",
                     borderLeftColor: "transparent",
@@ -117,7 +118,7 @@ const Menu = ({
                   },
                 }}
                 className="arrow"
-                ref={setArrowRef}
+                // ref={setArrowRef}
               ></Box>
               {dropdownContent}
             </div>

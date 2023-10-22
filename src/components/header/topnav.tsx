@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useContext } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
 import {
   faSearch,
@@ -11,25 +11,28 @@ import Image from "next/image";
 import { logo } from "@/assests/images";
 import Button from "@mui/material/Button";
 import Menu from "./dropdown/menu";
-import { Paper, Typography } from "@mui/material";
+import { Paper } from "@mui/material";
 import CartDropdown from "./dropdown/cart";
+import { CartContext } from "@/store/globalState";
 
 const TopNav = () => {
+  const { cartItems, setCartItems } = useContext(CartContext);
+
   const searchProducts = () => {};
 
   return (
     <nav className="col-span-12 pt-2.5 mx-auto">
       <div className="grid grid-flow-col justify-center gap-x-2 place-items-center">
-        <div className="">
+        <div>
           <Link href="/">
             <Image
-              className=""
+              className="w-auto min-w-[80px] min-h-[60px]"
               alt="Logo of the shop"
               src={logo}
               width={180}
               height={100}
               sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
-              priority
+              // priority={true}
             ></Image>
           </Link>
         </div>
@@ -76,7 +79,7 @@ const TopNav = () => {
               buttonChildren={
                 <Link href="/login">
                   <FontAwesomeIcon
-                    className="hover:text-white transition-colors"
+                    className="text-white hover:opacity-60 transition-opacity"
                     icon={faUser}
                   ></FontAwesomeIcon>
                 </Link>
@@ -104,9 +107,12 @@ const TopNav = () => {
               buttonChildren={
                 <Link href="/cart">
                   <FontAwesomeIcon
-                    className="hover:text-white transition-colors"
+                    className="relative text-white hover:opacity-60 transition-opacity"
                     icon={faCartShopping}
                   ></FontAwesomeIcon>
+                  <label className="absolute top-0.5 right-1.5 px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
+                    {cartItems.length}
+                  </label>
                 </Link>
               }
             ></Menu>
