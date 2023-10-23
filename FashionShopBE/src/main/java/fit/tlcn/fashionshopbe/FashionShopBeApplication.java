@@ -1,4 +1,4 @@
-package com.example.fashionshopbe;
+package fit.tlcn.fashionshopbe;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
