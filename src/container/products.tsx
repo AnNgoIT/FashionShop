@@ -7,7 +7,7 @@ import { FormatPrice } from "@/features/product/FilterAmount";
 import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { product_1 } from "@/assests/images";
-import { Button, capitalize } from "@mui/material";
+import NavigateButton from "@/components/button";
 const Products = () => {
   const productList: ProductDetail[] = [{ id: 1 }, { id: 2 }];
 
@@ -101,21 +101,7 @@ const Products = () => {
           className={`font-sans col-span-full flex justify-center items-center`}
         >
           <Link href="/product">
-            <Button
-              sx={{
-                textTransform: "capitalize",
-                background: "#639df1",
-                fontSize: "1rem",
-                lineHeight: "1.5rem",
-                fontWeight: "500",
-                padding: "18px 26px",
-                color: "white",
-              }}
-              className="py-[18px] px-[26px] font-medium text-base bg-primary-color text-white
-                                 hover:bg-text-light-color rounded-[0.25rem]"
-            >
-              See more Products
-            </Button>
+            <NavigateButton>See more Products</NavigateButton>
           </Link>
         </div>
       </div>
