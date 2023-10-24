@@ -33,7 +33,7 @@ const Products = () => {
                     <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
                       Sale
                     </label>
-                    <Link href={`/product/detail/${product}`}>
+                    <Link href={`/product/${product}`}>
                       <Image
                         loader={imageLoader}
                         placeholder="blur"
