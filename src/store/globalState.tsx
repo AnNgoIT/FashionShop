@@ -25,7 +25,7 @@ export const CartStateProvider = ({ children }: any) => {
       name: "Men's Full Sleeves Collar Shirt",
       price: 100000,
       quantity: 1,
-      maxQuantity: 2,
+      maxQuantity: 0,
     },
     {
       id: 2,

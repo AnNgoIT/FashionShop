@@ -5,6 +5,7 @@ import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { cartItem } from "@/store/globalState";
 import {
+  faCartShopping,
   faChevronLeft,
   faChevronRight,
   faMinus,
@@ -59,7 +60,7 @@ const Cart = () => {
                 Quantity
               </th>
               <th className=" border border-border-color min-w-[100px] p-3">
-                Sub Total
+                Status
               </th>
               <th className=" border border-border-color min-w-[100px] p-3">
                 Actions
@@ -87,45 +88,58 @@ const Cart = () => {
                 <td className="min-w-[150px] p-3 border border-border-color  text-primary-color font-bold">{`${FormatPrice(
                   item.price
                 )} VNĐ`}</td>
-                <td className=" min-w-[180px] p-3 border border-border-color">
-                  <div className="w-full flex items-center justify-center">
-                    <QuantityButton
-                      onClick={() =>
-                        handleQuantityChange(
-                          item.id,
-                          item.quantity - 1 < 0 ? 0 : item.quantity - 1
-                        )
-                      }
-                    >
-                      <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
-                    </QuantityButton>
-                    <input
-                      onKeyPress={(e) => onlyNumbers(e)}
-                      onChange={(e) =>
-                        handleQuantityChange(item.id, +e.target.value)
-                      }
-                      className="border-y border-border-color w-10 py-1.5 text-center text-text-color outline-none
+                <td className="min-w-[180px] p-3 border border-border-color">
+                  {item.maxQuantity > 0 && (
+                    <div className="w-full flex items-center justify-center">
+                      <QuantityButton
+                        onClick={() =>
+                          handleQuantityChange(
+                            item.id,
+                            item.quantity - 1 < 0 ? 0 : item.quantity - 1
+                          )
+                        }
+                      >
+                        <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
+                      </QuantityButton>
+                      <input
+                        onKeyPress={(e) => onlyNumbers(e)}
+                        onChange={(e) =>
+                          handleQuantityChange(item.id, +e.target.value)
+                        }
+                        className="border-y border-border-color w-10 py-1.5 text-center text-text-color outline-none
                       focus:border focus:border-primary-color"
-                      value={item.quantity}
-                      required
-                      type="text"
-                    />
-                    <QuantityButton
-                      onClick={() =>
-                        handleQuantityChange(item.id, item.quantity + 1)
-                      }
-                    >
-                      <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
-                    </QuantityButton>
-                  </div>
+                        value={item.quantity}
+                        required
+                        type="text"
+                      />
+                      <QuantityButton
+                        onClick={() =>
+                          handleQuantityChange(item.id, item.quantity + 1)
+                        }
+                      >
+                        <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
+                      </QuantityButton>
+                    </div>
+                  )}
                 </td>
-                <td className="min-w-[150px] p-3 border border-border-color text-primary-color font-bold">{`${FormatPrice(
-                  item.price * item.quantity
-                )} VNĐ`}</td>
-                <td className="max-w-[120px] p-3 border border-border-color">
+                <td className="max-w-[120px] p-3 border border-border-color text-primary-color font-bold">
+                  {`${item.maxQuantity > 0 ? "Available" : "Sold out"}`}
+                </td>
+                <td className="min-w-[150px] p-3 border border-border-color">
+                  <button
+                    title="Add To Cart"
+                    className="bg-primary-color text-white py-[8px] px-[15px] disabled:opacity-25
+                            disabled:hover:bg-primary-color
+                            rounded-md transition-all duration-200 hover:bg-text-color mr-2"
+                    disabled={item.maxQuantity <= 0}
+                    onClick={() => {}}
+                  >
+                    <FontAwesomeIcon icon={faCartShopping} />
+                  </button>
                   <button
                     title="Remove Cart Item"
-                    className="bg-primary-color text-white py-[8px] px-[15px] rounded-md transition-all duration-200 hover:bg-text-color"
+                    className="bg-primary-color text-white py-[8px] px-[15px] 
+                            rounded-md transition-all duration-200 hover:bg-text-color"
                     onClick={() => handleRemoveItem(item.id)}
                   >
                     <FontAwesomeIcon icon={faTrashCan} />
@@ -146,60 +160,6 @@ const Cart = () => {
             Continue Shopping
           </NavigateButton>
         </Link>
-      </div>
-      <div className="col-span-full grid grid-cols-12 place-items-center pt-[30px]">
-        <table className="col-span-full min-w-[400px]">
-          <thead className="text-center">
-            <tr className="border border-border-color text-text-color">
-              <th className=" border border-border-color min-w-[100px] p-3 text-left">
-                Cart Total
-              </th>
-            </tr>
-          </thead>
-          <tbody className="text-center">
-            <tr>
-              <td className="w-full p-3 border border-[#dee2e6]">
-                <article className="flex justify-between items-center">
-                  <h1 className="text-text-color">Items (s) Subtotal </h1>
-                  <span className="text-primary-color font-semibold">{`${FormatPrice(
-                    Total(cartItems)
-                  )} VNĐ`}</span>
-                </article>
-              </td>
-            </tr>
-            <tr>
-              <td className="w-full p-3 border border-[#dee2e6]">
-                <article className="flex justify-between items-center">
-                  <h1 className="text-text-color">Shipping </h1>
-                  <span className="text-primary-color font-semibold">{`${FormatPrice(
-                    cartItems.length !== 0 ? 45000 : 0
-                  )} VNĐ`}</span>
-                </article>
-              </td>
-            </tr>
-            <tr>
-              <td className="w-full p-3 border border-[#dee2e6]">
-                <article className="flex justify-between items-center">
-                  <h1 className="text-text-color font-bold">Total Price</h1>
-                  <span className="text-primary-color font-bold text-[20px]">{`${FormatPrice(
-                    Total(cartItems) + (cartItems.length !== 0 ? 45000 : 0)
-                  )} VNĐ`}</span>
-                </article>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="col-span-full">
-          <Link href="/cart/checkout">
-            <NavigateButton>
-              Checkout
-              <FontAwesomeIcon
-                className="text-[12px] ml-1"
-                icon={faChevronRight}
-              ></FontAwesomeIcon>
-            </NavigateButton>
-          </Link>
-        </div>
       </div>
     </section>
   );
