@@ -74,7 +74,7 @@ const Products = () => {
                           <div>
                             <Link href="/cart">
                               <FontAwesomeIcon
-                                className="text-[20px] hover:text-primary-color"
+                                className="text-[20px] hover:text-primary-color transition-all"
                                 icon={faBagShopping}
                               />
                             </Link>
@@ -84,7 +84,7 @@ const Products = () => {
                           <div>
                             <Link href="/wishlist">
                               <FontAwesomeIcon
-                                className="text-[20px] hover:text-primary-color"
+                                className="text-[20px] hover:text-primary-color transition-all"
                                 icon={faHeart}
                               />
                             </Link>
