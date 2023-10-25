@@ -12,7 +12,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -23,7 +22,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "\"user\"")
-public class User implements Serializable {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String user_id;
@@ -53,6 +52,7 @@ public class User implements Serializable {
     private Gender gender;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     @NotBlank
     private Role role;
 
@@ -65,7 +65,7 @@ public class User implements Serializable {
     private BigDecimal eWallet;
 
     @CreationTimestamp
-    private ZonedDateTime createAt;
+    private ZonedDateTime createdAt;
 
     @UpdateTimestamp
     private ZonedDateTime updatedAt;
