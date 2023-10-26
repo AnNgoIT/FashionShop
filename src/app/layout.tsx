@@ -2,6 +2,7 @@ import Header from "@/components/header/header";
 import { inter } from "./fonts";
 import "./globals.css";
 import "@fortawesome/fontawesome-svg-core/styles.css"; // import Font Awesome CSS
+import "react-multi-carousel/lib/styles.css";
 import type { Metadata } from "next";
 import Footer from "@/components/footer/footer";
 import { CartStateProvider } from "@/store/globalState";

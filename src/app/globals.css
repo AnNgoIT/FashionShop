@@ -53,6 +53,12 @@ button {
   cursor: pointer;
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Ovveride CSS */
 .carousel.carousel-slider {
   position: relative;
@@ -64,6 +70,9 @@ button {
   justify-content: center;
   gap: 0.25rem;
   bottom: -3px !important;
+}
+.carousel-item {
+  padding: 0.5rem 0.5rem 0 0.5rem;
 }
 
 /* Reset CSS */

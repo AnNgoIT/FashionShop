@@ -100,7 +100,7 @@ const Cart = () => {
                       <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
                     </QuantityButton>
                     <input
-                      onKeyPress={(e) => onlyNumbers(e)}
+                      onKeyDown={(e) => onlyNumbers(e)}
                       onChange={(e) =>
                         handleQuantityChange(item.id, +e.target.value)
                       }

@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
@@ -8,6 +9,7 @@ import {
   faPhone,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { imageLoader } from "@/features/img-loading";
 const Footer = () => {
   return (
     <footer>
@@ -16,13 +18,15 @@ const Footer = () => {
           <div className="col-span-12 md:col-span-4 p-4  grid place-items-center md:place-content-start">
             <div className="">
               <Image
+                loader={imageLoader}
+                placeholder="blur"
                 className="w-auto min-w-[80px] min-h-[80px]"
                 alt="Logo of the shop"
                 src={logo}
                 width={180}
                 height={100}
                 sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
-                // priority={true}
+                priority={true}
               ></Image>
             </div>
 

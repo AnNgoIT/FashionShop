@@ -26,14 +26,14 @@ const Products = () => {
                   className={`group transition-all hover:cursor-pointer hover:shadow-sd`}
                   key={product}
                 >
-                  <div className="relative border border-border-color group-hover:border-none">
+                  <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
                     <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
                       New
                     </label>
                     <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
                       Sale
                     </label>
-                    <Link href={`/product/detail/${product}`}>
+                    <Link href={`/product/${product}`}>
                       <Image
                         loader={imageLoader}
                         placeholder="blur"
@@ -74,7 +74,7 @@ const Products = () => {
                           <div>
                             <Link href="/cart">
                               <FontAwesomeIcon
-                                className="text-[20px] hover:text-primary-color"
+                                className="text-[20px] hover:text-primary-color transition-all"
                                 icon={faBagShopping}
                               />
                             </Link>
@@ -84,7 +84,7 @@ const Products = () => {
                           <div>
                             <Link href="/wishlist">
                               <FontAwesomeIcon
-                                className="text-[20px] hover:text-primary-color"
+                                className="text-[20px] hover:text-primary-color transition-all"
                                 icon={faHeart}
                               />
                             </Link>

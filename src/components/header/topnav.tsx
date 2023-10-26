@@ -14,6 +14,7 @@ import Menu from "./dropdown/menu";
 import { Paper } from "@mui/material";
 import CartDropdown from "./dropdown/cart";
 import { CartContext } from "@/store/globalState";
+import { imageLoader } from "@/features/img-loading";
 
 const TopNav = () => {
   const { cartItems, setCartItems } = useContext(CartContext);
@@ -26,13 +27,15 @@ const TopNav = () => {
         <div>
           <Link href="/">
             <Image
+              loader={imageLoader}
+              placeholder="blur"
               className="w-auto min-w-[80px] min-h-[60px]"
               alt="Logo of the shop"
               src={logo}
               width={180}
-              height={100}
+              height={180}
               sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
-              // priority={true}
+              priority={true}
             ></Image>
           </Link>
         </div>
