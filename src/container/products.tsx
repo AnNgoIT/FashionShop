@@ -7,7 +7,7 @@ import { FormatPrice } from "@/features/product/FilterAmount";
 import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { product_1 } from "@/assests/images";
-import { Button, capitalize } from "@mui/material";
+import NavigateButton from "@/components/button";
 const Products = () => {
   const productList: ProductDetail[] = [{ id: 1 }, { id: 2 }];
 
@@ -26,7 +26,7 @@ const Products = () => {
                   className={`group transition-all hover:cursor-pointer hover:shadow-sd`}
                   key={product}
                 >
-                  <div className="relative border border-border-color group-hover:border-none">
+                  <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
                     <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
                       New
                     </label>
@@ -74,7 +74,7 @@ const Products = () => {
                           <div>
                             <Link href="/cart">
                               <FontAwesomeIcon
-                                className="text-[20px] hover:text-primary-color"
+                                className="text-[20px] hover:text-primary-color transition-all"
                                 icon={faBagShopping}
                               />
                             </Link>
@@ -84,7 +84,7 @@ const Products = () => {
                           <div>
                             <Link href="/wishlist">
                               <FontAwesomeIcon
-                                className="text-[20px] hover:text-primary-color"
+                                className="text-[20px] hover:text-primary-color transition-all"
                                 icon={faHeart}
                               />
                             </Link>
@@ -101,21 +101,7 @@ const Products = () => {
           className={`font-sans col-span-full flex justify-center items-center`}
         >
           <Link href="/product">
-            <Button
-              sx={{
-                textTransform: "capitalize",
-                background: "#639df1",
-                fontSize: "1rem",
-                lineHeight: "1.5rem",
-                fontWeight: "500",
-                padding: "18px 26px",
-                color: "white",
-              }}
-              className="py-[18px] px-[26px] font-medium text-base bg-primary-color text-white
-                                 hover:bg-text-light-color rounded-[0.25rem]"
-            >
-              See more Products
-            </Button>
+            <NavigateButton>See more Products</NavigateButton>
           </Link>
         </div>
       </div>
