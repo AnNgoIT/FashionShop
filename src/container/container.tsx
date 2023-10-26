@@ -1,9 +1,11 @@
-import Banner from "@/container/banner";
 import React from "react";
-import SubBanner from "./sub-banner";
-import Services from "./services";
-import Products from "./products";
-import Blogs from "./blogs";
+import dynamic from "next/dynamic";
+
+const Banner = dynamic(() => import("@/container/banner"));
+const SubBanner = dynamic(() => import("./sub-banner"));
+const Services = dynamic(() => import("./services"));
+const Products = dynamic(() => import("./products"));
+const Blogs = dynamic(() => import("./blogs"));
 
 const Container = () => {
   return (
