@@ -41,6 +41,14 @@
       before:h-0.5 after:bg-primary-color after:absolute 
       after:top-6 after:w-24 after:left-full after:h-0.5;
   }
+  .product-detail-tags {
+    @apply px-5 py-[10px] rounded-none transition-all duration-200 hover:text-primary-color hover:cursor-pointer
+    hover:border-b-[1px] hover:border-primary-color;
+  }
+  .product-detail-tags-active {
+    @apply text-primary-color cursor-pointer
+    border-b-[1px] border-primary-color;
+  }
 }
 
 body {

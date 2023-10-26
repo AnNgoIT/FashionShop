@@ -13,22 +13,20 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-// import ContentSwitcher from "@/containers/ProductDetail/ContentSwitcher";
-// import RelatedProduct from "@/containers/ProductDetail/RelatedProduct";
-// import { montserrat } from "@/variables/Variable";
-// import { FormatPrice } from "@/containers/HomePage/Product";
+import { FormatPrice, MaxAmounts } from "@/features/product/FilterAmount";
+import { product_1, product_2, product_3 } from "@/assests/images";
 import {
-  FormatPrice,
-  MaxAmounts,
-  onlyNumbers,
-} from "@/features/product/FilterAmount";
-import { ProductDetail } from "@/features/product";
-import { product_1 } from "@/assests/images";
-import { imageLoader } from "@/features/img-loading";
-import Button from "@mui/material/Button";
+  MyLeftArrow,
+  MyRightArrow,
+  defaulResponsive,
+  imageLoader,
+  responsive,
+} from "@/features/img-loading";
 import { QuantityButton } from "@/components/button";
-import RelatedProduct from "@/container/related-product";
-
+import RelatedProduct from "@/container/product-detail/related-product";
+import ContentSwitcher from "@/container/product-detail/content-switcher";
+import ImageMagnifier from "@/components/image-magnifier";
+import Carousel from "react-multi-carousel";
 const ProductDetailPage = () => {
   const [qty, setQty] = useState(1);
 
@@ -61,19 +59,39 @@ const ProductDetailPage = () => {
     <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4">
       <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
         <div className="col-span-full md:col-span-5 lg:col-span-4 lg:col-start-2 outline outline-1 outline-border-color h-fit">
-          <Image
-            loader={imageLoader}
-            placeholder="blur"
-            className="w-full"
-            alt="productDetailImage"
-            src={product_1}
-            width={500}
-            height={0}
-          ></Image>
+          <Carousel
+            swipeable={true}
+            draggable={true}
+            ssr={true}
+            responsive={defaulResponsive}
+            infinite={true}
+            keyBoardControl={true}
+            customLeftArrow={<MyLeftArrow />}
+            customRightArrow={<MyRightArrow />}
+            deviceType={"desktop"}
+            // removeArrowOnDeviceType={["tablet", "mobile"]}
+            itemClass="carousel-item"
+          >
+            <ImageMagnifier
+              src={product_1}
+              bgImg={product_1.src}
+              zoomLevel={2.5}
+            ></ImageMagnifier>
+            <ImageMagnifier
+              src={product_2}
+              bgImg={product_2.src}
+              zoomLevel={2.5}
+            ></ImageMagnifier>
+            <ImageMagnifier
+              src={product_3}
+              bgImg={product_3.src}
+              zoomLevel={2.5}
+            ></ImageMagnifier>
+          </Carousel>
         </div>
         <div className={`col-span-full md:col-span-7 lg:col-span-5`}>
           <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
-            Product
+            Men Full Sleeves Collar Shirt
           </h3>
           <h1 className="text-primary-color font-bold">
             {FormatPrice(380000)} VNĐ
@@ -81,11 +99,6 @@ const ProductDetailPage = () => {
               {FormatPrice(420000)} VNĐ
             </span>
           </h1>
-          <div className="text-[1.5rem] ">
-            {[1, 2, 3, 4, 5].map((value) => {
-              return <span key={value}>★</span>;
-            })}
-          </div>
           <ul className=" border-b-[1px] border-border-color text-base py-4">
             <li className="flex items-center text-sm">
               <FontAwesomeIcon
@@ -125,7 +138,7 @@ const ProductDetailPage = () => {
             <span className="text-md mr-2 min-w-[5rem]">Colors:</span>
             <li className="p-5 outline outline-1 outline-border-color cursor-pointer bg-primary-color"></li>
             <li className="p-5 outline outline-1 outline-border-color cursor-pointer bg-secondary-color"></li>
-            <li className="p-5 outline outline-1 outline-border-color cursor-pointer bg-text-light-color"></li>
+            <li className="p-5 outline outline-1 outline-border-color cursor-pointer bg-amber-900"></li>
           </ul>
           <div
             className={`flex items-center gap-2 py-4 border-b-[1px] border-border-color`}
@@ -184,14 +197,16 @@ const ProductDetailPage = () => {
           </div>
         </div>
       </div>
-      {/* <div
-          className={`grid grid-cols-12 max-[500px]:px-[15px] gap-x-[30px] banner-part`}
-        >
-          <ContentSwitcher
-            description={productdetail.description}
-          ></ContentSwitcher>
-        </div>*/}
-      <div className={`col-span-full grid grid-cols-12 gap-x-[30px]`}>
+      <div
+        className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px] py-16`}
+      >
+        <ContentSwitcher
+          description={"Product Detail Description"}
+        ></ContentSwitcher>
+      </div>
+      <div
+        className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px]`}
+      >
         <RelatedProduct categoryId={1}></RelatedProduct>
       </div>
     </section>
