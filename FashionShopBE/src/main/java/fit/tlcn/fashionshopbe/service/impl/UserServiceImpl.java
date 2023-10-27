@@ -105,6 +105,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
     private boolean isValidPhoneNumber(String phoneNumber) {
         Pattern pattern = Pattern.compile(PHONE_NUMBER_REGEX);
         Matcher matcher = pattern.matcher(phoneNumber);

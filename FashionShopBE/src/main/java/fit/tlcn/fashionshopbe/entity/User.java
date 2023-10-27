@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Getter
@@ -23,7 +22,7 @@ import java.util.Date;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String user_id;
+    private String userId;
 
     @Column(columnDefinition = "nvarchar(50) not null")
     private String fullname;
@@ -57,12 +56,14 @@ public class User {
     private BigDecimal eWallet;
 
     @CreationTimestamp
-    private ZonedDateTime createdAt;
+    private Date createdAt;
 
     @UpdateTimestamp
-    private ZonedDateTime updatedAt;
+    private Date updatedAt;
 
-    private Boolean isDeleted = false;
+    private Date lastLoginAt;
+
+    private Boolean isActive = true;
 
     public User(String fullname, String email, String phone, String password, Role role) {
         this.fullname = fullname;
