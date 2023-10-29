@@ -76,7 +76,7 @@ const Banner = () => {
         width={400}
         height={0}
       />
-      <section className="grid grid-cols-12 p-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
+      <section className="grid grid-cols-12 py-4 max-md:px-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
         <div className="col-span-full md:col-span-8 md:col-start-3">
           <Carousel
             showStatus={false}

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-// import { useRouter } from 'next/navigation'
+import { usePathname } from "next/navigation";
 import usePath from "@/hooks/usePath";
 import Image from "next/image";
 import axios from "axios";
@@ -19,8 +19,6 @@ import {
   MyLeftArrow,
   MyRightArrow,
   defaulResponsive,
-  imageLoader,
-  responsive,
 } from "@/features/img-loading";
 import { QuantityButton } from "@/components/button";
 import RelatedProduct from "@/container/product-detail/related-product";
@@ -28,11 +26,25 @@ import ContentSwitcher from "@/container/product-detail/content-switcher";
 import ImageMagnifier from "@/components/image-magnifier";
 import Carousel from "react-multi-carousel";
 const ProductDetailPage = () => {
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState<number>(1);
+  const [price, setPrice] = useState<number>(380000);
+  const [isSizeActive, setSizeActive] = useState<string[]>([]);
+  const sizesList = [
+    { size: "S", price: 20000 },
+    { size: "M", price: 30000 },
+    { size: "L", price: 40000 },
+    { size: "XL", price: 50000 },
+  ];
 
-  // const router = useRouter();
-  // const query = router.query;
-  const thisPaths = usePath();
+  function handleSizeList(size: string) {
+    let newSize: string[] = [];
+    newSize.push(size);
+    setSizeActive(newSize);
+  }
+
+  function increasePriceBySize(increase: number) {
+    setPrice(380000 + increase);
+  }
 
   const handleClick = (event: any) => {
     event.target.select(); // Bôi đen toàn bộ giá trị khi click vào input
@@ -94,9 +106,9 @@ const ProductDetailPage = () => {
             Men Full Sleeves Collar Shirt
           </h3>
           <h1 className="text-primary-color font-bold">
-            {FormatPrice(380000)} VNĐ
+            {FormatPrice(price)} VNĐ
             <span className="line-through text-text-light-color ml-2 text-sm">
-              {FormatPrice(420000)} VNĐ
+              {FormatPrice(price + 60000)} VNĐ
             </span>
           </h1>
           <ul className=" border-b-[1px] border-border-color text-base py-4">
@@ -124,15 +136,27 @@ const ProductDetailPage = () => {
           </ul>
           <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
             <span className="text-md mr-2 min-w-[5rem]">Sizes:</span>
-            <li className="outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all">
-              S
-            </li>
-            <li className="outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all">
-              L
-            </li>
-            <li className="outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all">
-              XL
-            </li>
+            {sizesList &&
+              sizesList.length &&
+              sizesList.map((item) => {
+                return (
+                  <li
+                    onClick={() => {
+                      handleSizeList(item.size);
+                      increasePriceBySize(item.price);
+                    }}
+                    key={item.size}
+                    className={`outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all
+                              ${
+                                isSizeActive.includes(item.size)
+                                  ? " bg-primary-color text-white"
+                                  : ""
+                              }`}
+                  >
+                    {item.size}
+                  </li>
+                );
+              })}
           </ul>
           <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
             <span className="text-md mr-2 min-w-[5rem]">Colors:</span>

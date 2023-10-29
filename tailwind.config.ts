@@ -23,9 +23,9 @@ const config: Config = {
     },
     container: {
       center: true,
-      padding: {
-        DEFAULT: "0rem",
-      },
+      // padding: {
+      //   DEFAULT: "0rem",
+      // },
     },
     colors: {
       "primary-color": "#639df1",
@@ -77,6 +77,7 @@ const config: Config = {
       },
       boxShadow: {
         sd: "0 35px 60px -15px rgba(0, 0, 0, 0.3)",
+        hd: "0 3px 10px 0 rgba(0,0,0,0.14)",
       },
     },
   },

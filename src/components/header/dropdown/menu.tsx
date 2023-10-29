@@ -56,9 +56,11 @@ const StyledPopper = styled(Popper)(({ theme }) => ({
 const Menu = ({
   buttonChildren,
   dropdownContent,
+  arrowPos,
 }: {
-  buttonChildren?: ReactNode;
+  buttonChildren?: any;
   dropdownContent: ReactElement;
+  arrowPos?: string;
 }) => {
   const [arrowRef, setArrowRef]: any = useState(null);
   const [arrow, setArrow] = useState(false);
@@ -110,7 +112,14 @@ const Menu = ({
                     display: "block",
                     width: 0,
                     height: 0,
-                    transform: "translateX(105px)",
+                    transform: {
+                      xs: `translateX(${
+                        arrowPos && !arrowPos.includes("70px")
+                          ? arrowPos
+                          : "105px"
+                      })`,
+                      md: `translateX(${arrowPos ? arrowPos : "105px"})`,
+                    },
                     borderLeftWidth: "8px",
                     borderRightWidth: "8px",
                     borderLeftColor: "transparent",

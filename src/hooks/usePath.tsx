@@ -1,7 +1,7 @@
+"use client";
 import { useRouter, usePathname } from "next/navigation";
 
 const usePath = () => {
-  const router = useRouter();
   const path = usePathname();
   const regex = /\[.*?\]/;
   const urlPath = path

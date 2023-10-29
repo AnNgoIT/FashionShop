@@ -19,10 +19,10 @@ const NavigateButton = ({
         fontWeight: "500",
         padding: "14px 28px",
         color: "white",
-        marginTop: "32px",
+        // marginTop: "24px",
       }}
       className="py-3.5 px-7 font-medium text-base bg-primary-color text-white
-                     hover:bg-text-light-color rounded-[0.25rem] mt-8 capitalize"
+      hover:bg-text-light-color rounded-[0.25rem] capitalize"
     >
       {children}
     </Button>

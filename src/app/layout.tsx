@@ -26,7 +26,7 @@ export default function RootLayout({
       <body suppressHydrationWarning={true}>
         <CartStateProvider>
           <Header></Header>
-          <main className="font-montserrat min-h-full bg-white ssm:mt-[110px] xl:mt-[130px] min-[1400px]:mt-[146px]">
+          <main className="font-montserrat min-h-[1000px] bg-white mt-[110px]">
             {children}
           </main>
           <Footer></Footer>

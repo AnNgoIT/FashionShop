@@ -12,7 +12,7 @@ import {
 } from "@/assests/subbanner";
 const SubBanner = () => {
   return (
-    <section className="container grid grid-cols-12 p-4 ssm:mt-48 sm:mt-56 md:mt-48 lg:mt-32 transition-all">
+    <section className="container grid grid-cols-12 py-4 max-md:px-4 ssm:mt-48 sm:mt-56 md:mt-48 lg:mt-32 transition-all">
       <div className="grid grid-cols-1 md:grid-cols-12 col-span-full gap-4">
         <div className="group md:col-span-4 bg-white subbanner-shadow">
           <Image
