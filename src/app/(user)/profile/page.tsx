@@ -82,19 +82,21 @@ const ProfilePage = () => {
   return (
     <section className="container grid grid-cols-12 p-0 max-md:p-4 mt-8 md:mt-12">
       <div
-        className={`col-span-full md:col-span-8 md:col-start-4 grid grid-cols-12 gap-x-8 shadow-hd
+        className={`col-span-full md:col-span-10 md:col-start-3 xl:col-span-8 xl:col-start-4 grid grid-cols-12 gap-x-8 shadow-hd
         bg-white py-5 max-lg:px-10 rounded-sm mb-12`}
       >
-        <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-center mb-6 mx-6 pb-4 border-b border-border-color">
+        <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-center mb-6 mx-6 pb-4 border-b-[0] lg:border-b border-border-color">
           Profile
         </h2>
         <form
-          className="col-span-full lg:col-span-7 grid grid-cols-12 border-r border-border-color mr-4"
+          className="col-span-full lg:col-span-7 grid grid-cols-12 border-r-[0] lg:border-r border-border-color mr-4 max-lg:order-2"
           onSubmit={handleSubmit}
         >
-          <div className="col-span-9 col-start-3 flex items-center text-sm text-[#999] font-medium mb-7">
+          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
-              <InputLabel htmlFor="username">Username</InputLabel>
+              <InputLabel className="mb-2" htmlFor="username">
+                Username
+              </InputLabel>
               <OutlinedInput
                 fullWidth
                 id="username"
@@ -103,7 +105,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-9 col-start-3 flex items-center text-sm text-[#999] font-medium mb-7">
+          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
               <InputLabel htmlFor="fullname">Fullname</InputLabel>
               <OutlinedInput
@@ -114,7 +116,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-9 col-start-3 flex items-center text-sm text-[#999] font-medium mb-7">
+          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
               <InputLabel htmlFor="email">Email</InputLabel>
               <OutlinedInput
@@ -125,7 +127,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-9 col-start-3 flex items-center text-sm text-[#999] font-medium mb-7">
+          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
               <InputLabel htmlFor="phone">Phone</InputLabel>
               <OutlinedInput
@@ -136,7 +138,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-9 col-start-3 text-center text-sm text-[#999] font-medium mb-7">
+          <div className="col-span-full lg:col-span-9 lg:col-start-3 text-center text-sm text-[#999] font-medium mb-4">
             <FormControl
               sx={{
                 display: "flex",
@@ -169,7 +171,7 @@ const ProfilePage = () => {
               </RadioGroup>
             </FormControl>
           </div>
-          <div className="col-span-9 col-start-3 flex items-center text-sm text-[#999] font-medium mb-7">
+          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-7">
             <LocalizationProvider
               dateAdapter={AdapterMoment}
               adapterLocale="de"
@@ -187,8 +189,8 @@ const ProfilePage = () => {
             </button>
           </Link>
         </form>
-        <div className="col-span-3 min-w-max">
-          <div className="grid place-items-center  text-sm text-[#999] font-medium mb-[29px]">
+        <div className="col-span-full lg:col-span-3 min-w-max max-lg:order-1">
+          <div className="grid place-items-center text-sm text-[#999] font-medium">
             {profileImage ? (
               <Image
                 onClick={() => {
@@ -222,10 +224,10 @@ const ProfilePage = () => {
                 type="file"
               />
             </Button>
-            <p className="text-[16px] pt-4 pl-5 justify-self-start">
+            <p className="text-[16px] pt-4 ssm:pl-16 lg:pl-5 justify-self-center lg:justify-self-start w-full">
               File capacity not more than 1MB
             </p>
-            <p className="text-[16px] pb-4 pl-5 justify-self-start">
+            <p className="text-[16px] pb-4 ssm:pl-16 lg:pl-5 justify-self-center lg:justify-self-start w-full">
               File format: JPG, PNG,...
             </p>
           </div>
