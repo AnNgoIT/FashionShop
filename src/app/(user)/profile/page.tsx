@@ -12,13 +12,36 @@ import {
   InputLabel,
   OutlinedInput,
   Button,
+  Collapse,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import AddLocationIcon from "@mui/icons-material/AddLocation";
+import PasswordIcon from "@mui/icons-material/Password";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+import HistoryIcon from "@mui/icons-material/History";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import "moment/locale/de";
+
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 499,
+      sm: 576,
+      md: 768,
+      lg: 992,
+      xl: 1250,
+    },
+  },
+});
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -80,19 +103,164 @@ const ProfilePage = () => {
     }
   };
   return (
-    <section className="container grid grid-cols-12 p-0 max-md:p-4 mt-8 md:mt-12">
+    <section className="container grid grid-cols-12 p-0 max-md:p-4 mt-8 md:mt-12 gap-x-2">
+      <div className="col-span-full sm:col-span-10 sm:col-start-2 xl:col-span-2 xl:col-start-2 lg:col-span-3">
+        <ThemeProvider theme={theme}>
+          <List
+            sx={{
+              width: "100%",
+              minHeight: {
+                lg: "100%",
+              },
+              display: {
+                xs: "flex",
+                lg: "block",
+              },
+              // bgcolor: "black",
+            }}
+            component="nav"
+            aria-labelledby="nested-list-subheader"
+            subheader={
+              <ListSubheader
+                sx={{
+                  bgcolor: "transparent",
+                  display: {
+                    xs: "none",
+                    lg: "block",
+                  },
+                }}
+                component="div"
+                id="nested-list-subheader"
+              >
+                Nested List Items
+              </ListSubheader>
+            }
+          >
+            <ListItemButton
+              sx={{
+                color: "black",
+                padding: "16px 6px!important",
+                "&:hover": {
+                  color: "#639df1",
+                },
+                display: {
+                  xs: "flex",
+                },
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ListItemIcon>
+                <AddLocationIcon sx={{ minWidth: "3rem" }} />
+              </ListItemIcon>
+              <ListItemText
+                sx={{
+                  display: {
+                    xs: "none",
+                    lg: "block",
+                  },
+                }}
+                primary="Address"
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                color: "black",
+                padding: "16px 6px!important",
+                "&:hover": {
+                  color: "#639df1",
+                },
+                // minWidth: "max-content",
+                display: {
+                  xs: "flex",
+                },
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ListItemIcon>
+                <PasswordIcon sx={{ minWidth: "3rem" }} />
+              </ListItemIcon>
+              <ListItemText
+                sx={{
+                  display: {
+                    xs: "none",
+                    lg: "block",
+                  },
+                  minWidth: "max-content",
+                }}
+                primary="Change Password"
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                color: "black",
+                padding: "16px 6px!important",
+                "&:hover": {
+                  color: "#639df1",
+                },
+                display: {
+                  xs: "flex",
+                },
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ListItemIcon>
+                <ListAltIcon sx={{ minWidth: "3rem" }} />
+              </ListItemIcon>
+              <ListItemText
+                sx={{
+                  display: {
+                    xs: "none",
+                    lg: "block",
+                  },
+                }}
+                primary="Order Tracking"
+              />
+            </ListItemButton>
+            <ListItemButton
+              sx={{
+                color: "black",
+                padding: "16px 6px!important",
+                "&:hover": {
+                  color: "#639df1",
+                },
+                display: {
+                  xs: "flex",
+                },
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ListItemIcon>
+                <HistoryIcon sx={{ minWidth: "3rem" }} />
+              </ListItemIcon>
+              <ListItemText
+                sx={{
+                  display: {
+                    xs: "none",
+                    lg: "block",
+                  },
+                }}
+                primary="Order History"
+              />
+            </ListItemButton>
+          </List>
+        </ThemeProvider>
+      </div>
       <div
-        className={`col-span-full md:col-span-10 md:col-start-3 xl:col-span-8 xl:col-start-4 grid grid-cols-12 gap-x-8 shadow-hd
-        bg-white py-5 max-lg:px-10 rounded-sm mb-12`}
+        className={`col-span-full sm:col-span-10 sm:col-start-2 lg:col-span-9 xl:col-span-8 grid grid-cols-12 shadow-hd
+        bg-white py-5 max-lg:px-10 rounded-sm mb-8`}
       >
         <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-center mb-6 mx-6 pb-4 border-b-[0] lg:border-b border-border-color">
           Profile
         </h2>
         <form
-          className="col-span-full lg:col-span-7 grid grid-cols-12 border-r-[0] lg:border-r border-border-color mr-4 max-lg:order-2"
+          className="col-span-full lg:col-span-7 grid grid-cols-12 border-r-[0] lg:border-r border-border-color max-lg:order-2"
           onSubmit={handleSubmit}
         >
-          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
+          <div className="col-span-full lg:col-span-9 lg:col-start-2 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
               <InputLabel className="mb-2" htmlFor="username">
                 Username
@@ -105,7 +273,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
+          <div className="col-span-full lg:col-span-9 lg:col-start-2 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
               <InputLabel htmlFor="fullname">Fullname</InputLabel>
               <OutlinedInput
@@ -116,7 +284,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
+          <div className="col-span-full lg:col-span-9 lg:col-start-2 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
               <InputLabel htmlFor="email">Email</InputLabel>
               <OutlinedInput
@@ -127,7 +295,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-4">
+          <div className="col-span-full lg:col-span-9 lg:col-start-2 flex items-center text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
               <InputLabel htmlFor="phone">Phone</InputLabel>
               <OutlinedInput
@@ -138,7 +306,7 @@ const ProfilePage = () => {
               />
             </FormControl>
           </div>
-          <div className="col-span-full lg:col-span-9 lg:col-start-3 text-center text-sm text-[#999] font-medium mb-4">
+          <div className="col-span-full lg:col-[9_/_span_10] lg:col-start-2 text-center text-sm text-[#999] font-medium mb-4">
             <FormControl
               sx={{
                 display: "flex",
@@ -171,12 +339,12 @@ const ProfilePage = () => {
               </RadioGroup>
             </FormControl>
           </div>
-          <div className="col-span-full lg:col-span-9 lg:col-start-3 flex items-center text-sm text-[#999] font-medium mb-7">
+          <div className="col-span-full lg:col-span-9 lg:col-start-2 flex items-center text-sm text-[#999] font-medium mb-7">
             <LocalizationProvider
               dateAdapter={AdapterMoment}
               adapterLocale="de"
             >
-              <DatePicker className="w-full" label="Birthday" />
+              <DatePicker className="w-full" />
             </LocalizationProvider>
           </div>
           <Link className="col-span-11" href={"/profile"}>
@@ -189,7 +357,7 @@ const ProfilePage = () => {
             </button>
           </Link>
         </form>
-        <div className="col-span-full lg:col-span-3 min-w-max max-lg:order-1">
+        <div className="col-span-full lg:col-span-3 xl:col-span-5 min-w-max max-lg:order-1">
           <div className="grid place-items-center text-sm text-[#999] font-medium">
             {profileImage ? (
               <Image
@@ -224,10 +392,10 @@ const ProfilePage = () => {
                 type="file"
               />
             </Button>
-            <p className="text-[16px] pt-4 ssm:pl-16 lg:pl-5 justify-self-center lg:justify-self-start w-full">
+            <p className="text-[1rem] pt-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
               File capacity not more than 1MB
             </p>
-            <p className="text-[16px] pb-4 ssm:pl-16 lg:pl-5 justify-self-center lg:justify-self-start w-full">
+            <p className="text-[1rem] pb-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
               File format: JPG, PNG,...
             </p>
           </div>
