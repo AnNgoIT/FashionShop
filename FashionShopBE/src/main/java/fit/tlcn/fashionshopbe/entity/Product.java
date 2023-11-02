@@ -8,7 +8,7 @@
 //import org.hibernate.annotations.CreationTimestamp;
 //import org.hibernate.annotations.UpdateTimestamp;
 //
-//import java.time.ZonedDateTime;
+//import java.util.Date;
 //import java.util.Set;
 //
 //@Getter
@@ -20,7 +20,7 @@
 //public class Product {
 //    @Id
 //    @Column(columnDefinition = "varchar(32)")
-//    private String product_id;
+//    private String productId;
 //
 //    @Column(columnDefinition = "nvarchar(max) not null")
 //    private String name;
@@ -40,46 +40,43 @@
 //    @Column(columnDefinition = "int not null")
 //    private Integer quantity;
 //
-//    @Column(columnDefinition = "int default 0")
-//    private Integer sold;
+//    private Integer sold = 0;
 //
 //    @ManyToOne
-//    @JoinColumn(name = "category_id")
+//    @JoinColumn(name = "categoryId")
 //    private Category category;
 //
 //    @ManyToOne
-//    @JoinColumn(name = "brand_id")
+//    @JoinColumn(name = "brandId")
 //    private Brand brand;
 //
 //    private Float rating;
 //
 //    @ManyToMany
-//    @JoinTable(name = "product_style", joinColumns = @JoinColumn(name = "product_id"),
-//            inverseJoinColumns = @JoinColumn(name = "style_id"))
+//    @JoinTable(name = "product_style", joinColumns = @JoinColumn(name = "productId"),
+//            inverseJoinColumns = @JoinColumn(name = "styleId"))
 //    private Set<Style> styles;
 //
 //    @ManyToMany
-//    @JoinTable(name = "product_styleValue", joinColumns = @JoinColumn(name = "product_id"),
-//            inverseJoinColumns = @JoinColumn(name = "styleValue_id"))
+//    @JoinTable(name = "product_styleValue", joinColumns = @JoinColumn(name = "productId"),
+//            inverseJoinColumns = @JoinColumn(name = "styleValueId"))
 //    private Set<StyleValue> styleValues;
 //
 //    @ManyToMany(mappedBy = "products")
 //    private Set<Coupon> coupons;
 //
 //    @ManyToMany
-//    @JoinTable(name = "userFollowProduct", joinColumns = @JoinColumn(name = "product_id"),
-//            inverseJoinColumns = @JoinColumn(name = "user_id"))
+//    @JoinTable(name = "userFollowProduct", joinColumns = @JoinColumn(name = "productId"),
+//            inverseJoinColumns = @JoinColumn(name = "userId"))
 //    private Set<User> followers;
 //
 //    @CreationTimestamp
-//    private ZonedDateTime createdAt;
+//    private Date createdAt;
 //
 //    @UpdateTimestamp
-//    private ZonedDateTime updatedAt;
+//    private Date updatedAt;
 //
-//    @Column(columnDefinition = "bit default 1")
-//    private Boolean isSelling;
+//    private Boolean isSelling = true;
 //
-//    @Column(columnDefinition = "bit default 0")
-//    private Boolean isDeleted;
+//    private Boolean isActive = true;
 //}

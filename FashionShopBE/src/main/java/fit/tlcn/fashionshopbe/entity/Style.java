@@ -1,9 +1,6 @@
 //package fit.tlcn.fashionshopbe.entity;
 //
-//import jakarta.persistence.Column;
-//import jakarta.persistence.Entity;
-//import jakarta.persistence.Id;
-//import jakarta.persistence.Table;
+//import jakarta.persistence.*;
 //import lombok.AllArgsConstructor;
 //import lombok.Getter;
 //import lombok.NoArgsConstructor;
@@ -11,7 +8,7 @@
 //import org.hibernate.annotations.CreationTimestamp;
 //import org.hibernate.annotations.UpdateTimestamp;
 //
-//import java.time.ZonedDateTime;
+//import java.util.Date;
 //
 //@Getter
 //@Setter
@@ -21,18 +18,17 @@
 //@Table(name = "style")
 //public class Style {
 //    @Id
-//    @Column(columnDefinition = "varchar(32)")
-//    private String style_id;
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Integer styleId;
 //
-//    @Column(columnDefinition = "nvarchar(max) not null")
+//    @Column(columnDefinition = "nvarchar(max) not null unique")
 //    private String name;
 //
 //    @CreationTimestamp
-//    private ZonedDateTime createdAt;
+//    private Date createdAt;
 //
 //    @UpdateTimestamp
-//    private ZonedDateTime updatedAt;
+//    private Date updatedAt;
 //
-//    @Column(columnDefinition = "bit default 0")
-//    private Boolean isDeleted;
+//    private Boolean isActive = true;
 //}

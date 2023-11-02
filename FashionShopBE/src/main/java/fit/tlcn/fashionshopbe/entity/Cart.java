@@ -8,7 +8,7 @@
 //import org.hibernate.annotations.CreationTimestamp;
 //import org.hibernate.annotations.UpdateTimestamp;
 //
-//import java.time.ZonedDateTime;
+//import java.util.Date;
 //
 //@Getter
 //@Setter
@@ -19,18 +19,17 @@
 //public class Cart {
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Integer card_id;
+//    private Integer cardId;
 //
 //    @OneToOne
-//    @JoinColumn(name = "user_id")
+//    @JoinColumn(name = "userId")
 //    private User user;
 //
-//    @Column(columnDefinition = "int default 0")
-//    private Integer quantity;
+//    private Integer quantity = 0;
 //
 //    @CreationTimestamp
-//    private ZonedDateTime createdAt;
+//    private Date createdAt;
 //
 //    @UpdateTimestamp
-//    private ZonedDateTime updatedAt;
+//    private Date updatedAt;
 //}

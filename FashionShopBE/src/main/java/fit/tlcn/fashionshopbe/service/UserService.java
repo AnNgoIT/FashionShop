@@ -1,6 +1,7 @@
 package fit.tlcn.fashionshopbe.service;
 
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
+import fit.tlcn.fashionshopbe.dto.LoginRequest;
 import fit.tlcn.fashionshopbe.dto.RegisterRequest;
 import fit.tlcn.fashionshopbe.entity.User;
 import org.springframework.http.ResponseEntity;
@@ -13,4 +14,6 @@ public interface UserService {
     Optional<User> findByEmail(String email);
 
     void save(User user);
+
+    ResponseEntity<GenericResponse> login(LoginRequest loginRequest);
 }

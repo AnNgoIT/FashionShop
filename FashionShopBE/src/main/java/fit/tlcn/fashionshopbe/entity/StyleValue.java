@@ -8,7 +8,7 @@
 //import org.hibernate.annotations.CreationTimestamp;
 //import org.hibernate.annotations.UpdateTimestamp;
 //
-//import java.time.ZonedDateTime;
+//import java.util.Date;
 //
 //@Getter
 //@Setter
@@ -18,19 +18,18 @@
 //@Table(name = "styleValue")
 //public class StyleValue {
 //    @Id
-//    @Column(columnDefinition = "varchar(32)")
-//    private String styleValue_id;
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Integer styleValueId;
 //
 //    @ManyToOne
-//    @JoinColumn(name = "style_id")
+//    @JoinColumn(name = "styleId")
 //    private Style style;
 //
 //    @CreationTimestamp
-//    private ZonedDateTime createdAt;
+//    private Date createdAt;
 //
 //    @UpdateTimestamp
-//    private ZonedDateTime updatedAt;
+//    private Date updatedAt;
 //
-//    @Column(columnDefinition = "bit default 0")
-//    private Boolean isDeleted;
+//    private Boolean isActive = true;
 //}

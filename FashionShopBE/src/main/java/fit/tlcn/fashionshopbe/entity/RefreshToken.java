@@ -24,7 +24,7 @@ public class RefreshToken {
     private boolean revoked;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userId")
     @JsonBackReference
     private User user;
 }

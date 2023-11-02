@@ -9,6 +9,7 @@
 //import org.hibernate.annotations.UpdateTimestamp;
 //
 //import java.time.ZonedDateTime;
+//import java.util.Date;
 //import java.util.Set;
 //
 //@Getter
@@ -20,17 +21,16 @@
 //public class ProductVariant {
 //    @Id
 //    @Column(columnDefinition = "varchar(48)")
-//    private String productVariant_id;
+//    private String productVariantId;
 //
 //    @ManyToOne
-//    @JoinColumn(name = "product_id")
+//    @JoinColumn(name = "productId")
 //    private Product parent;
 //
 //    @Column(columnDefinition = "int not null")
 //    private Integer quantity;
 //
-//    @Column(columnDefinition = "int default 0")
-//    private Integer sold;
+//    private Integer sold = 0;
 //
 //    @Column(columnDefinition = "varchar(max) not null")
 //    private String images;
@@ -47,8 +47,8 @@
 //    private Set<StyleValue> styleValues;
 //
 //    @CreationTimestamp
-//    private ZonedDateTime createdAt;
+//    private Date createdAt;
 //
 //    @UpdateTimestamp
-//    private ZonedDateTime updatedAt;
+//    private Date updatedAt;
 //}

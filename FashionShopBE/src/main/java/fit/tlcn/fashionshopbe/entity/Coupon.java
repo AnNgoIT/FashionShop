@@ -1,14 +1,12 @@
 //package fit.tlcn.fashionshopbe.entity;
 //
 //import jakarta.persistence.*;
-//import lombok.AllArgsConstructor;
-//import lombok.Getter;
-//import lombok.NoArgsConstructor;
-//import lombok.Setter;
+//import lombok.*;
 //import org.hibernate.annotations.CreationTimestamp;
 //import org.hibernate.annotations.UpdateTimestamp;
 //
 //import java.time.ZonedDateTime;
+//import java.util.Date;
 //import java.util.Set;
 //
 //@Getter
@@ -20,32 +18,31 @@
 //public class Coupon {
 //    @Id
 //    @Column(columnDefinition = "varchar(32)")
-//    private String coupon_id;
+//    private String couponId;
 //
 //    @ManyToOne
-//    @JoinColumn(name = "banner_id")
+//    @JoinColumn(name = "bannerId")
 //    private Banner banner;
 //
 //    @Column(nullable = false)
-//    private ZonedDateTime startAt;
+//    private Date startAt;
 //
 //    @Column(nullable = false)
-//    private ZonedDateTime expireAt;
+//    private Date expireAt;
 //
 //    @Column(columnDefinition = "float not null")
 //    private Float discount;
 //
 //    @ManyToMany
-//    @JoinTable(name = "product_coupon", joinColumns = @JoinColumn(name = "coupon_id"),
-//            inverseJoinColumns = @JoinColumn(name = "product_id"))
+//    @JoinTable(name = "product_coupon", joinColumns = @JoinColumn(name = "couponId"),
+//            inverseJoinColumns = @JoinColumn(name = "productId"))
 //    private Set<Product> products;
 //
 //    @CreationTimestamp
-//    private ZonedDateTime createdAt;
+//    private Date createdAt;
 //
 //    @UpdateTimestamp
-//    private ZonedDateTime updatedAt;
+//    private Date updatedAt;
 //
-//    @Column(columnDefinition = "bit default 0")
-//    private Boolean isDeleted;
+//    private Boolean isActive = true;
 //}

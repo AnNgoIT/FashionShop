@@ -9,6 +9,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -25,7 +26,7 @@ public class JwtTokenProvider {
     private final Long JWT_REFRESH_EXPIRATION = 604800000L;
 
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-    private final String issuer = "Nhom 2";
+    private final String issuer = "Nhom 01";
 
     private Key getSigningKey() {
         return secretKey;
@@ -52,6 +53,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject((userDetail.getUser().getUserId()))
+                //.claim("userId", userDetail.getUser().getUserId())
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)

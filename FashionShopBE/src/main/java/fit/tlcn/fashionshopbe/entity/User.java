@@ -1,7 +1,7 @@
 package fit.tlcn.fashionshopbe.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import fit.tlcn.fashionshopbe.constant.Gender;
-import fit.tlcn.fashionshopbe.constant.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,8 +43,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "roleId")
+    @JsonBackReference
     private Role role;
 
     @Column(columnDefinition = "nvarchar(max)")
@@ -64,12 +65,4 @@ public class User {
     private Date lastLoginAt;
 
     private Boolean isActive = true;
-
-    public User(String fullname, String email, String phone, String password, Role role) {
-        this.fullname = fullname;
-        this.email = email;
-        this.phone = phone;
-        this.password = password;
-        this.role = role;
-    }
 }

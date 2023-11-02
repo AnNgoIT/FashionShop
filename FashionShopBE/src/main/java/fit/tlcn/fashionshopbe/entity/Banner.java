@@ -8,7 +8,7 @@
 //import org.hibernate.annotations.CreationTimestamp;
 //import org.hibernate.annotations.UpdateTimestamp;
 //
-//import java.time.ZonedDateTime;
+//import java.util.Date;
 //
 //@Getter
 //@Setter
@@ -19,17 +19,16 @@
 //public class Banner {
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Integer banner_id;
+//    private Integer bannerId;
 //
 //    @Column(columnDefinition = "varchar(max) not null")
 //    private String image;
 //
 //    @CreationTimestamp
-//    private ZonedDateTime createdAt;
+//    private Date createdAt;
 //
 //    @UpdateTimestamp
-//    private ZonedDateTime updatedAt;
+//    private Date updatedAt;
 //
-//    @Column(columnDefinition = "bit default 0")
-//    private Boolean isDeleted;
+//    private Boolean isActive = true;
 //}
