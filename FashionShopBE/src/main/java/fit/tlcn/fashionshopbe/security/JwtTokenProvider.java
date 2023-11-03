@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import java.util.function.Function;
 
 @Component
 @Log4j2
@@ -29,16 +30,18 @@ public class JwtTokenProvider {
     private final String issuer = "Nhom 01";
 
     private Key getSigningKey() {
+//        byte[] keyBytes= Decoders.BASE64.decode(String.valueOf(SECRET));
+//        return Keys.hmacShaKeyFor(keyBytes);
         return secretKey;
     }
 
-    public String generateAccessToken(UserDetail userDetail) {
+    public String generateAccessToken(UserDetails userDetails) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + JWT_ACCESS_EXPIRATION);
 
         return Jwts.builder()
-                .setSubject((userDetail.getUser().getUserId()))
-                .claim("userId", userDetail.getUser().getUserId())
+                .setSubject((userDetails.getUsername()))
+                .claim("email", userDetails.getUsername())
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -47,13 +50,12 @@ public class JwtTokenProvider {
 
     }
 
-    public String generateRefreshToken(UserDetail userDetail) {
+    public String generateRefreshToken(UserDetails userDetails) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + JWT_REFRESH_EXPIRATION);
 
         return Jwts.builder()
-                .setSubject((userDetail.getUser().getUserId()))
-                //.claim("userId", userDetail.getUser().getUserId())
+                .setSubject((userDetails.getUsername()))
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -63,25 +65,25 @@ public class JwtTokenProvider {
     }
 
 
-    public String getUserIdFromJwt(String token) {
+    public String getEmailFromJwt(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return ((String) claims.get("userId"));
+        return ((String) claims.get("email"));
     }
 
-    public String getUserIdFromRefreshToken(String token) {
+    public String getEmailFromRefreshToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return (claims.getSubject());
+        return ((String) claims.get("email"));
     }
 
-    public boolean validateToken(String authToken) {
+    public Boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey().getEncoded()).build().parseClaimsJws(authToken);
             return true;
@@ -91,5 +93,23 @@ public class JwtTokenProvider {
             log.error("JWT claims string is empty.");
         }
         return false;
+    }
+
+    public String extractEmail(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

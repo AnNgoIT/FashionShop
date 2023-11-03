@@ -9,7 +9,6 @@ import fit.tlcn.fashionshopbe.entity.User;
 import fit.tlcn.fashionshopbe.repository.RoleRepository;
 import fit.tlcn.fashionshopbe.repository.UserRepository;
 import fit.tlcn.fashionshopbe.security.JwtTokenProvider;
-import fit.tlcn.fashionshopbe.security.UserDetail;
 import fit.tlcn.fashionshopbe.service.RefreshTokenService;
 import fit.tlcn.fashionshopbe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -158,25 +158,20 @@ public class UserServiceImpl implements UserService {
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            System.out.println(SecurityContextHolder.getContext());
-
-
-//            UserDetail userDetail = (UserDetail) authentication.getPrincipal();
-//
-//            String accessToken = jwtTokenProvider.generateAccessToken(userDetail);
-//            RefreshToken refreshToken = new RefreshToken();
-//            String token = jwtTokenProvider.generateRefreshToken(userDetail);
-//            refreshToken.setToken(token);
-//            refreshToken.setUser(userDetail.getUser());
-//            //invalid all refreshToken before
-//            refreshTokenService.revokeRefreshToken(userDetail.getUserId());
-//            refreshTokenService.save(refreshToken);
-//            Map<String, String> tokenMap = new HashMap<>();
-//            tokenMap.put("accessToken", accessToken);
-//            tokenMap.put("refreshToken", token);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
+            RefreshToken refreshToken = new RefreshToken();
+            String token = jwtTokenProvider.generateRefreshToken(userDetails);
+            refreshToken.setToken(token);
+            refreshToken.setUser(userOptional.get());
+            //invalid all refreshToken before
+            refreshTokenService.revokeRefreshToken(userOptional.get().getUserId());
+            refreshTokenService.save(refreshToken);
+            Map<String, String> tokenMap = new HashMap<>();
+            tokenMap.put("accessToken", accessToken);
+            tokenMap.put("refreshToken", token);
 
             User user = userOptional.get();
-
             user.setLastLoginAt(new Date());
             userRepository.save(user);
 
@@ -184,7 +179,7 @@ public class UserServiceImpl implements UserService {
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Login successfully")
-//                    .result(tokenMap)
+                    .result(tokenMap)
                     .statusCode(HttpStatus.OK.value())
                     .build());
 

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -28,72 +29,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    private UserDetailService userDetailService;
+    private CustomUserDetailsService customUserDetailsService;
 
-    private Optional<String> getJwtFromRequest(HttpServletRequest request){
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return Optional.of(bearerToken.substring(7));
-        }
-        return Optional.empty();
-    }
+//    private Optional<String> getJwtFromRequest(HttpServletRequest request) {
+//        String bearerToken = request.getHeader("Authorization");
+//        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+//            return Optional.of(bearerToken.substring(7));
+//        }
+//        return Optional.empty();
+//    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        try {
-            CustomHttpServletRequestWrapper requestWrapper = new CustomHttpServletRequestWrapper(request);
-            try {
-                Optional<String> jwt = getJwtFromRequest(requestWrapper);
+//        CustomHttpServletRequestWrapper requestWrapper = new CustomHttpServletRequestWrapper(request);
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String email;
 
-                if (jwt.isPresent() && jwtTokenProvider.validateToken(jwt.get())) {
-                    String id = jwtTokenProvider.getUserIdFromJwt(jwt.get());
-
-                    UserDetails userDetails = userDetailService.loadUserByUserId(id);
-                    if (userDetails != null) {
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(requestWrapper));
-
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                        response.addHeader("Authorization", "Bearer " + jwt);
-                    }
-                }
-            } catch (MalformedJwtException e) {
-                response.setStatus(401);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                PrintWriter out = response.getWriter();
-                out.print("{\"success\": false, \"message\": \"Access Denied\", \"result\": \"Invalid JWT token. Please login again!\", \"statusCode\": \"401\"}");
-                out.flush();
-                return;
-            } catch (ExpiredJwtException e) {
-                response.setStatus(401);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                PrintWriter out = response.getWriter();
-                out.print("{\"success\": false, \"message\": \"Access Denied\", \"result\": \"Token is expired. Please login again!\", \"statusCode\": \"401\"}");
-                out.flush();
-                return;
-            } catch (SignatureException ex) {
-                response.setStatus(401);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                PrintWriter out = response.getWriter();
-                out.print("{\"success\": false, \"message\": \"Access Denied\", \"result\": \"In valid JWT signature. Please login again!\", \"statusCode\": \"401\"}");
-                out.flush();
-                return;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                response.setStatus(401);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                PrintWriter out = response.getWriter();
-                out.print("{\"success\": false, \"message\": \"Access Denied\", \"result\": \"Please login again!\", \"statusCode\": \"401\"}");
-                out.flush();
-                return;
-            }
-
-            filterChain.doFilter(requestWrapper, response);
-        } catch (Exception e) {
-
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        jwt = authHeader.substring(7);
+        email = jwtTokenProvider.getEmailFromJwt(jwt);
+
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (jwtTokenProvider.validateToken(jwt)) {
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+            }
+        }
+        filterChain.doFilter(request, response);
     }
 }
+

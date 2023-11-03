@@ -16,14 +16,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/v1/users/admin")
 public class AdCategoryController {
     @Autowired
     CategoryService categoryService;
 
     @PostMapping("/categories")
-    @Transactional
     public ResponseEntity<GenericResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(

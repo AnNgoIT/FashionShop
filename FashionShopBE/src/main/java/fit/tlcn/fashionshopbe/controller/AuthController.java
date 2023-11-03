@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-//@PreAuthorize("hasAuthority('ADMIN')")
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     @Autowired
