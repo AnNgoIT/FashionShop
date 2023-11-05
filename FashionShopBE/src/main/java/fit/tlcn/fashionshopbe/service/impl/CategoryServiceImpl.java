@@ -5,6 +5,7 @@ import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryRequest;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryStatusRequest;
 import fit.tlcn.fashionshopbe.entity.Category;
+import fit.tlcn.fashionshopbe.entity.Style;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
 import fit.tlcn.fashionshopbe.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,18 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public ResponseEntity<GenericResponse> createCategory(CreateCategoryRequest request) {
         try {
+            Optional<Category> categoryOptional = categoryRepository.findByName(request.getName());
+            if (categoryOptional.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Category already exists")
+                                .result("Conflict")
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .build()
+                );
+            }
+
             Category category = new Category();
             category.setName(request.getName());
             if (request.getParentId() != null) {

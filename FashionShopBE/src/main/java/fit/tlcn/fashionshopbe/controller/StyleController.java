@@ -2,7 +2,8 @@ package fit.tlcn.fashionshopbe.controller;
 
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.entity.Category;
-import fit.tlcn.fashionshopbe.repository.CategoryRepository;
+import fit.tlcn.fashionshopbe.entity.Style;
+import fit.tlcn.fashionshopbe.repository.StyleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,36 +18,36 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/categories")
-public class CategoryController {
+@RequestMapping("/api/v1/styles")
+public class StyleController {
     @Autowired
-    CategoryRepository categoryRepository;
+    StyleRepository styleRepository;
 
     @GetMapping("")
-    public ResponseEntity<GenericResponse> getAll() {
-        List<Category> categoryList = categoryRepository.findAllByIsActiveIsTrue();
+    public ResponseEntity<GenericResponse> getAll(){
+        List<Style> styleList = styleRepository.findAllByIsActiveIsTrue();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("content", categoryList);
-        map.put("totalElements", categoryList.size());
+        map.put("content", styleList);
+        map.put("totalElements", styleList.size());
         return ResponseEntity.status(HttpStatus.OK).body(
                 GenericResponse.builder()
                         .success(true)
-                        .message("All Categories")
+                        .message("All Styles")
                         .result(map)
                         .statusCode(HttpStatus.OK.value())
                         .build()
         );
     }
 
-    @GetMapping("/{categoryId}")
-    public ResponseEntity<GenericResponse> getOne(@PathVariable Integer categoryId) {
+    @GetMapping("/{styleId}")
+    public ResponseEntity<GenericResponse> getOne(@PathVariable Integer styleId) {
         try {
-            Optional<Category> categoryOptional = categoryRepository.findByCategoryIdAndIsActiveIsTrue(categoryId);
-            if (categoryOptional.isEmpty()) {
+            Optional<Style> styleOptional = styleRepository.findByStyleIdAndIsActiveIsTrue(styleId);
+            if (styleOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         GenericResponse.builder()
                                 .success(false)
-                                .message("Not found category")
+                                .message("Not found style")
                                 .result("Not found")
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -55,8 +56,8 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
-                            .message("This is category's information")
-                            .result(categoryOptional.get())
+                            .message("This is style's information")
+                            .result(styleOptional.get())
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );
