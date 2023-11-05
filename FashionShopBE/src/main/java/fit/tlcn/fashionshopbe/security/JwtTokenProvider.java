@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
-import java.util.function.Function;
 
 @Component
 @Log4j2
@@ -30,8 +29,6 @@ public class JwtTokenProvider {
     private final String issuer = "Nhom 01";
 
     private Key getSigningKey() {
-//        byte[] keyBytes= Decoders.BASE64.decode(String.valueOf(SECRET));
-//        return Keys.hmacShaKeyFor(keyBytes);
         return secretKey;
     }
 
@@ -41,7 +38,6 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject((userDetails.getUsername()))
-                .claim("email", userDetails.getUsername())
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -63,24 +59,14 @@ public class JwtTokenProvider {
                 .compact();
 
     }
-
-
+    
     public String getEmailFromJwt(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return ((String) claims.get("email"));
-    }
-
-    public String getEmailFromRefreshToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return ((String) claims.get("email"));
+        return claims.getSubject();
     }
 
     public Boolean validateToken(String authToken) {
@@ -93,23 +79,5 @@ public class JwtTokenProvider {
             log.error("JWT claims string is empty.");
         }
         return false;
-    }
-
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
     }
 }

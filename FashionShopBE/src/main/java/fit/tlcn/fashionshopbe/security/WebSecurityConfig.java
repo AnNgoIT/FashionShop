@@ -8,16 +8,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
@@ -30,18 +29,13 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     @Autowired
-    UserDetailsService userDetailsService;
+    CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     MyBasicAuthenticationEntryPoint myBasicAuthenticationEntryPoint;
-
-    @Bean
-    public JwtAuthenticationFilter JwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
-    }
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -59,7 +53,7 @@ public class WebSecurityConfig {
     public AuthenticationProvider authenticationProvider() {
         final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setPasswordEncoder(passwordEncoder());
-        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setUserDetailsService(customUserDetailsService);
         return authenticationProvider;
     }
 
@@ -73,12 +67,10 @@ public class WebSecurityConfig {
         http.csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers(antMatcher("/api/v1/auth/**"))
-                .permitAll()
                 .requestMatchers(antMatcher("/api/v1/users/admin/**"))
                 .hasAuthority("ADMIN")
                 .anyRequest()
-                .authenticated()
+                .permitAll()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -86,9 +78,24 @@ public class WebSecurityConfig {
                 .httpBasic()
                 .authenticationEntryPoint(myBasicAuthenticationEntryPoint)
                 .and()
+                .cors()
+                .configurationSource(corsConfigurationSource())
+                .and()
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    public CorsConfigurationSource corsConfigurationSource() {
+        final CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://example.com")); // Đặt nguồn cụ thể
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowCredentials(true); // Cho phép chia sẻ cookie và tiêu đề xác thực
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 }

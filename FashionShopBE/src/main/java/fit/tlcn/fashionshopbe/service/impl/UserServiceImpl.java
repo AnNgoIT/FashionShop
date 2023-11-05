@@ -2,7 +2,6 @@ package fit.tlcn.fashionshopbe.service.impl;
 
 import fit.tlcn.fashionshopbe.dto.LoginRequest;
 import fit.tlcn.fashionshopbe.entity.RefreshToken;
-import fit.tlcn.fashionshopbe.entity.Role;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.RegisterRequest;
 import fit.tlcn.fashionshopbe.entity.User;
@@ -14,7 +13,6 @@ import fit.tlcn.fashionshopbe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -131,19 +129,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    @Override
-    public void save(User user) {
-        userRepository.save(user);
-    }
-
-    @Override
     public ResponseEntity<GenericResponse> login(LoginRequest loginRequest) {
         try {
-            Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+            Optional<User> userOptional = userRepository.findByEmailAndIsActiveIsTrue(loginRequest.getEmail());
             if (userOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         GenericResponse.builder()
@@ -165,7 +153,7 @@ public class UserServiceImpl implements UserService {
             refreshToken.setToken(token);
             refreshToken.setUser(userOptional.get());
             //invalid all refreshToken before
-            refreshTokenService.revokeRefreshToken(userOptional.get().getUserId());
+            refreshTokenService.revokeRefreshToken(userOptional.get());
             refreshTokenService.save(refreshToken);
             Map<String, String> tokenMap = new HashMap<>();
             tokenMap.put("accessToken", accessToken);

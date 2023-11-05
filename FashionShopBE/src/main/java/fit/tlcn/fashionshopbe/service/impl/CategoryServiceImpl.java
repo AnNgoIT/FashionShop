@@ -24,8 +24,8 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             Category category = new Category();
             category.setName(request.getName());
-            if (request.getParentId() != -1) {
-                Optional<Category> prcateOptional = categoryRepository.findById(request.getParentId());
+            if (request.getParentId() != null) {
+                Optional<Category> prcateOptional = categoryRepository.findByCategoryIdAndIsActiveIsTrue(request.getParentId());
                 if (prcateOptional.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                             GenericResponse.builder()
@@ -64,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public ResponseEntity<GenericResponse> updateCategory(Integer categoryId, UpdateCategoryRequest updateCategoryRequest) {
         try {
-            Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
+            Optional<Category> categoryOptional = categoryRepository.findByCategoryIdAndIsActiveIsTrue(categoryId);
             if (categoryOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         GenericResponse.builder()
@@ -77,17 +77,21 @@ public class CategoryServiceImpl implements CategoryService {
 
             Category category = categoryOptional.get();
             category.setName(updateCategoryRequest.getName());
-            Optional<Category> parent = categoryRepository.findById(updateCategoryRequest.getParentId());
-            if (parent.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        GenericResponse.builder()
-                                .success(false)
-                                .message("This ParentId does not exist")
-                                .result("Not found")
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
+            if (updateCategoryRequest.getParentId() != null) {
+                Optional<Category> parent = categoryRepository.findByCategoryIdAndIsActiveIsTrue(updateCategoryRequest.getParentId());
+                if (parent.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("This ParentId does not exist")
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build());
+                }
+                category.setParent(parent.get());
             }
-            category.setParent(parent.get());
+            category.setParent(null);
+
             category.setIcon(updateCategoryRequest.getIcon());
 
             categoryRepository.save(category);

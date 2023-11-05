@@ -4,14 +4,11 @@ import fit.tlcn.fashionshopbe.dto.CreateCategoryRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryRequest;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryStatusRequest;
-//import fit.tlcn.fashionshopbe.security.UserDetail;
 import fit.tlcn.fashionshopbe.service.CategoryService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,5 +1,6 @@
 package fit.tlcn.fashionshopbe.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

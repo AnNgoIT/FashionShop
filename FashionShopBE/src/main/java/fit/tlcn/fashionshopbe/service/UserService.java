@@ -11,9 +11,5 @@ import java.util.Optional;
 public interface UserService {
     ResponseEntity<GenericResponse> registerUser(RegisterRequest registerRequest);
 
-    Optional<User> findByEmail(String email);
-
-    void save(User user);
-
     ResponseEntity<GenericResponse> login(LoginRequest loginRequest);
 }
