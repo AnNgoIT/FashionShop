@@ -1,8 +1,8 @@
 package fit.tlcn.fashionshopbe.controller.AdminController;
 
-import fit.tlcn.fashionshopbe.dto.CreateStyleRequest;
+import fit.tlcn.fashionshopbe.dto.CreateBrandRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
-import fit.tlcn.fashionshopbe.service.StyleService;
+import fit.tlcn.fashionshopbe.service.BrandService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/users/admin/styles")
-public class AdStyleController {
+@RequestMapping("/api/v1/users/admin/brands")
+public class AdBrandController {
     @Autowired
-    StyleService styleService;
+    BrandService brandService;
 
     @PostMapping("")
-    public ResponseEntity<GenericResponse> createStyle(@Valid @RequestBody CreateStyleRequest request, BindingResult bindingResult) {
+    public ResponseEntity<GenericResponse> createBrand(@Valid @RequestBody CreateBrandRequest request, BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     GenericResponse.builder()
@@ -32,6 +32,6 @@ public class AdStyleController {
             );
         }
 
-        return styleService.createStyle(request);
+        return brandService.createBrand(request);
     }
 }

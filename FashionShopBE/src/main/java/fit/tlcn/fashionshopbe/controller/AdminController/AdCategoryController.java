@@ -13,12 +13,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/users/admin")
+@RequestMapping("/api/v1/users/admin/categories")
 public class AdCategoryController {
     @Autowired
     CategoryService categoryService;
 
-    @PostMapping("/categories")
+    @PostMapping("")
     public ResponseEntity<GenericResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -34,7 +34,7 @@ public class AdCategoryController {
         return categoryService.createCategory(request);
     }
 
-    @PutMapping("/categories/{categoryId}")
+    @PutMapping("/{categoryId}")
     public ResponseEntity<GenericResponse> updateCategory(@PathVariable Integer categoryId, @Valid @RequestBody UpdateCategoryRequest updateCategoryRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -49,7 +49,7 @@ public class AdCategoryController {
         return categoryService.updateCategory(categoryId, updateCategoryRequest);
     }
 
-    @PatchMapping("/categories/{categoryId}")
+    @PatchMapping("/{categoryId}")
     public ResponseEntity<GenericResponse> updateCategoryStatus(@PathVariable Integer categoryId, @Valid @RequestBody UpdateCategoryStatusRequest updateCategoryStatusRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(

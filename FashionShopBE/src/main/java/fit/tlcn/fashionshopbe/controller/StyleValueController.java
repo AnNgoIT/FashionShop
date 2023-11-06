@@ -1,9 +1,8 @@
 package fit.tlcn.fashionshopbe.controller;
 
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
-import fit.tlcn.fashionshopbe.entity.Category;
-import fit.tlcn.fashionshopbe.entity.Style;
-import fit.tlcn.fashionshopbe.repository.StyleRepository;
+import fit.tlcn.fashionshopbe.entity.StyleValue;
+import fit.tlcn.fashionshopbe.repository.StyleValueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,36 +17,36 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/styles")
-public class StyleController {
+@RequestMapping("/api/v1/styleValues")
+public class StyleValueController {
     @Autowired
-    StyleRepository styleRepository;
+    StyleValueRepository styleValueRepository;
 
     @GetMapping("")
     public ResponseEntity<GenericResponse> getAll() {
-        List<Style> styleList = styleRepository.findAllByIsActiveIsTrue();
+        List<StyleValue> styleValueList = styleValueRepository.findAllByIsActiveIsTrue();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("content", styleList);
-        map.put("totalElements", styleList.size());
+        map.put("content", styleValueList);
+        map.put("totalElements", styleValueList.size());
         return ResponseEntity.status(HttpStatus.OK).body(
                 GenericResponse.builder()
                         .success(true)
-                        .message("All Styles")
+                        .message("All Style Values")
                         .result(map)
                         .statusCode(HttpStatus.OK.value())
                         .build()
         );
     }
 
-    @GetMapping("/{styleId}")
-    public ResponseEntity<GenericResponse> getOne(@PathVariable Integer styleId) {
+    @GetMapping("/{styleValueId}")
+    public ResponseEntity<GenericResponse> getOne(@PathVariable Integer styleValueId) {
         try {
-            Optional<Style> styleOptional = styleRepository.findByStyleIdAndIsActiveIsTrue(styleId);
-            if (styleOptional.isEmpty()) {
+            Optional<StyleValue> styleValueOptional = styleValueRepository.findByStyleValueIdAndIsActiveIsTrue(styleValueId);
+            if (styleValueOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         GenericResponse.builder()
                                 .success(false)
-                                .message("Not found style")
+                                .message("Not found style value")
                                 .result("Not found")
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -56,8 +55,8 @@ public class StyleController {
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
-                            .message("This is style's information")
-                            .result(styleOptional.get())
+                            .message("This is information of style value")
+                            .result(styleValueOptional.get())
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );
@@ -72,6 +71,5 @@ public class StyleController {
                             .build()
             );
         }
-
     }
 }

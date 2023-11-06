@@ -5,7 +5,6 @@ import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryRequest;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryStatusRequest;
 import fit.tlcn.fashionshopbe.entity.Category;
-import fit.tlcn.fashionshopbe.entity.Style;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
 import fit.tlcn.fashionshopbe.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;

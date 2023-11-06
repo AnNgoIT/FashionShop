@@ -1,9 +1,8 @@
 package fit.tlcn.fashionshopbe.controller;
 
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
-import fit.tlcn.fashionshopbe.entity.Category;
-import fit.tlcn.fashionshopbe.entity.Style;
-import fit.tlcn.fashionshopbe.repository.StyleRepository;
+import fit.tlcn.fashionshopbe.entity.Brand;
+import fit.tlcn.fashionshopbe.repository.BrandRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,36 +17,36 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/styles")
-public class StyleController {
+@RequestMapping("/api/v1/brands")
+public class BrandController {
     @Autowired
-    StyleRepository styleRepository;
+    BrandRepository brandRepository;
 
     @GetMapping("")
     public ResponseEntity<GenericResponse> getAll() {
-        List<Style> styleList = styleRepository.findAllByIsActiveIsTrue();
+        List<Brand> styleList = brandRepository.findAllByIsActiveIsTrue();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("content", styleList);
         map.put("totalElements", styleList.size());
         return ResponseEntity.status(HttpStatus.OK).body(
                 GenericResponse.builder()
                         .success(true)
-                        .message("All Styles")
+                        .message("All Brands")
                         .result(map)
                         .statusCode(HttpStatus.OK.value())
                         .build()
         );
     }
 
-    @GetMapping("/{styleId}")
-    public ResponseEntity<GenericResponse> getOne(@PathVariable Integer styleId) {
+    @GetMapping("/{brandId}")
+    public ResponseEntity<GenericResponse> getOne(@PathVariable Integer brandId) {
         try {
-            Optional<Style> styleOptional = styleRepository.findByStyleIdAndIsActiveIsTrue(styleId);
-            if (styleOptional.isEmpty()) {
+            Optional<Brand> brandOptional = brandRepository.findByBrandIdAndIsActiveIsTrue(brandId);
+            if (brandOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         GenericResponse.builder()
                                 .success(false)
-                                .message("Not found style")
+                                .message("Not found brand")
                                 .result("Not found")
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -56,8 +55,8 @@ public class StyleController {
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
-                            .message("This is style's information")
-                            .result(styleOptional.get())
+                            .message("This is brand's information")
+                            .result(brandOptional.get())
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );
