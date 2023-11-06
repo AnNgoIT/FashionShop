@@ -45,7 +45,6 @@ const TopNav = () => {
       <div className="grid grid-flow-col justify-center gap-x-2 place-items-center">
         <Link href="/" as={"/"}>
           <Image
-            loader={imageLoader}
             className={`w-auto min-w-[5rem] ${
               scrolling ? "h-[4rem]" : "h-[5rem]"
             } transition-all`}
