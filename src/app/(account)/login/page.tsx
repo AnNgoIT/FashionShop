@@ -4,7 +4,7 @@
 import dynamic from "next/dynamic";
 import React from "react";
 
-const LoginForm = dynamic(() => import("@/container/user/login-form"));
+const LoginForm = dynamic(() => import("@/container/account/login-form"));
 const Login = () => {
   return <LoginForm></LoginForm>;
 };

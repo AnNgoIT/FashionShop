@@ -15,6 +15,7 @@ import { Avatar, Paper } from "@mui/material";
 import CartDropdown from "./dropdown/cart";
 import { CartContext } from "@/store/globalState";
 import { user_img2 } from "@/assests/users";
+import { imageLoader } from "@/features/img-loading";
 
 const TopNav = () => {
   const { cartItems, setCartItems } = useContext(CartContext);
@@ -42,21 +43,20 @@ const TopNav = () => {
   return (
     <nav className="col-span-12 pt-2.5 mx-auto">
       <div className="grid grid-flow-col justify-center gap-x-2 place-items-center">
-        <div>
-          <Link href="/">
-            <Image
-              className={`w-auto min-w-[5rem] ${
-                scrolling ? "h-[4rem]" : "h-[6rem]"
-              } transition-all`}
-              alt="Logo of the shop"
-              src={logo}
-              width={180}
-              height={180}
-              sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
-              priority={true}
-            ></Image>
-          </Link>
-        </div>
+        <Link href="/" as={"/"}>
+          <Image
+            loader={imageLoader}
+            className={`w-auto min-w-[5rem] ${
+              scrolling ? "h-[4rem]" : "h-[5rem]"
+            } transition-all`}
+            alt="Logo of the shop"
+            src={logo}
+            width={180}
+            height={180}
+            sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
+            priority={true}
+          ></Image>
+        </Link>
         <form
           className="bg-white px-2 rounded-[0.25rem]"
           action={`/search`}
@@ -64,6 +64,7 @@ const TopNav = () => {
           onSubmit={searchProducts}
         >
           <input
+            name="keywords"
             className="outline-none p-2 text-sm"
             type="text"
             placeholder="Search..."

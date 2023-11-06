@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  fastRefresh: true,
+  optimizeFonts: false, // Disable font optimization
   images: {
     remotePatterns: [
       {
@@ -8,9 +10,9 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverActions: true,
-  },
+  // experimental: {
+  //   serverActions: true,
+  // },
   // trailingSlash: true,
 };
 

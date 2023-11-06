@@ -1,10 +1,8 @@
-import Header from "@/components/header/header";
 import { inter } from "./fonts";
 import "./globals.css";
 import "@fortawesome/fontawesome-svg-core/styles.css"; // import Font Awesome CSS
 import "react-multi-carousel/lib/styles.css";
 import type { Metadata } from "next";
-import Footer from "@/components/footer/footer";
 import { CartStateProvider } from "@/store/globalState";
 
 export const metadata: Metadata = {
@@ -24,13 +22,7 @@ export default function RootLayout({
       suppressHydrationWarning={true}
     >
       <body suppressHydrationWarning={true}>
-        <CartStateProvider>
-          <Header></Header>
-          <main className="font-montserrat min-h-[1000px] bg-white mt-[110px]">
-            {children}
-          </main>
-          <Footer></Footer>
-        </CartStateProvider>
+        <CartStateProvider>{children}</CartStateProvider>
       </body>
     </html>
   );

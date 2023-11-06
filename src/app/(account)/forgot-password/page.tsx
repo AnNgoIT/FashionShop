@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import React from "react";
 
 const ForgotPasswordForm = dynamic(
-  () => import("@/container/user/forgot-password-form")
+  () => import("@/container/account/forgot-password-form")
 );
 
 const Login = () => {

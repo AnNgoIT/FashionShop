@@ -12,19 +12,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { imageLoader } from "@/features/img-loading";
 const Footer = () => {
   return (
-    <footer className="font-sans bottom-0 left-0 right-0 z-10">
+    <footer className="font-sans left-0 right-0">
       <div className=" bg-gradient-to-l md:bg-gradient-to-r transition-colors from-[#0e9de9] to-[#639df1]">
         <div className="grid grid-cols-12 justify-items-center text-white">
           <div className="col-span-12 md:col-span-4 p-4  grid place-items-center md:place-content-start">
             <div className="">
               <Image
+                loader={imageLoader}
                 className="w-auto min-w-[80px] min-h-[80px]"
                 alt="Logo of the shop"
                 src={logo}
                 width={180}
                 height={100}
+                placeholder="blur"
                 sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
-                priority={true}
               ></Image>
             </div>
 

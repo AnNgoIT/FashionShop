@@ -99,6 +99,12 @@ const CartDropdown = () => {
             })}
           </ul>
           <div className="flex justify-between text-text-light-color text-sm">
+            <span>Shipping:</span>
+            <strong className="font-black">
+              {`${FormatPrice(45000)} VNĐ`}
+            </strong>
+          </div>
+          <div className="flex justify-between text-text-light-color text-sm">
             <span>Total:</span>
             <strong className="font-black">
               {`${FormatPrice(
