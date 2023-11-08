@@ -21,7 +21,7 @@
     @apply text-lg cursor-pointer;
   }
   .myarrow {
-    @apply absolute z-[2] cursor-pointer bottom-[50%] bg-background w-14 h-14 rounded-full
+    @apply absolute z-[2] cursor-pointer bottom-[61%] bg-background w-14 h-14 rounded-full
     md:grid place-items-center translate-y-10 transition-all hidden;
   }
   .subbanner-shadow {

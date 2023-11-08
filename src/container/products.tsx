@@ -12,7 +12,7 @@ const Products = () => {
   const productList: ProductDetail[] = [{ id: 1 }, { id: 2 }];
 
   return (
-    <section className="container grid grid-cols-12 py-4 max-md:px-4 mt-8 md:mt-12">
+    <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 md:mt-12">
       <div className="col-span-full grid grid-cols-12">
         <div className={`col-span-full text-center mb-4 md:mb-8`}>
           <span className="product-title">featured products</span>

@@ -126,7 +126,7 @@ const TopNav = () => {
                       <Link href="/profile">My Account</Link>
                     </div>
                     <div className="group py-2 px-4 text-left hover:text-primary-color cursor-pointer transition-colors">
-                      <Link href="/order">Order Tracking</Link>
+                      <Link href="profile/order-tracking">Order Tracking</Link>
                     </div>
                     <div className="group py-2 px-4 text-left hover:text-primary-color cursor-pointer transition-colors">
                       <Link href="/logout">Logout</Link>

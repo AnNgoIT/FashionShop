@@ -88,7 +88,7 @@ const ProductPage = ({ data }: any) => {
     );
   };
   return (
-    <section className="container grid grid-cols-12 p-0 max-md:p-4 mt-8 md:mt-12">
+    <section className="container grid grid-cols-12 p-4 mt-8 md:mt-12">
       <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-[30px]">
         <div className="col-span-full md:col-span-12 lg:col-span-3 grid gap-y-[30px] mb-5">
           <div className="bg-[#f5f5f5] p-3 shadow-[0_3px_10px_0_rgba(0,0,0,.1)]">

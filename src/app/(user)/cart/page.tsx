@@ -41,7 +41,7 @@ const Cart = () => {
   };
 
   return (
-    <section className="container grid grid-cols-12 py-4 max-md:px-4 mt-8 md:mt-12">
+    <section className="container grid grid-cols-12 p-4 mt-8 md:mt-12">
       <div className="col-span-full grid grid-cols-12 gap-x-7 overflow-auto">
         <table className="col-span-full">
           <thead className="text-center">

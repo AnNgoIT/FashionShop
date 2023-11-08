@@ -51,10 +51,10 @@ const AddressPage = () => {
   const [addressList, setAddressList] = useState<Address[]>([
     {
       id: 1,
-      address: "182 Lã Xuân Oai",
-      provinces: "1",
-      districts: "2",
-      wards: "3",
+      address: "282 Vĩnh Phúc",
+      provinces: "Thành phố Hà Nội",
+      districts: "Quận Ba Đình",
+      wards: "Phường Vĩnh Phúc",
     },
   ]);
 
@@ -73,18 +73,6 @@ const AddressPage = () => {
     setDistricts("");
     setWards("");
   }
-
-  const top100Films = [
-    "The Shawshank Redemption",
-    "The Godfather",
-    "The Godfather: Part II",
-    "The Dark Knight",
-    "12 Angry Men",
-    "Schindler's List",
-    "Hello",
-    "3",
-    "",
-  ];
 
   const dataList = useProvinces();
   if (dataList.isLoading) return <Loading />;
@@ -217,11 +205,14 @@ const AddressPage = () => {
                   sx={{
                     width: "100%",
                   }}
+                  isOptionEqualToValue={(option, value) =>
+                    value === undefined || value === "" || option === value
+                  }
                   value={provinces}
                   onChange={(event, newProvinces) => {
                     setProvinces(newProvinces!);
                   }}
-                  options={[...provinceList, ""]}
+                  options={provinceList}
                   renderInput={(params) => (
                     <TextField {...params} label="Citys/Provinces" />
                   )}
@@ -252,6 +243,9 @@ const AddressPage = () => {
                   onChange={(event, newDistricts) => {
                     setDistricts(newDistricts!);
                   }}
+                  isOptionEqualToValue={(option, value) =>
+                    value === undefined || value === "" || option === value
+                  }
                   disabled={provinces == ""}
                   options={[...districtList, ""]}
                   renderInput={(params) => (
@@ -285,7 +279,10 @@ const AddressPage = () => {
                   onChange={(event, newWards) => {
                     setWards(newWards!);
                   }}
-                  options={[...wardList, ""]}
+                  isOptionEqualToValue={(option, value) =>
+                    value === undefined || value === "" || option === value
+                  }
+                  options={wardList}
                   renderInput={(params) => (
                     <TextField {...params} label="Wards" />
                   )}
