@@ -1,15 +1,11 @@
 package fit.tlcn.fashionshopbe.dto;
 
-import fit.tlcn.fashionshopbe.entity.Category;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -21,6 +17,5 @@ public class CreateCategoryRequest {
 
     private Integer parentId;
 
-    @NotBlank(message = "Icon is required")
-    private String icon;
+    private MultipartFile imageFile;
 }

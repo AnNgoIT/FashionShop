@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/users/admin/categories")
@@ -19,7 +20,8 @@ public class AdCategoryController {
     CategoryService categoryService;
 
     @PostMapping("")
-    public ResponseEntity<GenericResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request, BindingResult bindingResult) {
+    public ResponseEntity<GenericResponse> createCategory(@Valid @ModelAttribute CreateCategoryRequest request,
+                                                          BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     GenericResponse.builder()

@@ -7,10 +7,12 @@ import fit.tlcn.fashionshopbe.dto.UpdateCategoryStatusRequest;
 import fit.tlcn.fashionshopbe.entity.Category;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
 import fit.tlcn.fashionshopbe.service.CategoryService;
+import fit.tlcn.fashionshopbe.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -18,6 +20,9 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     @Autowired
     CategoryRepository categoryRepository;
+
+    @Autowired
+    CloudinaryService cloudinaryService;
 
     @Override
     public ResponseEntity<GenericResponse> createCategory(CreateCategoryRequest request) {
@@ -50,7 +55,18 @@ public class CategoryServiceImpl implements CategoryService {
                 category.setParent(prcateOptional.get());
             }
 
-            category.setIcon(request.getIcon());
+            if (request.getImageFile() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("No Image yet")
+                                .result("Bad request")
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
+            String imgUrl = cloudinaryService.uploadCategoryImage(request.getImageFile());
+            category.setImage(imgUrl);
+
 
             categoryRepository.save(category);
             return ResponseEntity.status(HttpStatus.OK).body(
@@ -104,7 +120,7 @@ public class CategoryServiceImpl implements CategoryService {
             }
             category.setParent(null);
 
-            category.setIcon(updateCategoryRequest.getIcon());
+            category.setImage(updateCategoryRequest.getIcon());
 
             categoryRepository.save(category);
             return ResponseEntity.status(HttpStatus.OK).body(

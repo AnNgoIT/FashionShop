@@ -29,7 +29,7 @@ public class Category {
     private Category parent;
 
     @Column(columnDefinition = "varchar(max) not null")
-    private String icon;
+    private String image;
 
     @CreationTimestamp
     private Date createdAt;
