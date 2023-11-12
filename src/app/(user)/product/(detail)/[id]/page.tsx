@@ -1,7 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { usePathname } from "next/navigation";
-import usePath from "@/hooks/usePath";
 import Image from "next/image";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

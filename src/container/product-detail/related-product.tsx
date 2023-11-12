@@ -12,7 +12,6 @@ import Carousel from "react-multi-carousel";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { ProductDetail } from "@/features/product";
 import { product_1, product_2, product_3 } from "@/assests/images";
-import MobileDetect from "mobile-detect";
 
 import {
   MyLeftArrow,

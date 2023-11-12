@@ -1,5 +1,4 @@
 "use client";
-// import usePath from "@/hooks/usePath";
 import { useContext } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,20 +6,17 @@ import { cartItem } from "@/store/globalState";
 import {
   faCartShopping,
   faChevronLeft,
-  faChevronRight,
   faMinus,
   faPlus,
   faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { MaxAmounts, onlyNumbers } from "@/features/product/index";
-import { Total } from "@/features/cart/TotalPrice";
 import { CartContext } from "@/store/globalState";
 import { product_1 } from "@/assests/images";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { imageLoader } from "@/features/img-loading";
 import NavigateButton, { QuantityButton } from "@/components/button";
-import { Button } from "@mui/material";
 const Cart = () => {
   //   const thisPaths = usePath();
   const { cartItems, setCartItems } = useContext(CartContext);

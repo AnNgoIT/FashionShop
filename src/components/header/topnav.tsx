@@ -11,11 +11,11 @@ import Image from "next/image";
 import { logo } from "@/assests/images";
 import Button from "@mui/material/Button";
 import Menu from "./dropdown/menu";
-import { Avatar, Paper } from "@mui/material";
 import CartDropdown from "./dropdown/cart";
 import { CartContext } from "@/store/globalState";
 import { user_img2 } from "@/assests/users";
-import { imageLoader } from "@/features/img-loading";
+import Paper from "@mui/material/Paper";
+import Avatar from "@mui/material/Avatar";
 
 const TopNav = () => {
   const { cartItems, setCartItems } = useContext(CartContext);
@@ -85,7 +85,9 @@ const TopNav = () => {
             {false ? (
               <Menu
                 dropdownContent={
-                  <Paper sx={{ p: 1, transform: "translateX(-1rem)" }}>
+                  <Paper
+                    sx={{ p: 1, transform: "translateX(-1rem)", zIndex: "3" }}
+                  >
                     <div className="group py-2 px-4 text-left hover:text-primary-color cursor-pointer transition-colors">
                       <Link href="/register" prefetch={false}>
                         Register

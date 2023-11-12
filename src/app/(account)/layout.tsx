@@ -9,7 +9,7 @@ const AccountLayout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <AccountHeader />
-      <main className="font-montserrat min-h-[40rem] py-12 bg-white">
+      <main className="font-montserrat min-h-[40rem] py-12 bg-white  relative z-0">
         <section className="container grid grid-cols-12 max-md:p-4 gap-x-2">
           {children}
         </section>

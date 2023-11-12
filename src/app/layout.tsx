@@ -4,6 +4,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css"; // import Font Awesome CS
 import "react-multi-carousel/lib/styles.css";
 import type { Metadata } from "next";
 import { CartStateProvider } from "@/store/globalState";
+import ThemeRegistry from "@/components/ThemeRegistry/ThemeRegistry";
 
 export const metadata: Metadata = {
   title: "Fashion Shop",
@@ -17,12 +18,14 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
       className={`${inter.variable}`}
+      lang="en"
       suppressHydrationWarning={true}
     >
       <body suppressHydrationWarning={true}>
-        <CartStateProvider>{children}</CartStateProvider>
+        <ThemeRegistry>
+          <CartStateProvider>{children}</CartStateProvider>
+        </ThemeRegistry>
       </body>
     </html>
   );

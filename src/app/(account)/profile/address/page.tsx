@@ -1,17 +1,6 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Chip,
-  FormControl,
-  InputLabel,
-  Modal,
-  OutlinedInput,
-  TextField,
-} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
 import NavigateButton from "@/components/button";
@@ -19,6 +8,15 @@ import AddIcon from "@mui/icons-material/Add";
 import { empty_address } from "@/assests/images";
 import { useProvinces } from "@/hooks/Province/useProvinces";
 import Loading from "../loading";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
 
 export const modalStyle = {
   position: "absolute",
@@ -130,20 +128,18 @@ const AddressPage = () => {
     id: number
   ) => {
     e.preventDefault();
-    if (isUpdate && address && provinces && districts && wards) {
-      const newAddressList = addressList.map((item: Address) => {
-        if (item.id == id) {
-          item = { id, address, provinces, districts, wards };
-        }
-        return item;
-      });
-      setAddressList(newAddressList);
+    const newAddressList = addressList.map((item: Address) => {
+      if (item.id == id) {
+        item = { id, address, provinces, districts, wards };
+      }
+      return item;
+    });
+    setAddressList(newAddressList);
 
-      resetAddress();
-      setUpdate(false);
-      setUpdateId(-1);
-      handleClose();
-    }
+    resetAddress();
+    setUpdate(false);
+    setUpdateId(-1);
+    handleClose();
   };
   return (
     <div
@@ -166,6 +162,12 @@ const AddressPage = () => {
         aria-describedby="modal-modal-description"
       >
         <Box sx={modalStyle}>
+          {isUpdate && (
+            <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-left pb-4">
+              Address ID: {updateId}
+            </h2>
+          )}
+
           <form
             onSubmit={
               isUpdate

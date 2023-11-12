@@ -3,8 +3,6 @@ import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
 import usePath from "@/hooks/usePath";
 import Link from "next/link";
-import { title } from "process";
-import React, { ReactNode } from "react";
 
 type Props = {
   children?: React.ReactNode;
@@ -19,7 +17,7 @@ const UserLayout = ({ children, urlLink, title }: Props) => {
   return (
     <>
       <Header></Header>
-      <main className="font-montserrat min-h-[62.5rem] bg-white mt-[7rem]">
+      <main className="font-montserrat min-h-[62.5rem] bg-white mt-[7rem] relative z-0">
         <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">

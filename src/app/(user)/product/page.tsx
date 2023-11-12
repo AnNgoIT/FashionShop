@@ -1,5 +1,4 @@
 "use client";
-// import usePath from "@/hooks/usePath";
 import {
   faBagShopping,
   faClose,
@@ -18,22 +17,14 @@ import { FormatPrice } from "@/features/product/FilterAmount";
 import { ProductDetail } from "@/features/product";
 import { main_banner1, product_1 } from "@/assests/images";
 import { imageLoader } from "@/features/img-loading";
-import {
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  FormLabel,
-  Pagination,
-  Radio,
-  RadioGroup,
-  Slider,
-} from "@mui/material";
-// import {
-//   useProducts,
-//   useProductsPagination,
-// } from "@/hooks/Product/useProducts";
+import Button from "@mui/material/Button";
+import Slider from "@mui/material/Slider";
+import FormControl from "@mui/material/FormControl";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Pagination from "@mui/material/Pagination";
+
 type Category = {
   id: number;
   name: string;

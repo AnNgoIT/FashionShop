@@ -1,6 +1,9 @@
 import React, { ReactElement, ReactNode, useState } from "react";
 import { bindHover } from "material-ui-popup-state";
-import { Box, Button, Fade, Popper } from "@mui/material";
+import Button from "@mui/material/Button";
+import Fade from "@mui/material/Fade";
+import Box from "@mui/material/Box";
+import Popper from "@mui/material/Popper";
 import { bindPopper, usePopupState } from "material-ui-popup-state/hooks";
 import { styled } from "@mui/material/styles";
 

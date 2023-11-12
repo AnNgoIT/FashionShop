@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { Carousel } from "react-responsive-carousel";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,7 +6,7 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { main_banner1, main_banner2, main_banner3 } from "@/assests/images";
-import { Box } from "@mui/material";
+import Box from "@mui/material/Box";
 import { imageLoader } from "@/features/img-loading";
 export const MyArrowNext = (clickHandler: () => void, hasNext: boolean) => {
   return (

@@ -10,7 +10,7 @@ const Home = () => {
   return (
     <>
       <Header></Header>
-      <main className="font-montserrat min-h-[800px] bg-white mt-[110px]">
+      <main className="font-sans min-h-[800px] bg-white mt-[110px]">
         <Container></Container>
       </main>
       <Footer></Footer>

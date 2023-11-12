@@ -1,24 +1,22 @@
 "use client";
 import React, { useRef, useState } from "react";
 import Image from "next/image";
-import {
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  InputLabel,
-  OutlinedInput,
-  Button,
-} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import "moment/locale/de";
 import moment from "moment";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import FormLabel from "@mui/material/FormLabel";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from "@mui/material/Radio";
+import Button from "@mui/material/Button";
 
-const VisuallyHiddenInput = styled("input")({
+export const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
   height: 1,
@@ -31,7 +29,7 @@ const VisuallyHiddenInput = styled("input")({
 });
 
 const ProfilePage = () => {
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [birthdate, setBirthdate] = useState<Date | null>(null);
@@ -45,7 +43,7 @@ const ProfilePage = () => {
     e.preventDefault();
     // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
     console.log({
-      username,
+      // username,
       fullname,
       email,
       birthdate: moment(birthdate).format("LL"),
@@ -89,7 +87,7 @@ const ProfilePage = () => {
         className="col-span-full lg:col-span-7 grid grid-cols-12 border-r-[0] lg:border-r border-border-color max-lg:order-2 mt-4"
         onSubmit={handleSubmit}
       >
-        <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
+        {/* <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
           <FormControl className="w-full">
             <InputLabel className="mb-2" htmlFor="username">
               Username
@@ -103,7 +101,7 @@ const ProfilePage = () => {
               label="Username"
             />
           </FormControl>
-        </div>
+        </div> */}
         <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
           <FormControl className="w-full">
             <InputLabel htmlFor="fullname">Fullname</InputLabel>
@@ -152,7 +150,7 @@ const ProfilePage = () => {
             }}
             className="flex items-center gap-x-2 flex-row"
           >
-            <FormLabel className="text-[#333] min-w-fit">Gender</FormLabel>
+            <FormLabel className="text-[#333] min-w-fit">Gender : </FormLabel>
             <RadioGroup
               value={gender}
               onChange={(e) => setGender(e.target.value)}
@@ -200,7 +198,7 @@ const ProfilePage = () => {
               onClick={() => {
                 handleCustomButtonClick();
               }}
-              className="rounded-full w-[100px] h-[100px]"
+              className="rounded-full w-[6.25rem] h-[6.25rem]"
               width={300}
               height={300}
               src={profileImage}

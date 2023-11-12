@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
-import { Button } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
+import Button from "@mui/material/Button";
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

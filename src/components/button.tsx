@@ -1,6 +1,6 @@
 "use client";
+import Button from "@mui/material/Button";
 import React, { ReactNode } from "react";
-import { Button } from "@mui/material";
 const NavigateButton = ({
   children,
   onClick,
@@ -25,7 +25,7 @@ const NavigateButton = ({
         // marginTop: "24px",
       }}
       className="py-3.5 px-7 font-medium text-base bg-primary-color text-white
-      hover:bg-text-light-color rounded-[0.25rem] capitalize flex justify-center items-center"
+      hover:!bg-text-light-color rounded-[0.25rem] capitalize flex justify-center items-center"
     >
       {children}
     </Button>

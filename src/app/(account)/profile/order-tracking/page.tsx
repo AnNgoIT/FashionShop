@@ -1,22 +1,16 @@
 "use client";
 import Image from "next/image";
 import { empty_order, product_1 } from "@/assests/images";
-import { Box, Button, Modal } from "@mui/material";
 import React, { useState } from "react";
 import InfoIcon from "@mui/icons-material/Info";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { modalStyle } from "../address/page";
-import { cartItem } from "@/store/globalState";
 import { imageLoader } from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { Total } from "@/features/cart/TotalPrice";
-
-export type orderItem = {
-  id: number;
-  orderDate: Date;
-  status: string;
-  orderItemList: cartItem[];
-};
+import { orderItem } from "@/features/entities";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
 export const modalOrderDetailStyle = {
   position: "absolute",

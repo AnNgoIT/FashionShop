@@ -1,16 +1,14 @@
 "use client";
 import NavigateButton from "@/components/button";
-import {
-  Box,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  Modal,
-  OutlinedInput,
-} from "@mui/material";
 import React, { useState } from "react";
 import EmailIcon from "@mui/icons-material/Email";
 import { modalStyle } from "../address/page";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import FormHelperText from "@mui/material/FormHelperText";
 const ChangePasswordPage = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [otp, setOTP] = useState<number | null>(null);

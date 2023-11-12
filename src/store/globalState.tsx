@@ -1,13 +1,7 @@
 "use client";
+import { cartItem } from "@/features/entities";
 import React, { createContext, useState } from "react";
 
-export type cartItem = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  maxQuantity: number;
-};
 interface CartContextProps {
   cartItems: cartItem[];
   setCartItems: React.Dispatch<React.SetStateAction<cartItem[]>>;

@@ -82,7 +82,7 @@ const CartDropdown = () => {
                           <input
                             className="border-[1px] border-border-color rounded-md py-0.5 px-3 max-w-[2.5rem]
                             outline-1 outline-primary-color mx-1 text-center"
-                            onKeyPress={(e) => onlyNumbers(e)}
+                            onKeyDown={(e) => onlyNumbers(e)}
                             onChange={(e) =>
                               handleQuantityChange(item.id, +e.target.value)
                             }
