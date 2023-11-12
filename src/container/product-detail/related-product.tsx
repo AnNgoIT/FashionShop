@@ -12,7 +12,6 @@ import Carousel from "react-multi-carousel";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { ProductDetail } from "@/features/product";
 import { product_1, product_2, product_3 } from "@/assests/images";
-import MobileDetect from "mobile-detect";
 
 import {
   MyLeftArrow,
@@ -92,7 +91,7 @@ const RelatedProduct = ({ categoryId }: any) => {
                 <div className="relative w-full">
                   <div className="px-2 py-1">
                     <p
-                      className="text-text-color text-base pt-[10px] overflow-hidden font-medium
+                      className="text-text-color text-base pt-2.5 overflow-hidden font-medium
                    text-ellipsis whitespace-nowrap "
                     >
                       {/* {product.name} */}
@@ -112,22 +111,22 @@ const RelatedProduct = ({ categoryId }: any) => {
                     >
                       <li
                         className="border-r border-[#c6c6c6]
-                                    px-[10px] h-[20px]"
+                                    px-2.5 h-[1.25rem]"
                       >
                         <div>
                           <Link href="/cart">
                             <FontAwesomeIcon
-                              className="text-[20px] hover:text-primary-color transition-all"
+                              className="text-xl hover:text-primary-color transition-all"
                               icon={faBagShopping}
                             />
                           </Link>
                         </div>
                       </li>
-                      <li className="px-[10px] h-[20px]">
+                      <li className="px-2.5 h-[1.25rem]">
                         <div>
                           <Link href="/wishlist">
                             <FontAwesomeIcon
-                              className="text-[20px] hover:text-primary-color transition-all"
+                              className="text-xl hover:text-primary-color transition-all"
                               icon={faHeart}
                             />
                           </Link>
@@ -165,7 +164,7 @@ const RelatedProduct = ({ categoryId }: any) => {
             <div className="relative w-full">
               <div className="px-2 py-1">
                 <p
-                  className="text-text-color text-base pt-[10px] overflow-hidden font-medium
+                  className="text-text-color text-base pt-2.5 overflow-hidden font-medium
                    text-ellipsis whitespace-nowrap "
                 >
                   {/* {product.name} */}
@@ -185,22 +184,22 @@ const RelatedProduct = ({ categoryId }: any) => {
                 >
                   <li
                     className="border-r border-[#c6c6c6]
-                                    px-[10px] h-[20px]"
+                                    px-2.5 h-[1.25rem]"
                   >
                     <div>
                       <Link href="/cart">
                         <FontAwesomeIcon
-                          className="text-[20px] hover:text-primary-color transition-all"
+                          className="text-xl hover:text-primary-color transition-all"
                           icon={faBagShopping}
                         />
                       </Link>
                     </div>
                   </li>
-                  <li className="px-[10px] h-[20px]">
+                  <li className="px-2.5 h-[1.25rem]">
                     <div>
                       <Link href="/wishlist">
                         <FontAwesomeIcon
-                          className="text-[20px] hover:text-primary-color transition-all"
+                          className="text-xl hover:text-primary-color transition-all"
                           icon={faHeart}
                         />
                       </Link>
@@ -236,7 +235,7 @@ const RelatedProduct = ({ categoryId }: any) => {
             <div className="relative w-full">
               <div className="px-2 py-1">
                 <p
-                  className="text-text-color text-base pt-[10px] overflow-hidden font-medium
+                  className="text-text-color text-base pt-2.5 overflow-hidden font-medium
                    text-ellipsis whitespace-nowrap "
                 >
                   {/* {product.name} */}
@@ -256,22 +255,22 @@ const RelatedProduct = ({ categoryId }: any) => {
                 >
                   <li
                     className="border-r border-[#c6c6c6]
-                                    px-[10px] h-[20px]"
+                                    px-2.5 h-[1.25rem]"
                   >
                     <div>
                       <Link href="/cart">
                         <FontAwesomeIcon
-                          className="text-[20px] hover:text-primary-color transition-all"
+                          className="text-xl hover:text-primary-color transition-all"
                           icon={faBagShopping}
                         />
                       </Link>
                     </div>
                   </li>
-                  <li className="px-[10px] h-[20px]">
+                  <li className="px-2.5 h-[1.25rem]">
                     <div>
                       <Link href="/wishlist">
                         <FontAwesomeIcon
-                          className="text-[20px] hover:text-primary-color transition-all"
+                          className="text-xl hover:text-primary-color transition-all"
                           icon={faHeart}
                         />
                       </Link>

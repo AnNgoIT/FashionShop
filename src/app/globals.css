@@ -21,7 +21,7 @@
     @apply text-lg cursor-pointer;
   }
   .myarrow {
-    @apply absolute z-[2] cursor-pointer bottom-[50%] bg-background w-14 h-14 rounded-full
+    @apply absolute z-[2] cursor-pointer bottom-[61%] bg-background w-14 h-14 rounded-full
     md:grid place-items-center translate-y-10 transition-all hidden;
   }
   .subbanner-shadow {
@@ -52,7 +52,7 @@
 }
 
 body {
-  height: 100vh;
+  /* height: 100vh; */
   /* width: 100vw; */
   background: #f3f3f3;
 }
@@ -82,7 +82,12 @@ input[type="number"]::-webkit-outer-spin-button {
 .carousel-item {
   padding: 0.5rem 0.5rem 0 0.5rem;
 }
-
+.MuiInputBase-input.MuiOutlinedInput-input {
+  padding: 14px !important;
+}
+.MuiOutlinedInput-root .MuiAutocomplete-input {
+  padding: 6px 14px !important;
+}
 /* Reset CSS */
 * {
   margin: 0;

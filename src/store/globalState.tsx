@@ -1,13 +1,7 @@
 "use client";
+import { cartItem } from "@/features/entities";
 import React, { createContext, useState } from "react";
 
-export type cartItem = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  maxQuantity: number;
-};
 interface CartContextProps {
   cartItems: cartItem[];
   setCartItems: React.Dispatch<React.SetStateAction<cartItem[]>>;
@@ -25,7 +19,7 @@ export const CartStateProvider = ({ children }: any) => {
       name: "Men's Full Sleeves Collar Shirt",
       price: 100000,
       quantity: 1,
-      maxQuantity: 0,
+      maxQuantity: 2,
     },
     {
       id: 2,

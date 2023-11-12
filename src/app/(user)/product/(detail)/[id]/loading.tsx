@@ -1,9 +1,9 @@
-import React from "react";
+import dynamic from "next/dynamic";
+
+const LoadingComponent = dynamic(() => import("@/components/loading"));
 
 const Loading = () => {
-  return <div>Loading</div>;
+  return <LoadingComponent />;
 };
-
-Loading.propTypes = {};
 
 export default Loading;

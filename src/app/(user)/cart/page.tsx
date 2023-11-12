@@ -1,5 +1,4 @@
 "use client";
-// import usePath from "@/hooks/usePath";
 import { useContext } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,9 +18,7 @@ import { product_1 } from "@/assests/images";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { imageLoader } from "@/features/img-loading";
 import NavigateButton, { QuantityButton } from "@/components/button";
-import { Button } from "@mui/material";
 const Cart = () => {
-  //   const thisPaths = usePath();
   const { cartItems, setCartItems } = useContext(CartContext);
 
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
@@ -136,7 +133,7 @@ const Cart = () => {
           </tbody>
         </table>
       </div>
-      <div className="col-span-full">
+      <div className="col-span-full mt-6">
         <Link href="/product">
           <NavigateButton>
             <FontAwesomeIcon
@@ -189,7 +186,7 @@ const Cart = () => {
             </tr>
           </tbody>
         </table>
-        <div className="col-span-full">
+        <div className="col-span-full mt-6">
           <Link href="/cart/checkout">
             <NavigateButton>
               Checkout

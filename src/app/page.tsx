@@ -1,17 +1,20 @@
 "use client";
-import { CartStateProvider } from "@/store/globalState";
+import Footer from "@/components/footer/footer";
+import Header from "@/components/header/header";
 import dynamic from "next/dynamic";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 
-const Header = dynamic(() => import("@/components/header/header"));
 const Container = dynamic(() => import("@/container/container"));
-const Footer = dynamic(() => import("@/components/footer/footer"));
 const Home = () => {
   return (
-    <CartStateProvider>
-      <Container></Container>
-    </CartStateProvider>
+    <>
+      <Header></Header>
+      <main className="font-sans min-h-[800px] bg-white mt-[110px]">
+        <Container></Container>
+      </main>
+      <Footer></Footer>
+    </>
   );
 };
 export default Home;

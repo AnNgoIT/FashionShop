@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { Box, Button, Rating } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import Image from "next/image";
 import { user_img2 } from "@/assests/users";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Rating from "@mui/material/Rating";
 const StyledRating = styled(Rating)({
   "& .MuiRating-iconFilled": {
     color: "#ff6d75",

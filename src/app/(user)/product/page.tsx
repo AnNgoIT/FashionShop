@@ -1,5 +1,4 @@
 "use client";
-// import usePath from "@/hooks/usePath";
 import {
   faBagShopping,
   faClose,
@@ -18,22 +17,14 @@ import { FormatPrice } from "@/features/product/FilterAmount";
 import { ProductDetail } from "@/features/product";
 import { main_banner1, product_1 } from "@/assests/images";
 import { imageLoader } from "@/features/img-loading";
-import {
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  FormLabel,
-  Pagination,
-  Radio,
-  RadioGroup,
-  Slider,
-} from "@mui/material";
-// import {
-//   useProducts,
-//   useProductsPagination,
-// } from "@/hooks/Product/useProducts";
+import Button from "@mui/material/Button";
+import Slider from "@mui/material/Slider";
+import FormControl from "@mui/material/FormControl";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Pagination from "@mui/material/Pagination";
+
 type Category = {
   id: number;
   name: string;
@@ -88,7 +79,7 @@ const ProductPage = ({ data }: any) => {
     );
   };
   return (
-    <section className="container grid grid-cols-12 p-4 md:p-8 mt-8 md:mt-12">
+    <section className="container grid grid-cols-12 p-4 mt-8 md:mt-12">
       <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-[30px]">
         <div className="col-span-full md:col-span-12 lg:col-span-3 grid gap-y-[30px] mb-5">
           <div className="bg-[#f5f5f5] p-3 shadow-[0_3px_10px_0_rgba(0,0,0,.1)]">

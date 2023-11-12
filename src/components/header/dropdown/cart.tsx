@@ -82,7 +82,7 @@ const CartDropdown = () => {
                           <input
                             className="border-[1px] border-border-color rounded-md py-0.5 px-3 max-w-[2.5rem]
                             outline-1 outline-primary-color mx-1 text-center"
-                            onKeyPress={(e) => onlyNumbers(e)}
+                            onKeyDown={(e) => onlyNumbers(e)}
                             onChange={(e) =>
                               handleQuantityChange(item.id, +e.target.value)
                             }
@@ -98,6 +98,12 @@ const CartDropdown = () => {
               );
             })}
           </ul>
+          <div className="flex justify-between text-text-light-color text-sm">
+            <span>Shipping:</span>
+            <strong className="font-black">
+              {`${FormatPrice(45000)} VNĐ`}
+            </strong>
+          </div>
           <div className="flex justify-between text-text-light-color text-sm">
             <span>Total:</span>
             <strong className="font-black">

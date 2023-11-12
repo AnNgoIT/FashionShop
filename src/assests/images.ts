@@ -11,11 +11,15 @@ import product_3 from "./3.jpg";
 import blog_img1 from "./blogs/blog-img1.jpg";
 import blog_img2 from "./blogs/blog-img2.jpg";
 import blog_img3 from "./blogs/blog-img3.jpg";
+import empty_address from "./empty-address.png";
+import empty_order from "./empty-order.png";
 export {
   img1,
   img2,
   logo,
   empty_cart,
+  empty_address,
+  empty_order,
   main_banner1,
   main_banner2,
   main_banner3,
