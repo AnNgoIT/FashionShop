@@ -1,10 +1,8 @@
 package fit.tlcn.fashionshopbe.controller;
 
-import fit.tlcn.fashionshopbe.dto.GenericResponse;
-import fit.tlcn.fashionshopbe.dto.LoginRequest;
-import fit.tlcn.fashionshopbe.dto.RegisterRequest;
-import fit.tlcn.fashionshopbe.dto.TokenRequest;
+import fit.tlcn.fashionshopbe.dto.*;
 import fit.tlcn.fashionshopbe.security.JwtTokenProvider;
+import fit.tlcn.fashionshopbe.service.EmailVerificationService;
 import fit.tlcn.fashionshopbe.service.RefreshTokenService;
 import fit.tlcn.fashionshopbe.service.UserService;
 import jakarta.validation.Valid;
@@ -31,6 +29,9 @@ public class AuthController {
 
     @Autowired
     RefreshTokenService refreshTokenService;
+
+    @Autowired
+    EmailVerificationService emailVerificationService;
 
     @PostMapping("/register")
     public ResponseEntity<GenericResponse> register(@Valid @RequestBody RegisterRequest registerRequest, BindingResult bindingResult) {
@@ -83,5 +84,73 @@ public class AuthController {
     @PostMapping("/refresh-access-token")
     public ResponseEntity<GenericResponse> refreshAccessToken(@RequestBody TokenRequest tokenRequest) {
         return refreshTokenService.refreshAccessToken(tokenRequest.getRefreshToken());
+    }
+
+    @PostMapping("/sendOTP")
+    public ResponseEntity<GenericResponse> sendOtp(@RequestBody EmailVerificationRequest emailVerificationRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message("Invalid input data")
+                            .result(bindingResult.getFieldError().getDefaultMessage())
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build()
+            );
+        }
+
+        try {
+            emailVerificationService.sendOtp(emailVerificationRequest.getEmail());
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("OTP sent successfully!")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("An error occurred while sending OTP.")
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    @PostMapping("/verifyOTP")
+    public ResponseEntity<GenericResponse> verifyOtp(@RequestBody VerifyOtpRequest verifyOtpRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message("Invalid input data")
+                            .result(bindingResult.getFieldError().getDefaultMessage())
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build()
+            );
+        }
+
+        boolean isOtpVerified = emailVerificationService.verifyOtp(verifyOtpRequest.getEmail(), verifyOtpRequest.getOtp());
+
+        if (isOtpVerified) {
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("OTP verified successfully!")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Invalid OTP or expired.")
+                            .result(null)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build());
+        }
     }
 }
