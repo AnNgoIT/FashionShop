@@ -69,6 +69,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers(antMatcher("/api/v1/users/admin/**"))
                 .hasAuthority("ADMIN")
+                .requestMatchers(antMatcher("/api/v1/users/customers/**"))
+                .hasAuthority("CUSTOMER")
                 .anyRequest()
                 .permitAll()
                 .and()
@@ -86,12 +88,13 @@ public class WebSecurityConfig {
         return http.build();
     }
 
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("HEAD",
-                "GET", "POST", "PUT", "DELETE", "PATCH"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowCredentials(true); // Cho phép chia sẻ cookie và tiêu đề xác thực
+        configuration.setExposedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

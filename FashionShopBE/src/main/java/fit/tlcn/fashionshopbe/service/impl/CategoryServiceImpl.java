@@ -67,7 +67,6 @@ public class CategoryServiceImpl implements CategoryService {
             String imgUrl = cloudinaryService.uploadCategoryImage(request.getImageFile());
             category.setImage(imgUrl);
 
-
             categoryRepository.save(category);
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()

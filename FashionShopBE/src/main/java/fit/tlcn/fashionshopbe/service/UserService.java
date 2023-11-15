@@ -1,8 +1,6 @@
 package fit.tlcn.fashionshopbe.service;
 
-import fit.tlcn.fashionshopbe.dto.GenericResponse;
-import fit.tlcn.fashionshopbe.dto.LoginRequest;
-import fit.tlcn.fashionshopbe.dto.RegisterRequest;
+import fit.tlcn.fashionshopbe.dto.*;
 import fit.tlcn.fashionshopbe.entity.User;
 import org.springframework.http.ResponseEntity;
 
@@ -12,4 +10,8 @@ public interface UserService {
     ResponseEntity<GenericResponse> registerUser(RegisterRequest registerRequest);
 
     ResponseEntity<GenericResponse> login(LoginRequest loginRequest);
+
+    ResponseEntity<GenericResponse> updateUserProfile(UserProfileUpdateRequest request, String emailFromToken);
+
+    ResponseEntity<GenericResponse> changePassword(ChangePasswordRequest request, String emailFromToken);
 }

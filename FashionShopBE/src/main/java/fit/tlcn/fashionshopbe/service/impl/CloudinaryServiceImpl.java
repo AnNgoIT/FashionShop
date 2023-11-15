@@ -63,4 +63,38 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
         return imageUrls;
     }
+
+    @Override
+    public String uploadUserAvatar(MultipartFile avatar) throws IOException {
+        if (avatar == null) {
+            throw new IllegalArgumentException("File is null. Please upload a valid file.");
+        }
+
+        // Kiểm tra định dạng file sử dụng Apache Tika
+        Tika tika = new Tika();
+        String contentType = tika.detect(avatar.getInputStream());
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed.");
+        }
+
+        Map<String, String> params = ObjectUtils.asMap(
+                "folder", "FashionShop/User",
+                "resource_type", "image");
+        Map uploadResult = cloudinary.uploader().upload(avatar.getBytes(), params);
+        return (String) uploadResult.get("secure_url");
+    }
+
+    public String getPublicIdAvatar(String avatarUrl) {
+        String avatarName = avatarUrl.substring(avatarUrl.lastIndexOf("/") + 1, avatarUrl.lastIndexOf("."));
+        String publicId = "FashionShop/User/" + avatarName;
+        return publicId;
+    }
+
+    @Override
+    public void deleteAvatar(String avatarUrl) throws IOException {
+        Map<String, String> params = ObjectUtils.asMap(
+                "folder", "FashionShop/User",
+                "resource_type", "image");
+        Map result = cloudinary.uploader().destroy(getPublicIdAvatar(avatarUrl), params);
+    }
 }

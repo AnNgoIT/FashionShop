@@ -59,7 +59,8 @@ public class User implements UserDetails {
     @Column(columnDefinition = "nvarchar(max)")
     private String avatar;
 
-    private BigDecimal eWallet;
+    @Column(columnDefinition = "varchar(20)")
+    private String eWallet;
 
     @CreationTimestamp
     private Date createdAt;
