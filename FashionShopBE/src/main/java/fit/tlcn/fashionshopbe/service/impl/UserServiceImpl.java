@@ -363,6 +363,59 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public ResponseEntity<GenericResponse> getUserProfile(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+
+                UserResponse userResponse = new UserResponse();
+                userResponse.setUserId(user.getUserId());
+                userResponse.setFullname(user.getFullname());
+                userResponse.setEmail(user.getEmail());
+                userResponse.setPhone(user.getPhone());
+                userResponse.setIsVerified(user.getIsVerified());
+                userResponse.setDob(user.getDob());
+                userResponse.setGender(user.getGender());
+                userResponse.setRole(user.getRole().getName());
+                userResponse.setAddress(user.getAddress());
+                userResponse.setAvatar(user.getAvatar());
+                userResponse.setEWallet(user.getEWallet());
+                userResponse.setCreatedAt(user.getCreatedAt());
+                userResponse.setUpdatedAt(user.getUpdatedAt());
+                userResponse.setIsActive(user.getIsActive());
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get your profile successfully")
+                                .result(userResponse)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
     private boolean isValidPhoneNumber(String phoneNumber) {
         Pattern pattern = Pattern.compile(PHONE_NUMBER_REGEX);
         Matcher matcher = pattern.matcher(phoneNumber);

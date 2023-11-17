@@ -14,4 +14,6 @@ public interface UserService {
     ResponseEntity<GenericResponse> updateUserProfile(UserProfileUpdateRequest request, String emailFromToken);
 
     ResponseEntity<GenericResponse> changePassword(ChangePasswordRequest request, String emailFromToken);
+
+    ResponseEntity<GenericResponse> getUserProfile(String emailFromToken);
 }

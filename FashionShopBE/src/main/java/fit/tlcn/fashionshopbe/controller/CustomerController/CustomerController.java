@@ -21,6 +21,14 @@ public class CustomerController {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
 
+    @GetMapping("/profile")
+    public ResponseEntity<GenericResponse> getUserProfile(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.getUserProfile(emailFromToken);
+    }
+
     @PutMapping("/profile")
     public ResponseEntity<GenericResponse> updateUserProfile(@ModelAttribute UserProfileUpdateRequest request,
                                                              @RequestHeader("Authorization") String authorizationHeader) {
