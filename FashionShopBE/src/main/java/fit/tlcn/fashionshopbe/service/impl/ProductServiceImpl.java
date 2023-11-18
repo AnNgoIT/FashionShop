@@ -28,9 +28,6 @@ public class ProductServiceImpl implements ProductService {
     BrandRepository brandRepository;
 
     @Autowired
-    StyleRepository styleRepository;
-
-    @Autowired
     StyleValueRepository styleValueRepository;
 
     @Autowired
@@ -43,13 +40,8 @@ public class ProductServiceImpl implements ProductService {
             product.setName(request.getName());
             product.setDescription(request.getDescription());
 
-            List<String> imageUrls = cloudinaryService.uploadProductImages(request.getImageFiles());
-            product.setImages(imageUrls);
-
-            product.setPrice(request.getPrice());
-            product.setPromotionalPrice(request.getPrice());
-            product.setQuantity((request.getQuantity()));
-
+            String image = cloudinaryService.uploadProductImage(request.getImage());
+            product.setImage(image);
             Optional<Category> categoryOptional = categoryRepository.findByCategoryIdAndIsActiveIsTrue(request.getCategoryId());
             if (categoryOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -73,23 +65,6 @@ public class ProductServiceImpl implements ProductService {
                                 .build());
             }
             product.setBrand(brandOptional.get());
-
-            Set<Style> styleSet = new HashSet<>();
-            for (Integer styleId : request.getStyleIds()
-            ) {
-                Optional<Style> styleOptional = styleRepository.findByStyleIdAndIsActiveIsTrue(styleId);
-                if (styleOptional.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                            GenericResponse.builder()
-                                    .success(false)
-                                    .message("StyleId: " + styleId + " does not exist")
-                                    .result("Not found")
-                                    .statusCode(HttpStatus.NOT_FOUND.value())
-                                    .build());
-                }
-                styleSet.add(styleOptional.get());
-            }
-            product.setStyles(styleSet);
 
             Set<StyleValue> styleValueSet = new HashSet<>();
             for (Integer styleValueId : request.getStyleValueIds()

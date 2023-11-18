@@ -8,7 +8,7 @@ import java.util.List;
 public interface CloudinaryService {
     String uploadCategoryImage(MultipartFile file) throws IOException;
 
-    List<String> uploadProductImages(List<MultipartFile> files) throws IOException;
+    String uploadProductImage(MultipartFile file) throws IOException;
 
     String uploadUserAvatar(MultipartFile avatar) throws IOException;
 

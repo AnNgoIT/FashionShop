@@ -52,7 +52,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                                 .body(GenericResponse.builder()
                                         .success(false)
                                         .message("RefreshToken is not present. Please login again!")
-                                        .result("")
+                                        .result("Not found")
                                         .statusCode(HttpStatus.NOT_FOUND.value())
                                         .build());
                     }
@@ -64,7 +64,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     return ResponseEntity.status(200)
                             .body(GenericResponse.builder()
                                     .success(true)
-                                    .message("")
+                                    .message("OK")
                                     .result(resultMap)
                                     .statusCode(HttpStatus.OK.value())
                                     .build());
@@ -74,7 +74,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message("Unauthorized. Please login again!")
-                            .result("")
+                            .result("Unauthorized")
                             .statusCode(HttpStatus.UNAUTHORIZED.value())
                             .build());
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("")
+                            .result("Internal server error")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }

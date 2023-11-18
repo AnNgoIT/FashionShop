@@ -5,16 +5,19 @@ import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryRequest;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryStatusRequest;
 import fit.tlcn.fashionshopbe.entity.Category;
+import fit.tlcn.fashionshopbe.entity.Style;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
+import fit.tlcn.fashionshopbe.repository.StyleRepository;
 import fit.tlcn.fashionshopbe.service.CategoryService;
 import fit.tlcn.fashionshopbe.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -23,6 +26,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     CloudinaryService cloudinaryService;
+
+    @Autowired
+    StyleRepository styleRepository;
 
     @Override
     public ResponseEntity<GenericResponse> createCategory(CreateCategoryRequest request) {
@@ -66,6 +72,23 @@ public class CategoryServiceImpl implements CategoryService {
             }
             String imgUrl = cloudinaryService.uploadCategoryImage(request.getImageFile());
             category.setImage(imgUrl);
+
+            Set<Style> styleSet = new HashSet<>();
+            for (Integer styleId : request.getStyleIds()
+            ) {
+                Optional<Style> styleOptional = styleRepository.findByStyleIdAndIsActiveIsTrue(styleId);
+                if (styleOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("StyleId: " + styleId + " does not exist")
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build());
+                }
+                styleSet.add(styleOptional.get());
+            }
+            category.setStyles(styleSet);
 
             categoryRepository.save(category);
             return ResponseEntity.status(HttpStatus.OK).body(

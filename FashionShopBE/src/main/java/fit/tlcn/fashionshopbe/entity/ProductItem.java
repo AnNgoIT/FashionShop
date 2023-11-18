@@ -17,11 +17,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "productVariant")
-public class ProductVariant {
+@Table(name = "productItem")
+public class ProductItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer productVariantId;
+    private Integer productItemId;
 
     @ManyToOne
     @JoinColumn(name = "productId")
@@ -33,7 +33,7 @@ public class ProductVariant {
     private Integer sold = 0;
 
     @Column(columnDefinition = "varchar(max) not null")
-    private String images;
+    private String image;
 
     @Column(columnDefinition = "float not null")
     private Float price;
@@ -42,8 +42,8 @@ public class ProductVariant {
     private Float promotionalPrice;
 
     @ManyToMany
-    @JoinTable(name = "productVariant_styleValue", joinColumns = @JoinColumn(name = "productVariant_id"),
-            inverseJoinColumns = @JoinColumn(name = "styleValue_id"))
+    @JoinTable(name = "productItem_styleValue", joinColumns = @JoinColumn(name = "productItemId"),
+            inverseJoinColumns = @JoinColumn(name = "styleValueId"))
     private Set<StyleValue> styleValues;
 
     @CreationTimestamp

@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -30,6 +31,11 @@ public class Category {
 
     @Column(columnDefinition = "varchar(max) not null")
     private String image;
+
+    @ManyToMany
+    @JoinTable(name = "category_style", joinColumns = @JoinColumn(name = "categoryId"),
+            inverseJoinColumns = @JoinColumn(name = "styleId"))
+    private Set<Style> styles;
 
     @CreationTimestamp
     private Date createdAt;

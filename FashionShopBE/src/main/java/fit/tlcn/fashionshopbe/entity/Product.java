@@ -30,19 +30,7 @@ public class Product {
     private String description;
 
     @Column(columnDefinition = "varchar(max) not null")
-    @ElementCollection
-    private List<String> images;
-
-    @Column(columnDefinition = "float not null")
-    private Float price;
-
-    @Column(columnDefinition = "float not null")
-    private Float promotionalPrice;
-
-    @Column(columnDefinition = "int not null")
-    private Integer quantity;
-
-    private Integer sold = 0;
+    private String image;
 
     @ManyToOne
     @JoinColumn(name = "categoryId")
@@ -52,20 +40,20 @@ public class Product {
     @JoinColumn(name = "brandId")
     private Brand brand;
 
-    private Float rating;
+    private Integer totalQuantity = 0;
 
-    @ManyToMany
-    @JoinTable(name = "product_style", joinColumns = @JoinColumn(name = "productId"),
-            inverseJoinColumns = @JoinColumn(name = "styleId"))
-    private Set<Style> styles;
+    private Integer totalSold = 0;
+
+    private Float priceMin;
+
+    private Float promotionalPriceMin;
+
+    private Float rating;
 
     @ManyToMany
     @JoinTable(name = "product_styleValue", joinColumns = @JoinColumn(name = "productId"),
             inverseJoinColumns = @JoinColumn(name = "styleValueId"))
     private Set<StyleValue> styleValues;
-
-    @ManyToMany(mappedBy = "products")
-    private Set<Coupon> coupons;
 
     @ManyToMany
     @JoinTable(name = "userFollowProduct", joinColumns = @JoinColumn(name = "productId"),

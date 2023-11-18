@@ -39,29 +39,23 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
-    public List<String> uploadProductImages(List<MultipartFile> files) throws IOException {
-        List<String> imageUrls = new ArrayList<>();
+    public String uploadProductImage(MultipartFile file) throws IOException {
 
-        for (MultipartFile file : files) {
-            if (file == null || file.isEmpty()) {
-                throw new IllegalArgumentException("File is null. Please upload a valid file.");
-            }
-
-            Tika tika = new Tika();
-            String contentType = tika.detect(file.getInputStream());
-            if (!contentType.startsWith("image/")) {
-                throw new IllegalArgumentException("Only image files are allowed.");
-            }
-
-            Map<String, String> params = ObjectUtils.asMap(
-                    "folder", "FashionShop/Product",
-                    "resource_type", "image");
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), params);
-            String imageUrl = (String) uploadResult.get("secure_url");
-            imageUrls.add(imageUrl);
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is null. Please upload a valid file.");
         }
 
-        return imageUrls;
+        Tika tika = new Tika();
+        String contentType = tika.detect(file.getInputStream());
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed.");
+        }
+
+        Map<String, String> params = ObjectUtils.asMap(
+                "folder", "FashionShop/Product",
+                "resource_type", "image");
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), params);
+        return (String) uploadResult.get("secure_url");
     }
 
     @Override

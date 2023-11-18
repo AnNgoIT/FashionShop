@@ -23,22 +23,14 @@ public class CreateProductRequest {
     @Nullable
     private String description;
 
-    private List<MultipartFile> imageFiles;
-
-    @NotNull(message = "Price is required")
-    private Float price;
-
-    @NotNull(message = "Quantity is required")
-    private Integer quantity;
+    @NotNull(message = "Image is required")
+    private MultipartFile image;
 
     @NotNull(message = "Category is required")
     private Integer categoryId;
 
     @NotNull(message = "Brand is required")
     private Integer brandId;
-
-    @NotNull(message = "Styles is required")
-    private Set<Integer> styleIds;
 
     @NotNull(message = "Style Values is required")
     private Set<Integer> styleValueIds;

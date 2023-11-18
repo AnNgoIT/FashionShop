@@ -33,9 +33,9 @@ public class Coupon {
     private Float discount;
 
     @ManyToMany
-    @JoinTable(name = "product_coupon", joinColumns = @JoinColumn(name = "couponId"),
-            inverseJoinColumns = @JoinColumn(name = "productId"))
-    private Set<Product> products;
+    @JoinTable(name = "coupon_category", joinColumns = @JoinColumn(name = "couponId"),
+            inverseJoinColumns = @JoinColumn(name = "categoryId"))
+    private Set<Category> categories;
 
     @CreationTimestamp
     private Date createdAt;

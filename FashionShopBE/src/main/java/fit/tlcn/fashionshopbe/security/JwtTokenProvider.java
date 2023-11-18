@@ -2,10 +2,7 @@ package fit.tlcn.fashionshopbe.security;
 
 
 import fit.tlcn.fashionshopbe.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +56,7 @@ public class JwtTokenProvider {
                 .compact();
 
     }
-    
+
     public String getEmailFromJwt(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -77,6 +74,10 @@ public class JwtTokenProvider {
             log.error("Unsupported JWT token");
         } catch (IllegalArgumentException ex) {
             log.error("JWT claims string is empty.");
+        } catch (ExpiredJwtException ex) {
+            log.error("JWT token has expired");
+        } catch (Exception ex) {
+            log.error("Invalid JWT token");
         }
         return false;
     }
