@@ -46,6 +46,9 @@ public class ProductItem {
             inverseJoinColumns = @JoinColumn(name = "styleValueId"))
     private Set<StyleValue> styleValues;
 
+    @Column(columnDefinition = "varchar(max) not null")
+    private String sku;
+
     @CreationTimestamp
     private Date createdAt;
 

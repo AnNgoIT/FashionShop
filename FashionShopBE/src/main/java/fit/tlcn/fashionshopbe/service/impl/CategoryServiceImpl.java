@@ -1,9 +1,6 @@
 package fit.tlcn.fashionshopbe.service.impl;
 
-import fit.tlcn.fashionshopbe.dto.CreateCategoryRequest;
-import fit.tlcn.fashionshopbe.dto.GenericResponse;
-import fit.tlcn.fashionshopbe.dto.UpdateCategoryRequest;
-import fit.tlcn.fashionshopbe.dto.UpdateCategoryStatusRequest;
+import fit.tlcn.fashionshopbe.dto.*;
 import fit.tlcn.fashionshopbe.entity.Category;
 import fit.tlcn.fashionshopbe.entity.Style;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
@@ -15,9 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -47,6 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
 
             Category category = new Category();
             category.setName(request.getName());
+
             if (request.getParentId() != null) {
                 Optional<Category> prcateOptional = categoryRepository.findByCategoryIdAndIsActiveIsTrue(request.getParentId());
                 if (prcateOptional.isEmpty()) {
@@ -60,18 +56,6 @@ public class CategoryServiceImpl implements CategoryService {
                 }
                 category.setParent(prcateOptional.get());
             }
-
-            if (request.getImageFile() == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                        GenericResponse.builder()
-                                .success(false)
-                                .message("No Image yet")
-                                .result("Bad request")
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
-            }
-            String imgUrl = cloudinaryService.uploadCategoryImage(request.getImageFile());
-            category.setImage(imgUrl);
 
             Set<Style> styleSet = new HashSet<>();
             for (Integer styleId : request.getStyleIds()
@@ -90,12 +74,36 @@ public class CategoryServiceImpl implements CategoryService {
             }
             category.setStyles(styleSet);
 
+            String imgUrl = cloudinaryService.uploadCategoryImage(request.getImageFile());
+            category.setImage(imgUrl);
+
             categoryRepository.save(category);
+
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setCategoryId(category.getCategoryId());
+            categoryResponse.setName(category.getName());
+            if (category.getParent() != null) {
+                categoryResponse.setParentName(category.getParent().getName());
+            } else {
+                categoryResponse.setParentName(null);
+            }
+            categoryResponse.setImage(category.getImage());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : category.getStyles()) {
+                String styleName = style.getName();
+                styleNames.add(styleName);
+            }
+            categoryResponse.setStyleNames(styleNames);
+
+            categoryResponse.setCreatedAt(category.getCreatedAt());
+            categoryResponse.setUpdatedAt(category.getUpdatedAt());
+            categoryResponse.setIsActive(category.getIsActive());
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
                             .message("Category is created successfully")
-                            .result(category)
+                            .result(categoryResponse)
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );

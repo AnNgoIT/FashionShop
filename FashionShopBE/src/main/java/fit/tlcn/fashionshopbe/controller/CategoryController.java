@@ -1,7 +1,9 @@
 package fit.tlcn.fashionshopbe.controller;
 
+import fit.tlcn.fashionshopbe.dto.CategoryResponse;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.entity.Category;
+import fit.tlcn.fashionshopbe.entity.Style;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,10 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -25,8 +24,34 @@ public class CategoryController {
     @GetMapping("")
     public ResponseEntity<GenericResponse> getAll() {
         List<Category> categoryList = categoryRepository.findAllByIsActiveIsTrue();
+
+        List<CategoryResponse> categoryResponseList = new ArrayList<>();
+        for (Category category : categoryList) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setCategoryId(category.getCategoryId());
+            categoryResponse.setName(category.getName());
+            if (category.getParent() != null) {
+                categoryResponse.setParentName(category.getParent().getName());
+            } else {
+                categoryResponse.setParentName(null);
+            }
+            categoryResponse.setImage(category.getImage());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : category.getStyles()) {
+                String styleName = style.getName();
+                styleNames.add(styleName);
+            }
+            categoryResponse.setStyleNames(styleNames);
+
+            categoryResponse.setCreatedAt(category.getCreatedAt());
+            categoryResponse.setUpdatedAt(category.getUpdatedAt());
+            categoryResponse.setIsActive(category.getIsActive());
+
+            categoryResponseList.add(categoryResponse);
+        }
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("content", categoryList);
+        map.put("content", categoryResponseList);
         map.put("totalElements", categoryList.size());
         return ResponseEntity.status(HttpStatus.OK).body(
                 GenericResponse.builder()
@@ -51,12 +76,34 @@ public class CategoryController {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
+            Category category = categoryOptional.get();
+
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setCategoryId(category.getCategoryId());
+            categoryResponse.setName(category.getName());
+            if (category.getParent() != null) {
+                categoryResponse.setParentName(category.getParent().getName());
+            } else {
+                categoryResponse.setParentName(null);
+            }
+            categoryResponse.setImage(category.getImage());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : category.getStyles()) {
+                String styleName = style.getName();
+                styleNames.add(styleName);
+            }
+            categoryResponse.setStyleNames(styleNames);
+
+            categoryResponse.setCreatedAt(category.getCreatedAt());
+            categoryResponse.setUpdatedAt(category.getUpdatedAt());
+            categoryResponse.setIsActive(category.getIsActive());
 
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
                             .message("This is category's information")
-                            .result(categoryOptional.get())
+                            .result(categoryResponse)
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );

@@ -2,6 +2,7 @@ package fit.tlcn.fashionshopbe.service.impl;
 
 import fit.tlcn.fashionshopbe.dto.CreateStyleValueRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
+import fit.tlcn.fashionshopbe.dto.StyleValueResponse;
 import fit.tlcn.fashionshopbe.entity.Style;
 import fit.tlcn.fashionshopbe.entity.StyleValue;
 import fit.tlcn.fashionshopbe.repository.StyleRepository;
@@ -52,11 +53,19 @@ public class StyleValueServiceImpl implements StyleValueService {
             styleValue.setStyle(styleOptional.get());
 
             styleValueRepository.save(styleValue);
+
+            StyleValueResponse styleValueResponse = new StyleValueResponse();
+            styleValueResponse.setStyleValueId(styleValue.getStyleValueId());
+            styleValueResponse.setName(styleValue.getName());
+            styleValueResponse.setStyleName(styleValue.getStyle().getName());
+            styleValueResponse.setCreatedAt(styleValue.getCreatedAt());
+            styleValueResponse.setUpdatedAt(styleValue.getUpdatedAt());
+            styleValueResponse.setIsActive(styleValue.getIsActive());
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
                             .message("Style Value is created successfully")
-                            .result(styleValue)
+                            .result(styleValueResponse)
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );

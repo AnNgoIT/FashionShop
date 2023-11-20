@@ -20,6 +20,7 @@ public class CreateCategoryRequest {
 
     private Integer parentId;
 
+    @NotNull(message = "Image is required")
     private MultipartFile imageFile;
 
     @NotNull(message = "Styles is required")

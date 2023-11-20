@@ -11,10 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -38,10 +35,10 @@ public class ProductServiceImpl implements ProductService {
         try {
             Product product = new Product();
             product.setName(request.getName());
-            product.setDescription(request.getDescription());
+            if (request.getDescription() != null) {
+                product.setDescription(request.getDescription());
+            }
 
-            String image = cloudinaryService.uploadProductImage(request.getImage());
-            product.setImage(image);
             Optional<Category> categoryOptional = categoryRepository.findByCategoryIdAndIsActiveIsTrue(request.getCategoryId());
             if (categoryOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -83,12 +80,31 @@ public class ProductServiceImpl implements ProductService {
             }
             product.setStyleValues(styleValueSet);
 
+            String image = cloudinaryService.uploadProductImage(request.getImage());
+            product.setImage(image);
+
             productRepository.save(product);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("productId", product.getProductId());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : product.getCategory().getStyles()) {
+                styleNames.add(style.getName());
+            }
+            map.put("styleNames", styleNames);
+
+            List<String> styleValueNames = new ArrayList<>();
+            for (StyleValue styleValue : product.getStyleValues()) {
+                styleValueNames.add(styleValue.getName());
+            }
+            map.put("styleValueNames", styleValueNames);
+
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
                             .message("Product is created successfully")
-                            .result(product)
+                            .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );
