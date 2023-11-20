@@ -1,53 +1,109 @@
 "use client";
 import Link from "next/link";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useTransition } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
 import {
   faSearch,
   faCartShopping,
   faUser,
+  faHeart,
 } from "@fortawesome/free-solid-svg-icons"; // import the icons you need
 import Image from "next/image";
 import { logo } from "@/assests/images";
-import Button from "@mui/material/Button";
-import Menu from "./dropdown/menu";
 import CartDropdown from "./dropdown/cart";
-import { CartContext } from "@/store/globalState";
+import { CartContext, UserContext, UserProvider } from "@/store";
 import { user_img2 } from "@/assests/users";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
+import Menu from "./dropdown/menu";
+import { logout, useUserCredentials } from "@/hooks/useAuth";
+import { deleteCookie, getCookies } from "cookies-next";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { UserInfo } from "@/features/types";
 
-const TopNav = () => {
+const TopNav = ({ info }: { info?: UserInfo }) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  // Create inline loading UI
+  const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
-  const [scrolling, setScrolling] = useState<boolean>(false);
-  // const [login, setLogin] = useState<boolean>(false);
+  const cookies = getCookies();
+  const userInfo = info;
+  useEffect(() => {
+    setUser(
+      userInfo
+        ? userInfo
+        : {
+            fullname: null,
+            email: "",
+            phone: "",
+            dob: null,
+            gender: null,
+            address: null,
+            avatar: "",
+            ewallet: 0,
+          }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userInfo]);
+
+  const handleLogout = async () => {
+    try {
+      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
+      const id = toast.loading("Wating...");
+      if (res.success) {
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        toast.update(id, {
+          render: `Logouted Success`,
+          type: "success",
+          autoClose: 1000,
+          isLoading: false,
+        });
+
+        startTransition(() => {
+          // Refresh the current route and fetch new data from the server without
+          // losing client-side browser or React state.
+          router.refresh();
+        });
+      } else {
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        toast.update(id, {
+          render: `Please Login!`,
+          type: "warning",
+          autoClose: 1000,
+          isLoading: false,
+        });
+        router.push("/login");
+      }
+    } catch (error) {
+    } finally {
+      setUser({
+        fullname: null,
+        email: "",
+        phone: "",
+        dob: null,
+        gender: null,
+        address: null,
+        avatar: "",
+        ewallet: 0,
+      });
+      router.push("/login");
+    }
+  };
 
   const searchProducts = () => {};
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 0) {
-        setScrolling(true);
-        return;
-      } else setScrolling(false);
-    };
-
-    const cleanup = () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return cleanup;
-  }, []);
 
   return (
     <nav className="col-span-12 pt-2.5 mx-auto">
       <div className="grid grid-flow-col justify-center gap-x-2 place-items-center">
-        <Link href="/" as={"/"}>
+        <Link className="px-3 py-0.5" href="/" as={"/"}>
           <Image
-            className={`w-auto min-w-[5rem] ${
-              scrolling ? "h-[4rem]" : "h-[5rem]"
-            } transition-all`}
+            // loader={imageLoader}
+            className={`w-auto min-w-[5rem] h-[3.25rem] transition-all`}
             alt="Logo of the shop"
             src={logo}
             width={180}
@@ -57,32 +113,24 @@ const TopNav = () => {
           ></Image>
         </Link>
         <form
-          className="bg-white px-2 rounded-[0.25rem]"
+          className="bg-white px-2 rounded-[0.25rem] flex"
           action={`/search`}
           method="post"
           onSubmit={searchProducts}
         >
           <input
             name="keywords"
-            className="outline-none p-2 text-sm"
+            className="outline-none p-2 text-sm max-sm:w-[7rem]"
             type="text"
             placeholder="Search..."
           ></input>
-          <Button
-            sx={{
-              color: "#333",
-              width: 7,
-              minWidth: 0,
-              maxHeight: "fit-content",
-            }}
-            className="transition-opacity hover:opacity-60"
-          >
+          <button className="transition-opacity hover:opacity-60">
             <FontAwesomeIcon className="icon" icon={faSearch}></FontAwesomeIcon>
-          </Button>
+          </button>
         </form>
         <ul className="flex justify-center items-center">
           <li>
-            {false ? (
+            {!userInfo && (
               <Menu
                 dropdownContent={
                   <Paper
@@ -109,7 +157,8 @@ const TopNav = () => {
                   </Link>
                 }
               ></Menu>
-            ) : (
+            )}
+            {userInfo && user.email !== "" && (
               <Menu
                 arrowPos="70px"
                 dropdownContent={
@@ -131,7 +180,7 @@ const TopNav = () => {
                       <Link href="profile/order-tracking">Order Tracking</Link>
                     </div>
                     <div className="group py-2 px-4 text-left hover:text-primary-color cursor-pointer transition-colors">
-                      <Link href="/logout">Logout</Link>
+                      <button onClick={handleLogout}>Logout</button>
                     </div>
                   </Paper>
                 }
@@ -140,16 +189,63 @@ const TopNav = () => {
                     className="flex justify-center items-center gap-x-2"
                     href={"/profile"}
                   >
-                    <Avatar alt="avatar" src={user_img2.src}>
-                      T
-                    </Avatar>
+                    <Avatar
+                      alt="avatar"
+                      src={user.avatar ? user.avatar : user_img2.src}
+                    ></Avatar>
                     <span className="lowercase text-white text-sm max-md:hidden">
-                      thangnguyen138
+                      {user.fullname}
                     </span>
                   </Link>
                 }
               ></Menu>
             )}
+            {userInfo && user.email === "" && (
+              <Menu
+                arrowPos="70px"
+                dropdownContent={
+                  <Paper
+                    sx={{
+                      transform: {
+                        xs: "translateX(-2rem)",
+                        md: "translateX(-4.5rem)",
+                      },
+
+                      p: 1,
+                      minWidth: "170px",
+                    }}
+                  >
+                    <div className="group py-2 px-4 text-left hover:text-primary-color cursor-pointer transition-colors">
+                      <Link href="/profile">My Account</Link>
+                    </div>
+                    <div className="group py-2 px-4 text-left hover:text-primary-color cursor-pointer transition-colors">
+                      <Link href="profile/order-tracking">Order Tracking</Link>
+                    </div>
+                    <div className="group py-2 px-4 text-left hover:text-primary-color cursor-pointer transition-colors">
+                      <button onClick={handleLogout}>Logout</button>
+                    </div>
+                  </Paper>
+                }
+                buttonChildren={
+                  <Link
+                    className="flex justify-center items-center gap-x-2"
+                    href={"/profile"}
+                  >
+                    <Avatar
+                      alt="avatar"
+                      src={userInfo.avatar ? userInfo.avatar : user_img2.src}
+                    ></Avatar>
+                    <span className="lowercase text-white text-sm max-md:hidden">
+                      {userInfo.fullname}
+                    </span>
+                  </Link>
+                }
+              ></Menu>
+            )}
+            {/* <div className="flex justify-center items-center gap-x-2">
+              <Skeleton variant="circular" width={40} height={40} />
+              <Skeleton variant="rectangular" width={100} height={20} />
+            </div> */}
           </li>
           <li>
             <Menu
@@ -178,6 +274,19 @@ const TopNav = () => {
                   <div className="absolute top-0.5 right-1.5 px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
                     {cartItems.length}
                   </div>
+                </Link>
+              }
+            ></Menu>
+          </li>
+          <li>
+            <Menu
+              dropdownContent={undefined}
+              buttonChildren={
+                <Link href="/wishlist">
+                  <FontAwesomeIcon
+                    className="relative text-white hover:opacity-60 transition-opacity"
+                    icon={faHeart}
+                  ></FontAwesomeIcon>
                 </Link>
               }
             ></Menu>

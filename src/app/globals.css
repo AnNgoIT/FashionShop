@@ -79,9 +79,9 @@ input[type="number"]::-webkit-outer-spin-button {
   gap: 0.25rem;
   bottom: -3px !important;
 }
-.carousel-item {
+/* .carousel-item {
   padding: 0.5rem 0.5rem 0 0.5rem;
-}
+} */
 .MuiInputBase-input.MuiOutlinedInput-input {
   padding: 14px !important;
 }

@@ -1,4 +1,5 @@
-import React, { ReactElement, ReactNode, useState } from "react";
+"use client";
+import React, { ReactElement } from "react";
 import { bindHover } from "material-ui-popup-state";
 import Button from "@mui/material/Button";
 import Fade from "@mui/material/Fade";
@@ -6,6 +7,7 @@ import Box from "@mui/material/Box";
 import Popper from "@mui/material/Popper";
 import { bindPopper, usePopupState } from "material-ui-popup-state/hooks";
 import { styled } from "@mui/material/styles";
+import ClientOnly from "@/components/client-only";
 
 const StyledPopper = styled(Popper)(({ theme }) => ({
   // You can replace with `PopperUnstyled` for lower bundle size.
@@ -62,11 +64,9 @@ const Menu = ({
   arrowPos,
 }: {
   buttonChildren?: any;
-  dropdownContent: ReactElement;
+  dropdownContent?: ReactElement;
   arrowPos?: string;
 }) => {
-  const [arrowRef, setArrowRef]: any = useState(null);
-  const [arrow, setArrow] = useState(false);
   const popupState = usePopupState({
     variant: "popper",
     popupId: "demoPopper",
@@ -80,7 +80,6 @@ const Menu = ({
           fontSize: 20,
           color: "#333",
         }}
-        disableElevation={true}
         className="hover:bg-transparent transition-all"
         {...bindHover(popupState)}
       >
@@ -129,7 +128,7 @@ const Menu = ({
                     borderRightColor: "transparent",
                   },
                 }}
-                className="arrow"
+                className={`${dropdownContent ? "arrow" : ""} `}
                 // ref={setArrowRef}
               ></Box>
               {dropdownContent}

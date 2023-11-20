@@ -4,11 +4,12 @@ import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import React, { useContext } from "react";
-import { CartContext, cartItem } from "@/store/globalState";
+import { CartContext } from "@/store";
 import { Total } from "@/features/cart/TotalPrice";
 import Button from "@mui/material/Button";
 import { MaxAmounts, onlyNumbers } from "@/features/product";
 import { FormatPrice } from "@/features/product/FilterAmount";
+import { cartItem } from "@/features/types";
 
 const CartDropdown = () => {
   const { cartItems, setCartItems } = useContext(CartContext);

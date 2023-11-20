@@ -54,11 +54,11 @@ const ImageMagnifier = ({
           const y = e.pageY - top - window.scrollY;
           setXY([x, y]);
         }}
+        className="w-fit h-fit"
         src={src}
         loader={imageLoader}
-        placeholder="blur"
-        width={width}
-        height={height}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         alt={"productDetailImage"}
       />
       <div

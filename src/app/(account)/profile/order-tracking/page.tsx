@@ -4,30 +4,13 @@ import { empty_order, product_1 } from "@/assests/images";
 import React, { useState } from "react";
 import InfoIcon from "@mui/icons-material/Info";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { imageLoader } from "@/features/img-loading";
+import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { Total } from "@/features/cart/TotalPrice";
-import { orderItem } from "@/features/entities";
+import { orderItem } from "@/features/types";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-
-export const modalOrderDetailStyle = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: {
-    xs: "80vw",
-    lg: 500,
-  },
-  height: "80vh",
-  overflow: "auto",
-  bgcolor: "background.paper",
-  borderRadius: "0.25rem",
-  boxShadow: 24,
-  p: 2,
-};
 
 const OrderTracking = () => {
   const [orderDetail, setOrderDetail] = useState<orderItem | null>(null);

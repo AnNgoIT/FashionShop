@@ -19,17 +19,19 @@ import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import React, { useRef, useState } from "react";
 import UpdateIcon from "@mui/icons-material/Update";
-import { modalStyle } from "@/app/(account)/profile/address/page";
-import { Product } from "@/features/entities";
+import { Product } from "@/features/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
 import NavigateButton from "@/components/button";
 import AddIcon from "@mui/icons-material/Add";
 import TextField from "@mui/material/TextField";
 import Image from "next/image";
-import { imageLoader } from "@/features/img-loading";
+import {
+  VisuallyHiddenInput,
+  imageLoader,
+  modalStyle,
+} from "@/features/img-loading";
 import { product_1 } from "@/assests/images";
-import { VisuallyHiddenInput } from "@/app/(account)/profile/page";
 
 const AdminProductPage = () => {
   const [name, setName] = useState<string>("");
@@ -46,36 +48,7 @@ const AdminProductPage = () => {
   const [isSelling, setIsSelling] = useState<boolean>(true);
   const [isUpdate, setUpdate] = useState<boolean>(false);
 
-  const products = [
-    {
-      id: "1",
-      name: "White Heels For Women",
-      description: "",
-      images: [],
-      quantity: 20,
-      sold: 0,
-      price: 100000,
-      promotionalPrice: 80000,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      rating: 0,
-      isSelling: true,
-    },
-    {
-      id: "2",
-      name: "Croptop For Men",
-      description: "",
-      images: [],
-      quantity: 20,
-      sold: 0,
-      price: 100000,
-      promotionalPrice: 80000,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      rating: 0,
-      isSelling: true,
-    },
-  ];
+  const products: Product[] = [];
 
   const [rowsPerPage, setRowsPerPage] = useState(1);
   const [productList, setProductList] = useState<Product[]>(
@@ -95,7 +68,7 @@ const AdminProductPage = () => {
     setOpen(false);
   };
   const openUpdateModal = (id: string) => {
-    const product = productList.find((product) => product.id === id);
+    const product = productList.find((product) => product.productId === id);
     setName(product?.name!);
     setQuantity(product?.quantity!);
     setDes(product?.description!);
@@ -152,9 +125,9 @@ const AdminProductPage = () => {
 
   function handleCreateProduct(e: { preventDefault: () => void }) {
     e.preventDefault();
-    const newId = productList[productList.length - 1].id!;
+    const newId = productList[productList.length - 1].productId!;
     const result: Product = {
-      id: newId + 1,
+      productId: newId + 1,
       name,
       images,
       description,
@@ -166,6 +139,29 @@ const AdminProductPage = () => {
       sold,
       rating,
       isSelling,
+      category: {
+        categoryId: 0,
+        parent: undefined,
+        name: "",
+        image: "",
+        createdAt: undefined,
+        updatedAt: undefined,
+        isActive: false,
+        id: 0,
+        length: 0,
+      },
+      brand: {
+        brandId: 0,
+        name: "",
+        nation: "",
+        createdAt: undefined,
+        updatedAt: undefined,
+        isActive: false,
+      },
+      styles: [],
+      styleValues: [],
+      coupons: [],
+      followers: [],
     };
     const newProductList: Product[] = [...productList, result];
     setProductList(newProductList);
@@ -211,21 +207,7 @@ const AdminProductPage = () => {
   ) {
     event.preventDefault();
     const newProductList = productList.map((item) => {
-      if (item.id == id) {
-        item = {
-          id,
-          name,
-          description,
-          images,
-          price,
-          promotionalPrice,
-          quantity,
-          sold,
-          createdAt,
-          updatedAt,
-          rating,
-          isSelling,
-        };
+      if (item.productId == id) {
       }
       return item;
     });
@@ -418,12 +400,12 @@ const AdminProductPage = () => {
                     return (
                       <li
                         {...props}
-                        key={option.id}
+                        key={option.productId}
                         className="flex justify-between items-center px-3 py-2 border-b border-border-color"
                       >
                         <Image
                           loader={imageLoader}
-                          key={`product-img-${option.id}`}
+                          key={`product-img-${option.productId}`}
                           // placeholder="blur"
                           className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
                           width={120}
@@ -436,7 +418,7 @@ const AdminProductPage = () => {
                           }
                           priority
                         ></Image>
-                        <span key={`product-name-${option.id}`}>
+                        <span key={`product-name-${option.productId}`}>
                           {option.name}
                         </span>
                       </li>
@@ -446,8 +428,8 @@ const AdminProductPage = () => {
                     return tagValue.map((option, index) => (
                       <Chip
                         {...getTagProps({ index })}
-                        key={option.id}
-                        label={option.id}
+                        key={option.productId}
+                        label={option.productId}
                       />
                     ));
                   }}
@@ -476,7 +458,7 @@ const AdminProductPage = () => {
               <TableBody>
                 {productList &&
                   productList.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.productId}>
                       <TableCell>
                         <span className="max-md:block max-md:w-max">
                           {item.name}
@@ -497,7 +479,7 @@ const AdminProductPage = () => {
                       <TableCell>{item.sold}</TableCell>
                       <TableCell>
                         <Button
-                          onClick={() => openUpdateModal(item.id)}
+                          onClick={() => openUpdateModal(item.productId)}
                           sx={{
                             "&:hover": {
                               backgroundColor: "transparent",

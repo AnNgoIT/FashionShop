@@ -1,10 +1,7 @@
-"use client";
-import dynamic from "next/dynamic";
+import ForgotPasswordForm from "@/container/account/forgot-password-form";
 import React from "react";
 
-const ForgotPasswordForm = dynamic(
-  () => import("@/container/account/forgot-password-form")
-);
+export const revalidate = 3600; // revalidate every hour
 
 const Login = () => {
   return <ForgotPasswordForm></ForgotPasswordForm>;

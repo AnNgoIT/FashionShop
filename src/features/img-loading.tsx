@@ -3,6 +3,7 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { styled } from "@mui/material/styles";
 
 export const imageLoader = ({ src, width }: { src: string; width: number }) => {
   return `${src}?w=${width}`;
@@ -79,4 +80,44 @@ export const MyLeftArrow = ({ onClick, ...rest }: any) => {
       />
     </div>
   );
+};
+
+export const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+export const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  borderRadius: "0.25rem",
+  boxShadow: 24,
+  p: 4,
+};
+
+export const modalOrderDetailStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: {
+    xs: "80vw",
+    lg: 500,
+  },
+  height: "80vh",
+  overflow: "auto",
+  bgcolor: "background.paper",
+  borderRadius: "0.25rem",
+  boxShadow: 24,
+  p: 2,
 };

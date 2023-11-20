@@ -1,14 +1,13 @@
 "use client";
 import Title from "@/components/dashboard/Title";
-import { Order, orderItem } from "@/features/entities";
+import { Order, orderItem } from "@/features/types";
 import InfoIcon from "@mui/icons-material/Info";
 import Image from "next/image";
 import React, { useState } from "react";
 import { product_1 } from "@/assests/images";
 import { Total } from "@/features/cart/TotalPrice";
-import { imageLoader } from "@/features/img-loading";
+import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
-import { modalOrderDetailStyle } from "@/app/(account)/profile/order-tracking/page";
 import Toolbar from "@mui/material/Toolbar";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";

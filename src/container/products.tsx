@@ -1,4 +1,3 @@
-import { ProductDetail } from "@/features/product";
 import React from "react";
 import Image from "next/image";
 import { imageLoader } from "@/features/img-loading";
@@ -6,10 +5,20 @@ import Link from "next/link";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { product_1 } from "@/assests/images";
 import NavigateButton from "@/components/button";
+import { preloadAllProducts, useAllProducts } from "@/hooks/useProducts";
+import { Product } from "@/features/types";
+import { diffInHours } from "@/features/product/date";
+import LoadingComponent from "@/components/loading";
+
+preloadAllProducts();
+
 const Products = () => {
-  const productList: ProductDetail[] = [{ id: 1 }, { id: 2 }];
+  const { products, isProductsError, isProductsLoading } = useAllProducts();
+  if (isProductsLoading) return <LoadingComponent />;
+  if (isProductsError) return <div>Failed to Load</div>;
+
+  const productList: Product[] = products && products.result.content;
 
   return (
     <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 md:mt-12">
@@ -17,30 +26,37 @@ const Products = () => {
         <div className={`col-span-full text-center mb-4 md:mb-8`}>
           <span className="product-title">featured products</span>
         </div>
+
         <ul className="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-6">
-          {productList &&
-            productList.length &&
-            [1, 2, 3, 4, 5, 6, 7, 8].map((product: any) => {
+          {productList && productList.length ? (
+            productList.map((product: Product) => {
               return (
                 <li
                   className={`group transition-all hover:cursor-pointer hover:shadow-sd`}
-                  key={product}
+                  key={product.productId}
                 >
                   <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-                    <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                      New
-                    </label>
-                    <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                      Sale
-                    </label>
-                    <Link href={`/product/${product}`}>
+                    {diffInHours(new Date(product.createdAt), new Date()) <=
+                      72 && (
+                      <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
+                        New
+                      </label>
+                    )}
+
+                    {product.priceMin != product.promotionalPriceMin && (
+                      <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
+                        Sale
+                      </label>
+                    )}
+
+                    <Link href={`/product/${product.productId}`}>
                       <Image
                         loader={imageLoader}
-                        placeholder="blur"
+                        // placeholder="blur"
                         priority
                         className="group-hover:shadow-sd"
                         alt="productImage"
-                        src={product_1}
+                        src={product.image}
                         width={500}
                         height={0}
                       ></Image>
@@ -52,14 +68,15 @@ const Products = () => {
                         className="text-text-color text-base pt-[10px] overflow-hidden font-medium
                      text-ellipsis whitespace-nowrap "
                       >
-                        {/* {product.name} */}
-                        Mens Full sleeves Collar Shirt
+                        {product.name}
                       </p>
                       <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                        {FormatPrice(380000)} VNĐ
-                        <span className="line-through text-text-light-color ml-2 text-sm">
-                          {FormatPrice(420000)} VNĐ
-                        </span>
+                        {FormatPrice(product.promotionalPriceMin)} VNĐ
+                        {product.priceMin != product.promotionalPriceMin && (
+                          <span className="line-through text-text-light-color ml-2 text-sm">
+                            {FormatPrice(product.priceMin)} VNĐ
+                          </span>
+                        )}
                       </h3>
                     </div>
                     <div className="absolute top-0 left-0 right-0 w-full h-full">
@@ -95,15 +112,22 @@ const Products = () => {
                   </div>
                 </li>
               );
-            })}
+            })
+          ) : (
+            <div className="col-span-full text-center text-md p-4 text-secondary-color">
+              No Products Found
+            </div>
+          )}
         </ul>
-        <div
-          className={`font-sans col-span-full flex justify-center items-center`}
-        >
-          <Link href="/product">
-            <NavigateButton>See more Products</NavigateButton>
-          </Link>
-        </div>
+        {productList && productList.length != 0 && (
+          <div
+            className={`font-sans col-span-full flex justify-center items-center`}
+          >
+            <Link href="/product">
+              <NavigateButton>See more Products</NavigateButton>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

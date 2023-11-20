@@ -1,5 +1,7 @@
 import { onlyNumbers, MaxAmounts } from "./FilterAmount";
 
+
+
 export type ProductDetail = {
   [x: string]: any;
   name?: string;

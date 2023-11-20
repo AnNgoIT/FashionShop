@@ -1,5 +1,4 @@
 "use client";
-import { modalStyle } from "@/app/(account)/profile/address/page";
 import Title from "@/components/dashboard/Title";
 import UpdateIcon from "@mui/icons-material/Update";
 import Toolbar from "@mui/material/Toolbar";
@@ -21,9 +20,12 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { product_1 } from "@/assests/images";
-import { imageLoader } from "@/features/img-loading";
-import { VisuallyHiddenInput } from "@/app/(account)/profile/page";
-import { Category } from "@/features/entities";
+import {
+  VisuallyHiddenInput,
+  imageLoader,
+  modalStyle,
+} from "@/features/img-loading";
+import { Category } from "@/features/types";
 import NavigateButton from "@/components/button";
 import AddIcon from "@mui/icons-material/Add";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -37,25 +39,7 @@ const AdminCategoryPage = () => {
   const [createdAt, setCreatedAt] = useState<Date>(new Date());
   const [updatedAt, setUpdatedAt] = useState<Date>(new Date());
   const [isUpdate, setUpdate] = useState<boolean>(false);
-
-  const cateList = [
-    {
-      id: 1,
-      parentId: 1,
-      name: "T-Skirt",
-      image: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: 2,
-      parentId: 2,
-      name: "Jeans",
-      image: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
+  const cateList: Category[] = [];
 
   const [open, setOpen] = useState<boolean>(false);
   const [updateId, setUpdateId] = useState<number>(-1);
@@ -162,6 +146,9 @@ const AdminCategoryPage = () => {
       image,
       createdAt,
       updatedAt,
+      length: 0,
+      categoryId: 0,
+      isActive: false,
     };
     const newCategoryList: Category[] = [...categoryList, result];
     setCategoryList(newCategoryList);
@@ -174,14 +161,17 @@ const AdminCategoryPage = () => {
     id: number
   ) {
     event.preventDefault();
-    const newCategoryList = categoryList.map((item) => {
+    const newCategoryList = categoryList.map((item: Category) => {
       if (item.id == id) {
         item = {
           id,
+          categoryId: 1,
           name,
           image,
+          length,
           createdAt,
           updatedAt,
+          isActive: true,
         };
       }
       return item;
