@@ -22,4 +22,10 @@ public interface UserService {
     ResponseEntity<GenericResponse> getCart(String emailFromToken);
 
     ResponseEntity<GenericResponse> getCartItem(Integer cartItemId, String emailFromToken);
+
+    ResponseEntity<GenericResponse> updateCartItem(Integer cartItemId, UpdateCartItemRequest request, String emailFromToken);
+
+    ResponseEntity<GenericResponse> deleteCartItem(Integer cartItemId, String emailFromToken);
+
+    ResponseEntity<GenericResponse> deleteAllCartItemsInCart(String emailFromToken);
 }

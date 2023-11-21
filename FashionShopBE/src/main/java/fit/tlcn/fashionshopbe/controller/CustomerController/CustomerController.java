@@ -1,11 +1,9 @@
 package fit.tlcn.fashionshopbe.controller.CustomerController;
 
-import fit.tlcn.fashionshopbe.dto.AddToCartRequest;
-import fit.tlcn.fashionshopbe.dto.ChangePasswordRequest;
-import fit.tlcn.fashionshopbe.dto.GenericResponse;
-import fit.tlcn.fashionshopbe.dto.UserProfileUpdateRequest;
+import fit.tlcn.fashionshopbe.dto.*;
 import fit.tlcn.fashionshopbe.security.JwtTokenProvider;
 import fit.tlcn.fashionshopbe.service.UserService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +21,7 @@ public class CustomerController {
     JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/profile")
-    public ResponseEntity<GenericResponse> getUserProfile(@RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<GenericResponse> getUserProfile(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
 
@@ -62,7 +60,7 @@ public class CustomerController {
     @PostMapping("/carts/cartItems")
     public ResponseEntity<GenericResponse> addToCart(@Valid @RequestBody AddToCartRequest request,
                                                      @RequestHeader("Authorization") String authorizationHeader,
-                                                     BindingResult bindingResult){
+                                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     GenericResponse.builder()
@@ -80,7 +78,7 @@ public class CustomerController {
     }
 
     @GetMapping("/carts")
-    public ResponseEntity<GenericResponse> getCart(@RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<GenericResponse> getCart(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
 
@@ -89,12 +87,37 @@ public class CustomerController {
 
     @GetMapping("/carts/cartItems/{cartItemId}")
     public ResponseEntity<GenericResponse> getCartItem(@PathVariable Integer cartItemId,
-                                                       @RequestHeader("Authorization") String authorizationHeader){
+                                                       @RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
-        return  userService.getCartItem(cartItemId, emailFromToken);
+        return userService.getCartItem(cartItemId, emailFromToken);
     }
 
-//    @PatchMapping("/carts/cartItems/{cartItemId}")
-//    public ResponseEntity<GenericResponse> updateQuantity
+    @PatchMapping("/carts/cartItems/{cartItemId}")
+    public ResponseEntity<GenericResponse> updateCartItem(@PathVariable Integer cartItemId,
+                                                          @Valid @RequestBody UpdateCartItemRequest request,
+                                                          @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.updateCartItem(cartItemId, request, emailFromToken);
+    }
+
+    @DeleteMapping("/carts/cartItems/{cartItemId}")
+    public ResponseEntity<GenericResponse> deleteCartItem(@PathVariable Integer cartItemId,
+                                                          @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.deleteCartItem(cartItemId, emailFromToken);
+    }
+
+    @Transactional
+    @DeleteMapping("/carts/cartItems")
+    public ResponseEntity<GenericResponse> deleteAllCartItemsInCart(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.deleteAllCartItemsInCart(emailFromToken);
+    }
 }

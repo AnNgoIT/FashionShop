@@ -216,6 +216,17 @@ public class UserServiceImpl implements UserService {
                     user.setFullname(request.getFullname());
                 }
 
+                if (!isValidPhoneNumber(request.getPhone())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Invalid phone number format")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
                 if (request.getPhone() != null && !request.getPhone().equals(user.getPhone())) {
                     Optional<User> userOptionalPhone = userRepository.findByPhone(request.getPhone());
                     if (userOptionalPhone.isPresent()) {
@@ -236,7 +247,7 @@ public class UserServiceImpl implements UserService {
                     user.setDob(request.getDob());
                 }
 
-                if (request.getGender() != null){
+                if (request.getGender() != null) {
                     user.setGender(request.getGender());
                 }
 
@@ -607,6 +618,151 @@ public class UserServiceImpl implements UserService {
                             .build()
             );
 
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> updateCartItem(Integer cartItemId, UpdateCartItemRequest request, String emailFromToken) {
+        try {
+            Optional<CartItem> cartItemOptional = cartItemRepository.findByCartItemIdAndCart_User_Email(cartItemId, emailFromToken);
+            if (cartItemOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found cart item")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build()
+                );
+            }
+            CartItem cartItem = cartItemOptional.get();
+            if (request.getQuantity() <= (cartItem.getProductItem().getQuantity() - cartItem.getProductItem().getSold())) {
+                cartItem.setQuantity(request.getQuantity());
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Quantity must be less than or equal to the inventory")
+                                .result("Bad request")
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build()
+                );
+            }
+            cartItemRepository.save(cartItem);
+
+            CartItemResponse cartItemResponse = new CartItemResponse();
+            cartItemResponse.setCartItemId(cartItem.getCartItemId());
+            cartItemResponse.setProductItemId(cartItem.getProductItem().getProductItemId());
+            cartItemResponse.setProductName(cartItem.getProductItem().getParent().getName());
+            List<String> styleValueNames = new ArrayList<>();
+            for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
+                styleValueNames.add(styleValue.getName());
+            }
+            cartItemResponse.setStyleValues(styleValueNames);
+            cartItemResponse.setQuantity(cartItem.getQuantity());
+            cartItemResponse.setProductPrice(cartItem.getProductItem().getPrice());
+            cartItemResponse.setProductPromotionalPrice(cartItem.getProductItem().getPromotionalPrice());
+            cartItemResponse.setAmount(cartItem.getProductItem().getPromotionalPrice() * cartItem.getQuantity());
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Updated cart item successfully")
+                            .result(cartItemResponse)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> deleteCartItem(Integer cartItemId, String emailFromToken) {
+        try {
+            Optional<CartItem> cartItemOptional = cartItemRepository.findByCartItemIdAndCart_User_Email(cartItemId, emailFromToken);
+            if (cartItemOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found cart item")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build()
+                );
+            }
+            CartItem cartItem = cartItemOptional.get();
+            Cart cart = cartItem.getCart();
+            cartItemRepository.delete(cartItem);
+            cart.setQuantity(cart.getQuantity() - 1);
+            cartRepository.save(cart);
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Deleted cart item successfully")
+                            .result("OK")
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> deleteAllCartItemsInCart(String emailFromToken) {
+        try {
+            List<CartItem> cartItemList = cartItemRepository.findByCart_User_Email(emailFromToken);
+            if (!cartItemList.isEmpty()) {
+                Cart cart = cartRepository.findByUser_Email(emailFromToken);
+                cartItemRepository.deleteAllByCart(cart);
+                cart.setQuantity(0);
+                cartRepository.save(cart);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Deleted all cart items in cart successfully")
+                                .result("OK")
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Cart is empty")
+                                .result("Bad request")
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(

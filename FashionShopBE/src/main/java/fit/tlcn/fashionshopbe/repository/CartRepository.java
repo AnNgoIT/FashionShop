@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Integer> {
     Cart findByUser(User user);
+
+    Cart findByUser_Email(String emailFromToken);
 }
