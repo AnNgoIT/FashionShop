@@ -2,10 +2,8 @@ package fit.tlcn.fashionshopbe.service.impl;
 
 import com.cloudinary.Cloudinary;
 import fit.tlcn.fashionshopbe.dto.*;
-import fit.tlcn.fashionshopbe.entity.RefreshToken;
-import fit.tlcn.fashionshopbe.entity.User;
-import fit.tlcn.fashionshopbe.repository.RoleRepository;
-import fit.tlcn.fashionshopbe.repository.UserRepository;
+import fit.tlcn.fashionshopbe.entity.*;
+import fit.tlcn.fashionshopbe.repository.*;
 import fit.tlcn.fashionshopbe.security.JwtTokenProvider;
 import fit.tlcn.fashionshopbe.service.CloudinaryService;
 import fit.tlcn.fashionshopbe.service.RefreshTokenService;
@@ -21,10 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +45,15 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     CloudinaryService cloudinaryService;
+
+    @Autowired
+    ProductItemRepository productItemRepository;
+
+    @Autowired
+    CartItemRepository cartItemRepository;
+
+    @Autowired
+    CartRepository cartRepository;
 
     private static final String PHONE_NUMBER_REGEX = "^(\\+\\d{1,3}[- ]?)?\\d{10}$";
 
@@ -391,6 +395,88 @@ public class UserServiceImpl implements UserService {
                                 .success(true)
                                 .message("Get your profile successfully")
                                 .result(userResponse)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> addToCart(AddToCartRequest request, String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<ProductItem> productItemOptional = productItemRepository.findById(request.getProductItemId());
+                if (productItemOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(true)
+                                    .message("Not found product item")
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                CartItem cartItem = new CartItem();
+                Cart cart = cartRepository.findByUser(userOptional.get());
+                cartItem.setCart(cart);
+                cartItem.setProductItem(productItemOptional.get());
+                if (request.getQuantity() <= (cartItem.getProductItem().getQuantity() - cartItem.getProductItem().getSold())) {
+                    cartItem.setQuantity(request.getQuantity());
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Quantity must be less than or equal to the inventory")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                cart.setQuantity(cart.getQuantity() + request.getQuantity());
+                cartItemRepository.save(cartItem);
+                cartRepository.save(cart);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("cartItemId", cartItem.getCartItemId());
+                map.put("cartId", cartItem.getCart().getCardId());
+                map.put("userId", cartItem.getCart().getUser().getUserId());
+                map.put("productItemId", cartItem.getProductItem().getProductItemId());
+                List<String> styleValueNames = new ArrayList<>();
+                for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
+                    styleValueNames.add(styleValue.getName());
+                }
+                map.put("styleValueNames", styleValueNames);
+                map.put("productId", cartItem.getProductItem().getParent().getProductId());
+                map.put("productName", cartItem.getProductItem().getParent().getName());
+                map.put("quantity", cartItem.getQuantity());
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Add to cart successfully")
+                                .result(map)
                                 .statusCode(HttpStatus.OK.value())
                                 .build()
                 );

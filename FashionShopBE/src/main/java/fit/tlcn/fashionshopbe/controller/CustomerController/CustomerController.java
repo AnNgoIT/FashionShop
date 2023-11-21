@@ -1,5 +1,6 @@
 package fit.tlcn.fashionshopbe.controller.CustomerController;
 
+import fit.tlcn.fashionshopbe.dto.AddToCartRequest;
 import fit.tlcn.fashionshopbe.dto.ChangePasswordRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.UserProfileUpdateRequest;
@@ -56,5 +57,25 @@ public class CustomerController {
         String token = authorizationHeader.substring(7);
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
         return userService.changePassword(request, emailFromToken);
+    }
+
+    @PostMapping("/carts/cartItems")
+    public ResponseEntity<GenericResponse> addToCart(@Valid @RequestBody AddToCartRequest request,
+                                                     @RequestHeader("Authorization") String authorizationHeader,
+                                                     BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message("Invalid input data")
+                            .result(bindingResult.getFieldError())
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build()
+            );
+        }
+
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+        return userService.addToCart(request, emailFromToken);
     }
 }

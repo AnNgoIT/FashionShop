@@ -31,7 +31,7 @@
 //    private Delivery delivery;
 //
 //    @Column(columnDefinition = "float not null")
-//    private Float amount;
+//    private Float totalAmount;
 //
 //    @Column(columnDefinition = "bit default 0")
 //    private Boolean isPaidBefore;

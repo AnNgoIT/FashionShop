@@ -31,6 +31,9 @@
 //
 //    private Integer quantity;
 //
+//    @Column(columnDefinition = "float not null")
+//    private Float amount;
+//
 //    @CreationTimestamp
 //    private ZonedDateTime createdAt;
 //

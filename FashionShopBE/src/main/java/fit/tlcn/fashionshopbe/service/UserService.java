@@ -16,4 +16,6 @@ public interface UserService {
     ResponseEntity<GenericResponse> changePassword(ChangePasswordRequest request, String emailFromToken);
 
     ResponseEntity<GenericResponse> getUserProfile(String emailFromToken);
+
+    ResponseEntity<GenericResponse> addToCart(AddToCartRequest request, String emailFromToken);
 }
