@@ -18,4 +18,8 @@ public interface UserService {
     ResponseEntity<GenericResponse> getUserProfile(String emailFromToken);
 
     ResponseEntity<GenericResponse> addToCart(AddToCartRequest request, String emailFromToken);
+
+    ResponseEntity<GenericResponse> getCart(String emailFromToken);
+
+    ResponseEntity<GenericResponse> getCartItem(Integer cartItemId);
 }

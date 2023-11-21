@@ -502,6 +502,114 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public ResponseEntity<GenericResponse> getCart(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Cart cart = cartRepository.findByUser(userOptional.get());
+                List<CartItem> cartItemList = cartItemRepository.findByCart(cart);
+                Map<String, Object> map = new HashMap<>();
+                List<CartItemResponse> cartItemResponseList = new ArrayList<>();
+                if (!cartItemList.isEmpty()) {
+                    for (CartItem cartItem : cartItemList) {
+                        CartItemResponse cartItemResponse = new CartItemResponse();
+                        cartItemResponse.setCartItemId(cartItem.getCartItemId());
+                        cartItemResponse.setProductItemId(cartItem.getProductItem().getProductItemId());
+                        cartItemResponse.setProductName(cartItem.getProductItem().getParent().getName());
+                        List<String> styleValueNames = new ArrayList<>();
+                        for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
+                            styleValueNames.add(styleValue.getName());
+                        }
+                        cartItemResponse.setStyleValues(styleValueNames);
+                        cartItemResponse.setQuantity(cartItem.getQuantity());
+
+                        cartItemResponseList.add(cartItemResponse);
+                    }
+                }
+                map.put("Items in cart", cartItemResponseList);
+                map.put("cartId", cart.getCardId());
+                map.put("Quantity of product items in the cart", cart.getQuantity());
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("This is your cart's information")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getCartItem(Integer cartItemId) {
+        try {
+            Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId);
+            if (cartItemOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found cart item")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build()
+                );
+            }
+            CartItem cartItem = cartItemOptional.get();
+
+            CartItemResponse cartItemResponse = new CartItemResponse();
+            cartItemResponse.setCartItemId(cartItem.getCartItemId());
+            cartItemResponse.setProductItemId(cartItem.getProductItem().getProductItemId());
+            cartItemResponse.setProductName(cartItem.getProductItem().getParent().getName());
+            List<String> styleValueNames = new ArrayList<>();
+            for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
+                styleValueNames.add(styleValue.getName());
+            }
+            cartItemResponse.setStyleValues(styleValueNames);
+            cartItemResponse.setQuantity(cartItem.getQuantity());
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("This is information of cart item")
+                            .result(cartItemResponse)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
     private boolean isValidPhoneNumber(String phoneNumber) {
         Pattern pattern = Pattern.compile(PHONE_NUMBER_REGEX);
         Matcher matcher = pattern.matcher(phoneNumber);

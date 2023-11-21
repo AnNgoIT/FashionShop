@@ -78,4 +78,17 @@ public class CustomerController {
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
         return userService.addToCart(request, emailFromToken);
     }
+
+    @GetMapping("/carts")
+    public ResponseEntity<GenericResponse> getCart(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.getCart(emailFromToken);
+    }
+
+    @GetMapping("/carts/cartItems/{cartItemId}")
+    public ResponseEntity<GenericResponse> getCartItem(@PathVariable Integer cartItemId){
+        return  userService.getCartItem(cartItemId);
+    }
 }
