@@ -236,6 +236,10 @@ public class UserServiceImpl implements UserService {
                     user.setDob(request.getDob());
                 }
 
+                if (request.getGender() != null){
+                    user.setGender(request.getGender());
+                }
+
                 if (request.getAddress() != null) {
                     user.setAddress(request.getAddress());
                 }
@@ -565,9 +569,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<GenericResponse> getCartItem(Integer cartItemId) {
+    public ResponseEntity<GenericResponse> getCartItem(Integer cartItemId, String emailFromToken) {
         try {
-            Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId);
+            Optional<CartItem> cartItemOptional = cartItemRepository.findByCartItemIdAndCart_User_Email(cartItemId, emailFromToken);
             if (cartItemOptional.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                         GenericResponse.builder()

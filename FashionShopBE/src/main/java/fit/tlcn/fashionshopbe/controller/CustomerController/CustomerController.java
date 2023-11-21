@@ -88,7 +88,13 @@ public class CustomerController {
     }
 
     @GetMapping("/carts/cartItems/{cartItemId}")
-    public ResponseEntity<GenericResponse> getCartItem(@PathVariable Integer cartItemId){
-        return  userService.getCartItem(cartItemId);
+    public ResponseEntity<GenericResponse> getCartItem(@PathVariable Integer cartItemId,
+                                                       @RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+        return  userService.getCartItem(cartItemId, emailFromToken);
     }
+
+//    @PatchMapping("/carts/cartItems/{cartItemId}")
+//    public ResponseEntity<GenericResponse> updateQuantity
 }

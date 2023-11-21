@@ -21,5 +21,5 @@ public interface UserService {
 
     ResponseEntity<GenericResponse> getCart(String emailFromToken);
 
-    ResponseEntity<GenericResponse> getCartItem(Integer cartItemId);
+    ResponseEntity<GenericResponse> getCartItem(Integer cartItemId, String emailFromToken);
 }
