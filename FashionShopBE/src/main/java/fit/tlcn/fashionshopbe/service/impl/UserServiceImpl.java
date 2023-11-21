@@ -454,7 +454,7 @@ public class UserServiceImpl implements UserService {
                     );
                 }
 
-                cart.setQuantity(cart.getQuantity() + request.getQuantity());
+                cart.setQuantity(cart.getQuantity() + 1);
                 cartItemRepository.save(cartItem);
                 cartRepository.save(cart);
 
@@ -523,13 +523,16 @@ public class UserServiceImpl implements UserService {
                         }
                         cartItemResponse.setStyleValues(styleValueNames);
                         cartItemResponse.setQuantity(cartItem.getQuantity());
+                        cartItemResponse.setProductPrice(cartItem.getProductItem().getPrice());
+                        cartItemResponse.setProductPromotionalPrice(cartItem.getProductItem().getPromotionalPrice());
+                        cartItemResponse.setAmount(cartItem.getProductItem().getPromotionalPrice() * cartItem.getQuantity());
 
                         cartItemResponseList.add(cartItemResponse);
                     }
                 }
                 map.put("Items in cart", cartItemResponseList);
                 map.put("cartId", cart.getCardId());
-                map.put("Quantity of product items in the cart", cart.getQuantity());
+                map.put("Quantity of cart items in cart", cart.getQuantity());
 
                 return ResponseEntity.status(HttpStatus.OK).body(
                         GenericResponse.builder()
@@ -587,6 +590,9 @@ public class UserServiceImpl implements UserService {
             }
             cartItemResponse.setStyleValues(styleValueNames);
             cartItemResponse.setQuantity(cartItem.getQuantity());
+            cartItemResponse.setProductPrice(cartItem.getProductItem().getPrice());
+            cartItemResponse.setProductPromotionalPrice(cartItem.getProductItem().getPromotionalPrice());
+            cartItemResponse.setAmount(cartItem.getProductItem().getPromotionalPrice() * cartItem.getQuantity());
 
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()

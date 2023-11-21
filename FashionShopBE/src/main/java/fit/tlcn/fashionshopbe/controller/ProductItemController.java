@@ -33,6 +33,7 @@ public class ProductItemController {
             ProductItemResponse productItemResponse = new ProductItemResponse();
             productItemResponse.setProductItemId(productItem.getProductItemId());
             productItemResponse.setParentId(productItem.getParent().getProductId());
+            productItemResponse.setParentName(productItem.getParent().getName());
             productItemResponse.setQuantity(productItem.getQuantity());
             productItemResponse.setSold(productItem.getSold());
             productItemResponse.setImage(productItem.getImage());
@@ -80,6 +81,7 @@ public class ProductItemController {
             ProductItemResponse productItemResponse = new ProductItemResponse();
             productItemResponse.setProductItemId(productItem.getProductItemId());
             productItemResponse.setParentId(productItem.getParent().getProductId());
+            productItemResponse.setParentName(productItem.getParent().getName());
             productItemResponse.setQuantity(productItem.getQuantity());
             productItemResponse.setSold(productItem.getSold());
             productItemResponse.setImage(productItem.getImage());

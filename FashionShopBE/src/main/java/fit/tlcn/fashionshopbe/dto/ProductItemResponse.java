@@ -14,6 +14,8 @@ public class ProductItemResponse {
 
     private Integer parentId;
 
+    private  String parentName;
+
     private Integer quantity;
 
     private Integer sold;
