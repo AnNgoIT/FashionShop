@@ -137,7 +137,7 @@ public class ProductController {
 
     }
 
-    @PostMapping("/styleValues/")
+    @GetMapping("/styleValues/")
     public ResponseEntity<GenericResponse> findStyleValuesByProductIdAndStyleName(@RequestParam Integer productId, @RequestParam String styleName) {
         try {
             List<StyleValue> styleValueList = productRepository.findStyleValuesByProductIdAndStyleName(productId, styleName);
