@@ -30,8 +30,34 @@ public class ProductController {
     BrandRepository brandRepository;
 
     @GetMapping("")
-    public ResponseEntity<GenericResponse> getAll() {
-        List<Product> productList = productRepository.findAllByIsActiveIsTrueAndIsSellingIsTrue();
+    public ResponseEntity<GenericResponse> getAll(@RequestParam(defaultValue = "") String productName,
+                                                  @RequestParam(defaultValue = "") String categoryName,
+                                                  @RequestParam(defaultValue = "") String brandName,
+                                                  @RequestParam(defaultValue = "0") Float priceFrom,
+                                                  @RequestParam(defaultValue = "5000000") Float priceTo) {
+        Optional<Category> categoryOptional = categoryRepository.findByNameAndIsActiveIsTrue(categoryName);
+        if (categoryOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message("Not found category")
+                            .result("Not found")
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build());
+        }
+
+        Optional<Brand> brandOptional = brandRepository.findByNameAndIsActiveIsTrue(brandName);
+        if (brandOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message("Not found brand")
+                            .result("Not found")
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build());
+        }
+
+        List<Product> productList = productRepository.findAllByFilter(productName, categoryName, brandName, priceFrom, priceTo);
 
         List<ProductResponse> productResponseList = new ArrayList<>();
         for (Product product : productList) {

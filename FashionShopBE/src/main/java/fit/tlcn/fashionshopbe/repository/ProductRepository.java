@@ -25,4 +25,15 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
 
     Page<Product> findAllByCategory_CategoryIdAndBrand_BrandIdAndIsActiveIsTrueAndIsSellingIsTrue(Integer categoryId, Integer brandId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE " +
+            "p.name LIKE %:productName% " +
+            "AND (COALESCE(:categoryName, '') = '' OR p.category.name LIKE %:categoryName%)" +
+            "AND (COALESCE(:brandName, '') = '' OR p.brand.name = :brandName) " +
+            "AND p.promotionalPriceMin >= :priceFrom " +
+            "AND p.promotionalPriceMin <= :priceTo " +
+            "AND p.isActive = true " +
+            "AND p.isSelling = true " +
+            "ORDER BY p.createdAt DESC")
+    List<Product> findAllByFilter(String productName, String categoryName, String brandName, Float priceFrom, Float priceTo);
 }
