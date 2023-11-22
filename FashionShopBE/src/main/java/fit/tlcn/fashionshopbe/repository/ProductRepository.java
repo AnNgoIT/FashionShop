@@ -2,6 +2,8 @@ package fit.tlcn.fashionshopbe.repository;
 
 import fit.tlcn.fashionshopbe.entity.Product;
 import fit.tlcn.fashionshopbe.entity.StyleValue;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -21,5 +23,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
             "WHERE p.productId = :productId AND s.name = :styleName")
     List<StyleValue> findStyleValuesByProductIdAndStyleName(Integer productId, String styleName);
 
-    List<Product> findAllByCategory_NameAndAndBrand_NameAndIsActiveIsTrueAndIsSellingIsTrue(String categoryName, String brandName);
+
+    Page<Product> findAllByCategory_CategoryIdAndBrand_BrandIdAndIsActiveIsTrueAndIsSellingIsTrue(Integer categoryId, Integer brandId, Pageable pageable);
 }
