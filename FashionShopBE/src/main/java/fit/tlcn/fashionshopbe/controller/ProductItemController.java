@@ -2,10 +2,7 @@ package fit.tlcn.fashionshopbe.controller;
 
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.ProductItemResponse;
-import fit.tlcn.fashionshopbe.dto.ProductResponse;
-import fit.tlcn.fashionshopbe.entity.Product;
 import fit.tlcn.fashionshopbe.entity.ProductItem;
-import fit.tlcn.fashionshopbe.entity.Style;
 import fit.tlcn.fashionshopbe.entity.StyleValue;
 import fit.tlcn.fashionshopbe.repository.ProductItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;

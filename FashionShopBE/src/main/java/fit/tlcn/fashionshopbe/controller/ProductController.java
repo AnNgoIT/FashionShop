@@ -3,9 +3,9 @@ package fit.tlcn.fashionshopbe.controller;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.ProductResponse;
 import fit.tlcn.fashionshopbe.dto.StyleValueResponse;
-import fit.tlcn.fashionshopbe.entity.Product;
-import fit.tlcn.fashionshopbe.entity.Style;
-import fit.tlcn.fashionshopbe.entity.StyleValue;
+import fit.tlcn.fashionshopbe.entity.*;
+import fit.tlcn.fashionshopbe.repository.BrandRepository;
+import fit.tlcn.fashionshopbe.repository.CategoryRepository;
 import fit.tlcn.fashionshopbe.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +20,12 @@ public class ProductController {
     @Autowired
     ProductRepository productRepository;
 
+    @Autowired
+    CategoryRepository categoryRepository;
+
+    @Autowired
+    BrandRepository brandRepository;
+
     @GetMapping("")
     public ResponseEntity<GenericResponse> getAll() {
         List<Product> productList = productRepository.findAllByIsActiveIsTrueAndIsSellingIsTrue();
@@ -31,7 +37,9 @@ public class ProductController {
             productResponse.setName(product.getName());
             productResponse.setDescription(product.getDescription());
             productResponse.setImage(product.getImage());
+            productResponse.setCategoryId(product.getCategory().getCategoryId());
             productResponse.setCategoryName(product.getCategory().getName());
+            productResponse.setBrandId(product.getBrand().getBrandId());
             productResponse.setBrandName(product.getBrand().getName());
             productResponse.setTotalQuantity(product.getTotalQuantity());
             productResponse.setTotalSold(product.getTotalSold());
@@ -91,7 +99,9 @@ public class ProductController {
             productResponse.setName(product.getName());
             productResponse.setDescription(product.getDescription());
             productResponse.setImage(product.getImage());
+            productResponse.setCategoryId(product.getCategory().getCategoryId());
             productResponse.setCategoryName(product.getCategory().getName());
+            productResponse.setBrandId(product.getBrand().getBrandId());
             productResponse.setBrandName(product.getBrand().getName());
             productResponse.setTotalQuantity(product.getTotalQuantity());
             productResponse.setTotalSold(product.getTotalSold());
@@ -178,5 +188,98 @@ public class ProductController {
             );
         }
 
+    }
+
+    @GetMapping("/{productId}/related-products")
+    public ResponseEntity<GenericResponse> findRelatedProducts(@PathVariable Integer productId,
+                                                               @RequestParam String categoryName,
+                                                               @RequestParam String brandName) {
+        try {
+            Optional<Product> productOptional = productRepository.findByProductIdAndIsActiveIsTrueAndIsSellingIsTrue(productId);
+            if (productOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found product")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            Optional<Category> categoryOptional = categoryRepository.findByNameAndIsActiveIsTrue(categoryName);
+            if (categoryOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found category")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            Optional<Brand> brandOptional = brandRepository.findByNameAndIsActiveIsTrue(brandName);
+            if (brandOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found brand")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            List<Product> productList = productRepository.findAllByCategory_NameAndAndBrand_NameAndIsActiveIsTrueAndIsSellingIsTrue(categoryName, brandName);
+
+            Product product = productOptional.get();
+            ProductResponse productResponse = new ProductResponse();
+            productResponse.setProductId(product.getProductId());
+            productResponse.setName(product.getName());
+            productResponse.setDescription(product.getDescription());
+            productResponse.setImage(product.getImage());
+            productResponse.setCategoryId(product.getCategory().getCategoryId());
+            productResponse.setCategoryName(product.getCategory().getName());
+            productResponse.setBrandId(product.getBrand().getBrandId());
+            productResponse.setBrandName(product.getBrand().getName());
+            productResponse.setTotalQuantity(product.getTotalQuantity());
+            productResponse.setTotalSold(product.getTotalSold());
+            productResponse.setPriceMin(product.getPriceMin());
+            productResponse.setPromotionalPriceMin(product.getPromotionalPriceMin());
+            productResponse.setRating(product.getRating());
+
+            List<String> styleNames = new ArrayList<>();
+            for(Style style: product.getCategory().getStyles()){
+                styleNames.add(style.getName());
+            }
+            productResponse.setStyleNames(styleNames);
+
+            List<String> styleValueNames = new ArrayList<>();
+            for(StyleValue styleValue: product.getStyleValues()){
+                styleValueNames.add(styleValue.getName());
+            }
+            productResponse.setStyleValueNames(styleValueNames);
+
+            productResponse.setCreatedAt(product.getCreatedAt());
+            productResponse.setUpdatedAt(product.getUpdatedAt());
+            productResponse.setIsSelling(product.getIsSelling());
+            productResponse.setIsActive(product.getIsActive());
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("This is product's information")
+                            .result(productResponse)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
     }
 }

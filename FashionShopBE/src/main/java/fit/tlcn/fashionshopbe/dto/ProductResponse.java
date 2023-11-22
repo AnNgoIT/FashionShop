@@ -21,7 +21,11 @@ public class ProductResponse {
 
     private String image;
 
+    private Integer categoryId;
+
     private String categoryName;
+
+    private Integer brandId;
 
     private String brandName;
 

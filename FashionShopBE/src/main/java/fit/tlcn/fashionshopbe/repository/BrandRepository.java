@@ -15,4 +15,6 @@ public interface BrandRepository extends JpaRepository<Brand, Integer> {
     List<Brand> findAllByIsActiveIsTrue();
 
     Optional<Brand> findByBrandIdAndIsActiveIsTrue(Integer brandId);
+
+    Optional<Brand> findByNameAndIsActiveIsTrue(String brandName);
 }

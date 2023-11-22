@@ -20,4 +20,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
             "JOIN pv.style s " +
             "WHERE p.productId = :productId AND s.name = :styleName")
     List<StyleValue> findStyleValuesByProductIdAndStyleName(Integer productId, String styleName);
+
+    List<Product> findAllByCategory_NameAndAndBrand_NameAndIsActiveIsTrueAndIsSellingIsTrue(String categoryName, String brandName);
 }

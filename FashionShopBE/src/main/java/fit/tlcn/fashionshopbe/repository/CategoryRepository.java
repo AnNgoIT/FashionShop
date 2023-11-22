@@ -14,4 +14,6 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     Optional<Category> findByCategoryIdAndIsActiveIsTrue(Integer categoryId);
 
     Optional<Category> findByName(String name);
+
+    Optional<Category> findByNameAndIsActiveIsTrue(String categoryName);
 }
