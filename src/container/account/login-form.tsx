@@ -1,21 +1,89 @@
+"use client";
 import React, { useState } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import Button from "@mui/material/Button";
-const LoginForm = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import { login } from "@/hooks/useAuth";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { setCookie } from "cookies-next";
+import { decodeToken } from "@/features/jwt-decode";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import InputAdornment from "@mui/material/InputAdornment";
+import ShowHidePassword from "@/features/visibility";
 
-  const handleSubmit = (event: { preventDefault: () => void }) => {
+type Login = {
+  email: string;
+  password: string;
+};
+
+const LoginForm = () => {
+  const router = useRouter();
+  const [account, setAccount] = useState<Login>({ email: "", password: "" });
+  const [error, setError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
+  };
+
+  const handleAccountValue = (e: any) => {
+    const value = e.target.value;
+    setAccount({
+      ...account,
+      [e.target.name]: value,
+    });
+
+    // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
+    setError("");
+  };
+
+  const handleLogin = async () => {
+    const loginAccount: Login = {
+      email: account.email,
+      password: account.password,
+    };
+
+    const response = await login(loginAccount);
+    if (response.success) {
+      const id = toast.loading("Please wait...");
+      toast.update(id, {
+        render: `Login Success`,
+        type: "success",
+        autoClose: 1500,
+        isLoading: false,
+      });
+
+      setCookie("accessToken", response.result.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(response.result.accessToken)!,
+        maxAge: ACCESS_MAX_AGE,
+      });
+      setCookie("refreshToken", response.result.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(response.result.refreshToken)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
+      router.refresh();
+      router.push("/");
+    } else {
+      setError("Incorrect Email or Password, Please try again!");
+    }
     // Xử lý logic đăng nhập ở đây
     // Ví dụ: gửi yêu cầu đăng nhập đến máy chủ
 
     // Reset trạng thái trường nhập liệu sau khi xử lý
-    setUsername("");
-    setPassword("");
   };
 
   return (
@@ -24,57 +92,56 @@ const LoginForm = () => {
          bg-white py-5 max-lg:px-10 rounded-md`}
     >
       <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold mb-6 text-center">
-        CUSTOMER LOGIN
+        LOGIN
       </h2>
-      <form
-        className="col-span-full lg:col-span-10 lg:col-start-2"
-        onSubmit={handleSubmit}
-      >
+      {error != "" && (
+        <div className="col-span-full text-center text-red-600 text-lg font-bold mb-4">
+          {error}
+        </div>
+      )}
+      <form className="col-span-full lg:col-span-10 lg:col-start-2">
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-7">
-          <label className="text-text-color mb-2" htmlFor="username">
-            Username :
-          </label>
-          <input
-            placeholder="Enter your Email"
-            className="bg-white outline-none w-full border border-border-color
-                            py-2 px-4 text-text-light-color min-h-[3rem] rounded-md"
-            type="text"
-            id="username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            autoComplete="off"
-            required
-          />
+          <FormControl fullWidth>
+            <InputLabel htmlFor="email">Email</InputLabel>
+            <OutlinedInput
+              type="text"
+              value={account.email}
+              onChange={handleAccountValue}
+              id="email"
+              name="email"
+              label="Email"
+              autoComplete="off"
+              aria-describedby="email"
+            />
+          </FormControl>
         </div>
 
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-7">
-          <label className="text-text-color mb-2" htmlFor="password">
-            Password :
-          </label>
-          <input
-            placeholder="Enter your password"
-            className="bg-white outline-none w-full border border-border-color
-                            py-2 px-4 text-text-light-color min-h-[3rem] rounded-md"
-            type="password"
-            id="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="off"
-            required
-          />
-        </div>
-        <div className="flex items-center text-sm text-text-light-color font-medium">
-          <input
-            className="py-2 px-4 bg-[#f8f8f8] mr-1 min-h-[1.125rem] min-w-[1.125rem]"
-            type="checkbox"
-            id="rememberAccount"
-          />
-          <label className="text-text-light-color" htmlFor="rememberAccount">
-            Remember Me
-          </label>
+          <FormControl fullWidth>
+            <InputLabel htmlFor="password">Password</InputLabel>
+            <OutlinedInput
+              type={showPassword ? "text" : "password"}
+              value={account.password}
+              onChange={handleAccountValue}
+              id="password"
+              name="password"
+              label="Password"
+              autoComplete="off"
+              aria-describedby="password"
+              endAdornment={
+                <InputAdornment position="end">
+                  <ShowHidePassword
+                    showPassword={showPassword}
+                    click={handleClickShowPassword}
+                    mousedownPassword={handleMouseDownPassword}
+                  />
+                </InputAdornment>
+              }
+            />
+          </FormControl>
         </div>
         <div className="h-fit float-right">
-          <NavigateButton>Log In</NavigateButton>
+          <NavigateButton onClick={handleLogin}>Log In</NavigateButton>
         </div>
       </form>
       <h1

@@ -21,7 +21,7 @@
     @apply text-lg cursor-pointer;
   }
   .myarrow {
-    @apply absolute z-[2] cursor-pointer bottom-[61%] bg-background w-14 h-14 rounded-full
+    @apply absolute z-[1] cursor-pointer bottom-[61%] bg-background w-14 h-14 rounded-full
     md:grid place-items-center translate-y-10 transition-all hidden;
   }
   .subbanner-shadow {
@@ -67,6 +67,16 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+span,
+p,
+table {
+  user-select: none; /* standard syntax */
+  -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+  -moz-user-select: none; /* mozilla browsers */
+  -khtml-user-select: none; /* webkit (konqueror) browsers */
+  -ms-user-select: none; /* IE10+ */
+}
+
 /* Ovveride CSS */
 .carousel.carousel-slider {
   position: relative;
@@ -79,9 +89,9 @@ input[type="number"]::-webkit-outer-spin-button {
   gap: 0.25rem;
   bottom: -3px !important;
 }
-.carousel-item {
+/* .carousel-item {
   padding: 0.5rem 0.5rem 0 0.5rem;
-}
+} */
 .MuiInputBase-input.MuiOutlinedInput-input {
   padding: 14px !important;
 }

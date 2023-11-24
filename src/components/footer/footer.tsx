@@ -17,16 +17,18 @@ const Footer = () => {
         <div className="grid grid-cols-12 justify-items-center text-white">
           <div className="col-span-12 md:col-span-4 p-4  grid place-items-center md:place-content-start">
             <div className="">
-              <Image
-                loader={imageLoader}
-                className="w-auto min-w-[80px] min-h-[80px]"
-                alt="Logo of the shop"
-                src={logo}
-                width={180}
-                height={100}
-                placeholder="blur"
-                sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
-              ></Image>
+              <Link href="/" as="/">
+                <Image
+                  // loader={imageLoader}
+                  className="w-auto min-w-[80px] min-h-[80px]"
+                  alt="Logo of the shop"
+                  src={logo.src}
+                  width={180}
+                  height={100}
+                  sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
+                  priority={true}
+                ></Image>
+              </Link>
             </div>
 
             <p className="max-w-[100%] justify-self-center">

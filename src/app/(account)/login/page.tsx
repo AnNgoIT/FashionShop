@@ -1,10 +1,8 @@
-"use client";
-
-// import LoginForm from "@/container/user/login-form";
-import dynamic from "next/dynamic";
+import LoginForm from "@/container/account/login-form";
 import React from "react";
 
-const LoginForm = dynamic(() => import("@/container/account/login-form"));
+export const revalidate = 1800; // revalidate every hour
+
 const Login = () => {
   return <LoginForm></LoginForm>;
 };

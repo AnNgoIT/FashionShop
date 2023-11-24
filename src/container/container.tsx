@@ -1,11 +1,10 @@
+"use client";
 import React from "react";
-import dynamic from "next/dynamic";
-
-const Banner = dynamic(() => import("@/container/banner"));
-const SubBanner = dynamic(() => import("./sub-banner"));
-const Services = dynamic(() => import("./services"));
-const Products = dynamic(() => import("./products"));
-const Blogs = dynamic(() => import("./blogs"));
+import Banner from "./banner";
+import Blogs from "./blogs";
+import Products from "./products";
+import Services from "./services";
+import SubBanner from "./sub-banner";
 
 const Container = () => {
   return (

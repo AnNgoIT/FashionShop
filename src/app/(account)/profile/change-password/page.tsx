@@ -1,45 +1,100 @@
 "use client";
-import NavigateButton from "@/components/button";
 import React, { useState } from "react";
-import EmailIcon from "@mui/icons-material/Email";
-import { modalStyle } from "../address/page";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import FormHelperText from "@mui/material/FormHelperText";
+import { deleteCookie, getCookie } from "cookies-next";
+import { changePassword } from "@/hooks/useAuth";
+import { validateChangePasswordForm } from "@/features/validation";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 const ChangePasswordPage = () => {
-  const [open, setOpen] = useState<boolean>(false);
-  const [otp, setOTP] = useState<number | null>(null);
-  const [otpError, setOTPError] = useState<boolean>(false);
-  const [isAuthenticated, setAuthenticated] = useState<boolean>(false);
+  const router = useRouter();
+  const [userPassword, setUserPassword] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOTP(null);
-    setOpen(false);
-  };
-
-  const handleOTP = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    if (otp) {
-      if (otp === 123678) {
-        setAuthenticated(true);
-        handleClose();
-        setOTP(null);
-        // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
-      } else {
-        setOTPError(true);
+  const isError = (error: any) => {
+    for (const key in error) {
+      if (error[key] !== "") {
+        return false; // Nếu có ít nhất một giá trị trống, trả về true
       }
     }
+    return true; // Nếu tất cả giá trị đều không trống, trả về false
   };
 
-  const handleChangePassword = (e: { preventDefault: () => void }) => {
+  const handleChange = (e: any) => {
+    const value = e.target.value;
+    setUserPassword({
+      ...userPassword,
+      [e.target.name]: value,
+    });
+
+    // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
+    setErrors({
+      ...errors,
+      [e.target.name]: "",
+    });
+  };
+
+  const handleResetPassword = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
+
+    const reset = {
+      currentPassword: userPassword.currentPassword,
+      newPassword: userPassword.newPassword,
+      confirmPassword: userPassword.confirmPassword,
+    };
+    const formErrors = validateChangePasswordForm(reset);
+
+    if (isError(formErrors)) {
+      // Xử lý logic reset mật khẩu ở đây
+      const id = toast.loading("Please wait...");
+      const response = await changePassword(getCookie("accessToken")!, reset);
+      if (response.success) {
+        toast.update(id, {
+          render: "Change password success",
+          type: "success",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        router.push("/login");
+        router.refresh();
+      }
+      if (response.statusCode == 401) {
+        toast.update(id, {
+          render: "Please Login",
+          type: "warning",
+          autoClose: 3000,
+          isLoading: false,
+        });
+        router.push("/login");
+        router.refresh();
+      } else if (response.statusCode == 400) {
+        toast.update(id, {
+          render: "Wrong Password",
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        setErrors({
+          ...formErrors,
+          currentPassword: "Wrong Password",
+        });
+      }
+    } else setErrors(formErrors);
   };
 
   return (
@@ -51,106 +106,85 @@ const ChangePasswordPage = () => {
         <h2 className="text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center">
           Change Password
         </h2>
-        {!isAuthenticated && (
-          <NavigateButton onClick={handleOpen}>
-            <EmailIcon sx={{ marginRight: "0.25rem" }} />
-            Send Email
-          </NavigateButton>
-        )}
       </div>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+      <form
+        className="col-span-full grid grid-cols-12 py-3"
+        onSubmit={handleResetPassword}
       >
-        <Box sx={modalStyle}>
-          <form
-            className="col-span-full grid grid-cols-12 py-3"
-            onSubmit={handleOTP}
-          >
-            <div className="col-span-full text-sm text-[#999] font-medium mb-4">
-              <FormControl className="w-full" error={otpError}>
-                <InputLabel className="mb-2" htmlFor="otp">
-                  OTP
-                </InputLabel>
-                <OutlinedInput
-                  autoFocus={true}
-                  aria-describedby="component-error-text"
-                  value={otp}
-                  onChange={(e) =>
-                    setOTP(e.target.value ? +e.target.value : null)
-                  }
-                  type="number"
-                  fullWidth
-                  required={true}
-                  id="otp"
-                  // placeholder="Type your otp"
-                  label="otp"
-                />
-                {otpError && (
-                  <FormHelperText id="component-error-text">
-                    Wrong OTP!
-                  </FormHelperText>
-                )}
-              </FormControl>
-            </div>
-            <div className="col-span-full">
-              <button
-                className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
-                           float-right px-[15px] text-white rounded-[5px] w-full"
-                type="submit"
-              >
-                Send
-              </button>
-            </div>
-          </form>
-        </Box>
-      </Modal>
-      {isAuthenticated ? (
-        <form
-          className="col-span-full grid grid-cols-12 py-3"
-          onSubmit={handleChangePassword}
-        >
-          <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
-            <FormControl className="w-full">
-              <InputLabel className="mb-2" htmlFor="New Password">
-                New Password
-              </InputLabel>
-              <OutlinedInput
-                fullWidth
-                id="New Password"
-                // placeholder="Type your New Password"
-                label="New Password"
-              />
-            </FormControl>
-          </div>
-          <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
-            <FormControl className="w-full">
-              <InputLabel htmlFor="Confirm Password">
-                Confirm Password
-              </InputLabel>
-              <OutlinedInput
-                fullWidth
-                id="Confirm Password"
-                // placeholder="Type your Confirm Password"
-                label="Confirm Password"
-              />
-            </FormControl>
-          </div>
-          <div className="col-span-full lg:col-span-9">
-            <button
-              className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+        <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
+          <FormControl className="w-full" error={errors.currentPassword != ""}>
+            <InputLabel className="mb-2" htmlFor="currentPassword">
+              Current Password
+            </InputLabel>
+            <OutlinedInput
+              fullWidth
+              required
+              autoComplete="off"
+              type="password"
+              value={userPassword.currentPassword}
+              onChange={handleChange}
+              id="currentPassword"
+              name="currentPassword"
+              label="Current Password"
+            />
+            <FormHelperText id="currentPassword-error">
+              {errors.currentPassword}
+            </FormHelperText>
+          </FormControl>
+        </div>
+        <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
+          <FormControl className="w-full" error={errors.newPassword != ""}>
+            <InputLabel className="mb-2" htmlFor="newPassword">
+              New Password
+            </InputLabel>
+            <OutlinedInput
+              fullWidth
+              required
+              autoComplete="off"
+              type="password"
+              value={userPassword.newPassword}
+              onChange={handleChange}
+              id="newPassword"
+              name="newPassword"
+              // placeholder="Type your newPassword"
+              label="New Password"
+            />
+            <FormHelperText id="password-error">
+              {errors.newPassword}
+            </FormHelperText>
+          </FormControl>
+        </div>
+        <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
+          <FormControl className="w-full" error={errors.confirmPassword != ""}>
+            <InputLabel htmlFor="confirmPassword">
+              Confirm New Password
+            </InputLabel>
+            <OutlinedInput
+              fullWidth
+              required
+              autoComplete="off"
+              type="password"
+              id="confirmPassword"
+              onChange={handleChange}
+              // placeholder="Type your confirmPassword"
+              label="Confirm New Password"
+              name="confirmPassword"
+            />
+            <FormHelperText id="confirmPassword-error">
+              {errors.confirmPassword}
+            </FormHelperText>
+          </FormControl>
+        </div>
+        <div className="col-span-full lg:col-span-9">
+          <button
+            className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
                            float-right px-[15px] text-white rounded-[5px]"
-              type="submit"
-            >
-              Change
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="min-h-[12.25rem]"></div>
-      )}
+            type="submit"
+          >
+            Change
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

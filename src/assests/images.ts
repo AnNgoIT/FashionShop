@@ -13,6 +13,7 @@ import blog_img2 from "./blogs/blog-img2.jpg";
 import blog_img3 from "./blogs/blog-img3.jpg";
 import empty_address from "./empty-address.png";
 import empty_order from "./empty-order.png";
+import favico from "./favicon.ico";
 export {
   img1,
   img2,
@@ -29,4 +30,5 @@ export {
   blog_img1,
   blog_img2,
   blog_img3,
+  favico,
 };

@@ -1,5 +1,9 @@
 "use client";
-import { imageLoader } from "@/features/img-loading";
+import {
+  VisuallyHiddenInput,
+  imageLoader,
+  modalOrderDetailStyle,
+} from "@/features/img-loading";
 import Title from "@/components/dashboard/Title";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
@@ -14,14 +18,13 @@ import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
 import React, { useRef, useState } from "react";
 import Image from "next/image";
-import { User } from "@/features/entities";
+import { User } from "@/features/types";
 import { user_img1 } from "@/assests/users";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import NavigateButton from "@/components/button";
 import AddIcon from "@mui/icons-material/Add";
-import { VisuallyHiddenInput } from "@/app/(account)/profile/page";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import FormControl from "@mui/material/FormControl";
@@ -30,39 +33,12 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import { onlyNumbers } from "@/features/product";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { modalOrderDetailStyle } from "@/app/(account)/profile/order-tracking/page";
+import { CldImage } from "next-cloudinary";
 
 const AdminUserPage = () => {
-  const users: User[] = [
-    {
-      id: "1-2-3-4-5",
-      email: "nguyenthang@gmail.com",
-      phone: "0909090909",
-      fullName: "Nguyen Ngoc Thang",
-      isVerified: false,
-      role: "CUSTOMER",
-      eWallet: 123456789,
-      avatar: "",
-      password: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: "6-7-8-9-10",
-      fullName: "Ngo Thua An",
-      email: "anngo@gmail.com",
-      phone: "0909090909",
-      isVerified: false,
-      role: "CUSTOMER",
-      eWallet: 123456789,
-      avatar: "",
-      password: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
+  const users: User[] = [];
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fullName, setFullName] = useState<string>("");
+  const [fullname, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [role, setRole] = useState<string>("CUSTOMER");
@@ -142,17 +118,21 @@ const AdminUserPage = () => {
     e.preventDefault();
     const newId = generateUUID();
     const result: User = {
-      id: newId,
-      fullName,
+      userId: newId,
+      fullname,
       email,
       phone,
       isVerified: false,
       role,
       password,
       avatar,
-      eWallet: 0,
+      ewallet: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
+      dob: null,
+      gender: null,
+      address: null,
+      isActive: false,
     };
     const newUserList: User[] = [...userList, result];
     setUserList(newUserList);
@@ -218,7 +198,7 @@ const AdminUserPage = () => {
                   autoComplete="true"
                   fullWidth
                   id="Full Name"
-                  value={fullName}
+                  value={fullname}
                   onChange={(event) => setFullName(event.target.value)}
                   // placeholder="Type your Full Name"
                   label="Full Name"
@@ -312,7 +292,7 @@ const AdminUserPage = () => {
             </div>
             <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium mb-4">
               {avatar && (
-                <Image
+                <CldImage
                   onClick={() => {
                     handleCustomButtonClick();
                   }}
@@ -321,7 +301,7 @@ const AdminUserPage = () => {
                   height={300}
                   src={avatar}
                   alt="Uploaded Image"
-                ></Image>
+                ></CldImage>
               )}
               <Button
                 sx={{ marginTop: "1rem", background: "#639df1" }}
@@ -382,21 +362,23 @@ const AdminUserPage = () => {
                     return (
                       <li
                         {...props}
-                        key={option.id}
+                        key={option.userId}
                         className="flex justify-between items-center px-3 py-2 border-b border-border-color"
                       >
-                        <Image
+                        <CldImage
                           loader={imageLoader}
-                          key={`product-img-${option.id}`}
+                          key={`product-img-${option.userId}`}
                           // placeholder="blur"
                           className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
                           width={120}
                           height={120}
                           alt="productImg"
-                          src={option.avatar == "" ? user_img1 : option.avatar}
+                          src={
+                            option.avatar == "" ? user_img1.src : option.avatar!
+                          }
                           priority
-                        ></Image>
-                        <span key={`product-name-${option.id}`}>
+                        ></CldImage>
+                        <span key={`product-name-${option.userId}`}>
                           {option.email}
                         </span>
                       </li>
@@ -406,8 +388,8 @@ const AdminUserPage = () => {
                     return tagValue.map((option, index) => (
                       <Chip
                         {...getTagProps({ index })}
-                        key={option.id}
-                        label={option.id}
+                        key={option.userId}
+                        label={option.userId}
                       />
                     ));
                   }}
@@ -433,12 +415,12 @@ const AdminUserPage = () => {
               <TableBody>
                 {userList &&
                   userList.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.userId}>
                       <TableCell
                         sx={{ minWidth: "max-content" }}
                         align="center"
                       >
-                        {item.fullName}
+                        {item.fullname}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -448,16 +430,16 @@ const AdminUserPage = () => {
                         }}
                         align="center"
                       >
-                        <Image
+                        <CldImage
                           loader={imageLoader}
                           // placeholder="blur"
                           className="w-[6.25rem] h-[6.25rem]"
                           width={120}
                           height={120}
                           alt="productImg"
-                          src={item.avatar == "" ? user_img1 : item.avatar}
+                          src={item.avatar == "" ? user_img1.src : item.avatar!}
                           priority
-                        ></Image>
+                        ></CldImage>
                       </TableCell>
                       <TableCell align="center">{item.email}</TableCell>
                       <TableCell align="center">{item.phone}</TableCell>

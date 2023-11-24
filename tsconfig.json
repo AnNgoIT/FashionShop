@@ -27,7 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/(account)/profile/change-password"
-  ],
+    "middleware.ts"
+, "src/features/loader.js"  ],
   "exclude": ["node_modules"]
 }

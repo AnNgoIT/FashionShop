@@ -1,28 +1,175 @@
-import Link from "next/link";
-import React, { useRef, useState } from "react";
+"use client";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import "moment/locale/de";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import FormLabel from "@mui/material/FormLabel";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from "@mui/material/Radio";
+import Button from "@mui/material/Button";
+import {
+  VisuallyHiddenInput,
+  imageLoader,
+  onImageEdit,
+} from "@/features/img-loading";
+import { UserInfo } from "@/features/types";
+import { UserContext } from "@/store";
+import dayjs from "dayjs";
+import { updateProfile } from "@/hooks/useAuth";
+import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import isLeapYear from "dayjs/plugin/isLeapYear"; // import plugin
+import "dayjs/locale/en"; // import locale
+import Skeleton from "@mui/material/Skeleton";
+import MuiPhoneNumber from "mui-phone-number";
+
+dayjs.extend(isLeapYear); // use plugin
+dayjs.locale("en"); // use locale
+
 const ProfileForm = () => {
-  const [username, setUsername] = useState("");
-  const [fullname, setFullname] = useState("");
-  const [email, setEmail] = useState("");
-  const [birthdate, setBirthdate] = useState("");
-  const [gender, setGender] = useState("");
-  const [phonenumber, setPhoneNumber] = useState("");
+  const router = useRouter();
+  const { user } = useContext(UserContext);
+  const [avatar, setAvatar] = useState<any>("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    fullname: "",
+    email: "",
+    phone: "",
+    dob: dayjs().toISOString(),
+    gender: "",
+    address: "",
+    avatar: "",
+    ewallet: 0,
+  });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [profileImage, setProfileImage] = useState("");
-
-  const handleSubmit = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
-    console.log({
-      username,
-      fullname,
-      email,
-      birthdate,
-      gender,
-      profileImage,
+  useEffect(() => {
+    setUserInfo({
+      ...user,
+      fullname: user.fullname ? user.fullname : "",
+      email: user.email ? user.email : "",
+      phone: user.phone ? user.phone : "",
+      dob: user.dob ? user.dob : dayjs().toISOString(),
+      gender: user.gender ? user.gender : "",
+      address: user.address ? user.address : "",
+      avatar: user.avatar ? user.avatar : "no avatar",
+      ewallet: 0,
     });
+    setAvatar(user.avatar || "");
+  }, [user]);
+
+  const handleUserInfo = (e: any) => {
+    const value = e.target.value;
+    setUserInfo({
+      ...userInfo,
+      [e.target.name]: value,
+    });
+    setIsUpdating(true);
+
+    // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
+  };
+
+  const handlePhone = (value: any) => {
+    setUserInfo({
+      ...userInfo,
+      phone: value,
+    });
+    setIsUpdating(true);
+  };
+
+  const handleUserBirthDay = (date: any) => {
+    setUserInfo({
+      ...userInfo,
+      dob: date.format("DD/MM/YYYY"),
+    });
+    setIsUpdating(true);
+  };
+  function resetUserInfo() {
+    setUserInfo({
+      fullname: "",
+      email: "",
+      phone: "",
+      dob: dayjs().toISOString(),
+      gender: "",
+      address: "",
+      avatar: "",
+      ewallet: 0,
+    });
+    setAvatar("");
+    setIsUpdating(false);
+  }
+
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    if (!isUpdating) return;
+    // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
+    const formData = new FormData();
+    formData.append("fullname", userInfo.fullname || "");
+    formData.append("phone", userInfo.phone || "");
+    formData.append("dob", dayjs(userInfo.dob).format("MM/DD/YYYY"));
+    formData.append("gender", userInfo.gender || "");
+    formData.append("address", userInfo.address || "");
+    // formData.append("avatar", avatar || "");
+    formData.append("ewallet", userInfo.ewallet?.toString() || "");
+    if (avatar instanceof File) {
+      formData.append("avatar", avatar || "");
+    }
+    const id = toast.loading("Updating...");
+    const profile = await updateProfile(getCookie("accessToken")!, formData);
+    if (profile.success) {
+      toast.update(id, {
+        render: `Updated Success`,
+        type: "success",
+        autoClose: 1500,
+        isLoading: false,
+      });
+      const newProfile: UserInfo = {
+        fullname: profile.result.fulname,
+        email: profile.result.email,
+        phone: profile.result.phone,
+        dob: profile.result.dob,
+        gender: profile.result.gender,
+        address: profile.result.address,
+        avatar: profile.result.avatar,
+        ewallet: profile.result.ewallet,
+      };
+      router.refresh();
+    } else {
+      if (profile.statusCode == 401) {
+        toast.update(id, {
+          render: `Please Login!`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.push("/login");
+      } else if (profile.statusCode == 400) {
+      }
+      if (profile.statusCode == 500) {
+        toast.update(id, {
+          render: `Only support PNG,JPG,JPEG File!`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else {
+        toast.update(id, {
+          render: `${profile.message}!`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      }
+    }
+    resetUserInfo();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,182 +177,177 @@ const ProfileForm = () => {
 
     if (files && files.length > 0) {
       const file = files[0];
+      setAvatar(file);
       const reader = new FileReader();
 
       reader.onload = (e) => {
         if (e.target && e.target.result) {
           const imageUrl = e.target.result.toString();
-          setProfileImage(imageUrl);
+          setUserInfo({
+            ...userInfo,
+            avatar: imageUrl,
+          });
+          setIsUpdating(true);
         }
       };
 
       reader.readAsDataURL(file);
     }
   };
-
-  const handleCustomButtonClick = () => {
-    if (fileInputRef && fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
   return (
-    <section className="vertical-section">
-      <div className="mycontainer block">
-        <div
-          className={`grid grid-cols-12 max-[991px]:px-[15px] gap-x-[30px] `}
+    <>
+      <div
+        className={`col-span-full sm:col-span-10 sm:col-start-2 lg:col-span-9 xl:col-span-8 grid grid-cols-12 shadow-hd
+        bg-white p-5 max-lg:px-10 rounded-sm mb-8 h-fit`}
+      >
+        <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center pb-4 border-b-[0] lg:border-b border-border-color">
+          Profile
+        </h2>
+        <form
+          className="col-span-full lg:col-span-7 grid grid-cols-12 border-r-[0] lg:border-r border-border-color max-lg:order-2 mt-4"
+          onSubmit={handleSubmit}
         >
-          <h2 className="col-span-full text-[35px] leading-10 tracking-[0] text-text-color uppercase font-semibold mb-[30px] text-center">
-            Profile
-          </h2>
-          <form
-            className="col-span-4 col-start-3 max-[767px]:col-span-full 
-            max-[991px]:col-span-6 max-[991px]:col-start-2 w-full pb-[30px] md:border-r-[1px]  md:border-[#999] md:pr-8"
-            onSubmit={handleSubmit}
-          >
-            <div className="flex flex-col text-[14px] leading-[24px] text-[#999] font-medium mb-[29px]">
-              <label className="text-[#333] mb-2" htmlFor="username">
-                Username :
-              </label>
-              <input
-                className="bg-white outline-none w-full border border-[#e5e5e5]
-                            py-[8px] px-[15px] text-[#999] min-h-[45px] leading-[28px] rounded-[5px]"
-                type="text"
-                id="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                autoComplete="off"
-                required
-              />
-            </div>
-            <div className="flex flex-col text-[14px] leading-[24px] text-[#999] font-medium mb-[29px]">
-              <label className="text-[#333] mb-2" htmlFor="fullname">
-                Fullname :
-              </label>
-              <input
-                className="bg-white outline-none w-full border border-[#e5e5e5]
-                            py-[8px] px-[15px] text-[#999] min-h-[45px] leading-[28px] rounded-[5px]"
-                type="text"
+          <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
+            <FormControl className="w-full">
+              <InputLabel htmlFor="fullname">Fullname</InputLabel>
+              <OutlinedInput
+                value={userInfo.fullname}
+                onChange={handleUserInfo}
+                fullWidth
+                name="fullname"
                 id="fullname"
-                value={fullname}
-                onChange={(event) => setFullname(event.target.value)}
-                autoComplete="off"
-                required
+                label="fullname"
               />
-            </div>
-            <div className="flex flex-col text-[14px] leading-[24px] text-[#999] font-medium mb-[29px]">
-              <label className="text-[#333] mb-2" htmlFor="email">
-                Email :
-              </label>
-              <input
-                className="bg-white outline-none w-full border border-[#e5e5e5]
-                            py-[8px] px-[15px] text-[#999] min-h-[45px] leading-[28px] rounded-[5px]"
-                type="text"
+            </FormControl>
+          </div>
+          <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
+            <FormControl className="w-full">
+              <InputLabel htmlFor="email">Email</InputLabel>
+              <OutlinedInput
+                readOnly={true}
+                disabled={true}
+                value={userInfo.email}
+                onChange={handleUserInfo}
+                fullWidth
+                name="email"
                 id="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                autoComplete="off"
-                required
+                label="email"
               />
-            </div>
-            <div className="flex flex-col text-[14px] leading-[24px] text-[#999] font-medium mb-[29px]">
-              <label className="text-[#333] mb-2" htmlFor="phoneNumber">
-                Phone Number :
-              </label>
-              <input
-                className="bg-white outline-none w-full border border-[#e5e5e5]
-                            py-[8px] px-[15px] text-[#999] min-h-[45px] leading-[28px] rounded-[5px]"
-                type="text"
-                id="phoneNumber"
-                value={phonenumber}
-                onChange={(event) => setPhoneNumber(event.target.value)}
-                autoComplete="off"
-                required
+            </FormControl>
+          </div>
+          <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
+            <FormControl className="w-full">
+              {/* <InputLabel htmlFor="phone">Phone</InputLabel> */}
+              <MuiPhoneNumber
+                // inputProps={{ maxLength: 10 }}
+                // value={account.phone}
+                disableAreaCodes={true}
+                // disableCountryCode={true}
+                defaultCountry={"vn"}
+                onChange={handlePhone}
               />
-            </div>
-            <div className="flex items-center text-center text-[14px] leading-[24px] text-[#999] font-medium mb-[29px]">
-              <label className="text-[#333]" htmlFor="gender">
-                Gender :
-              </label>
-              <select
-                className="ml-2 p-2 outline-none border-[2px] rounded-md border-[#ccc]"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
+            </FormControl>
+          </div>
+          <div className="col-span-full lg:col-span-10 lg:col-start-2 text-center text-sm text-[#999] font-medium mb-4">
+            <FormControl
+              sx={{
+                display: "flex",
+                alignItems: "items-center",
+                flexDirection: "row",
+              }}
+              className="flex items-center gap-x-2 flex-row"
+            >
+              <FormLabel className="text-[#333] min-w-fit">Gender : </FormLabel>
+              <RadioGroup
+                name="gender"
+                value={userInfo.gender}
+                onChange={handleUserInfo}
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
               >
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div className="flex flex-col text-[14px] leading-[24px] text-[#999] font-medium mb-[29px]">
-              <label className="text-[#333]  mb-2">Birthdate :</label>
-              <input
-                className="bg-white outline-none w-full border border-[#e5e5e5]
-               py-[8px] px-[15px] text-[#999] min-h-[45px] leading-[28px] rounded-[5px]"
-                type="date"
-                value={birthdate}
-                onChange={(e) => setBirthdate(e.target.value)}
-              />
-            </div>
-            <Link href={"/profile"}>
-              <button
-                className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
-                           float-right px-[15px] text-white rounded-[5px]"
-                type="submit"
-              >
-                Save
-              </button>
-            </Link>
-          </form>
-          <div
-            className="col-span-4 max-[767px]:col-span-full 
-            max-[991px]:col-span-4 w-full pb-[30px] max-[767px]:row-start-2"
-          >
-            <div className="flex flex-col text-[14px] leading-[24px] text-[#999] font-medium mb-[29px] items-center justify-center">
-              {profileImage ? (
-                <Image
-                  onClick={() => {
-                    handleCustomButtonClick();
-                  }}
-                  className="rounded-full w-[100px] h-[100px]"
-                  width={300}
-                  height={300}
-                  src={profileImage}
-                  alt="Uploaded Image"
-                ></Image>
-              ) : (
-                <div
-                  onClick={() => {
-                    handleCustomButtonClick();
-                  }}
-                  className="text-[16px]"
-                >
-                  No Avatar Selected
-                </div>
-              )}
-              <label className="mt-4 flex">
-                <input
-                  className="hidden"
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e)}
+                <FormControlLabel
+                  value="FEMALE"
+                  control={<Radio />}
+                  label="Female"
                 />
-                <button
-                  onClick={() => {
-                    handleCustomButtonClick();
-                  }}
-                  className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
-                           float-right px-[15px] text-white rounded-[5px]"
-                  type="submit"
-                >
-                  Upload Avatar
-                </button>
-              </label>
-            </div>
+                <FormControlLabel
+                  value="MALE"
+                  control={<Radio />}
+                  label="Male"
+                />
+                <FormControlLabel
+                  value="OTHER"
+                  control={<Radio />}
+                  label="Other"
+                />
+              </RadioGroup>
+            </FormControl>
+          </div>
+          <div className="col-span-full lg:col-span-10 lg:col-start-2 flex items-center text-sm text-[#999] font-medium mb-7">
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en">
+              <DatePicker
+                value={dayjs(userInfo.dob)}
+                onChange={(newValue: any) => handleUserBirthDay(newValue)}
+                className="w-full"
+              />
+            </LocalizationProvider>
+          </div>
+          <div className="col-span-full lg:col-span-11">
+            <button
+              disabled={!isUpdating}
+              className={`${
+                !isUpdating ? "bg-text-light-color" : "bg-primary-color"
+              } transition-all duration-200 ${
+                !isUpdating ? "" : "hover:bg-text-color"
+              } py-[8px] 
+                           float-right px-[15px] text-white rounded-[5px]`}
+              type="submit"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+        <div className="col-span-full lg:col-span-3 xl:col-span-5 min-w-max max-lg:order-1 mt-4">
+          <div className="grid place-items-center text-sm text-[#999] font-medium">
+            {userInfo.avatar == "" ? (
+              <Skeleton variant="circular" width={112} height={112} />
+            ) : userInfo.avatar == "no avatar" ? (
+              <div className="text-[16px] pb-4 text-center">
+                No Avatar Selected
+              </div>
+            ) : (
+              <Image
+                loader={imageLoader}
+                priority={true}
+                className="rounded-full w-[7rem] h-[7rem]"
+                width={300}
+                height={300}
+                src={userInfo.avatar!}
+                alt="Uploaded Image"
+              ></Image>
+            )}
+            <Button
+              sx={{ marginTop: "1rem", background: "#639df1" }}
+              component="label"
+              variant="contained"
+              className="mt-4 bg-primary-color hover:bg-text-color"
+            >
+              Upload file
+              <VisuallyHiddenInput
+                onChange={(e) => handleImageUpload(e)}
+                type="file"
+              />
+            </Button>
+            <p className="text-[1rem] pt-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
+              File capacity not more than 1MB
+            </p>
+            <p className="text-[1rem] pb-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
+              File format: JPG, PNG,...
+            </p>
           </div>
         </div>
       </div>
-    </section>
+    </>
   );
 };
 

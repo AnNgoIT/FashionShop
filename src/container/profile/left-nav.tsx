@@ -12,6 +12,9 @@ import Avatar from "@mui/material/Avatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "@/store";
+import Skeleton from "@mui/material/Skeleton";
 const theme = createTheme({
   breakpoints: {
     values: {
@@ -24,6 +27,17 @@ const theme = createTheme({
   },
 });
 const ProfileNav = () => {
+  const { user, setUser } = useContext(UserContext);
+  const [userInfo, setUserInfo] = useState({
+    avatar: "",
+    fullname: "",
+  });
+  useEffect(() => {
+    setUserInfo({
+      avatar: user.avatar ? user.avatar : "",
+      fullname: user.fullname ? user.fullname : "",
+    });
+  }, [user]);
   return (
     <div className="col-span-full sm:col-span-10 sm:col-start-2 xl:col-span-2 xl:col-start-2 lg:col-span-3">
       <ThemeProvider theme={theme}>
@@ -63,12 +77,22 @@ const ProfileNav = () => {
                 className="flex  max-lg:justify-center items-center gap-x-2 h-full"
                 href={"/profile"}
               >
-                <Avatar alt="avatar" src={user_img2.src}>
-                  T
-                </Avatar>
-                <span className="lowercase text-text-color text-sm max-lg:hidden">
-                  thangnguyen138
-                </span>
+                {userInfo.fullname === "" ? (
+                  <Skeleton variant="circular" width={40} height={40} />
+                ) : (
+                  <Avatar
+                    alt="avatar"
+                    src={userInfo.avatar ? userInfo.avatar : user_img2.src}
+                  ></Avatar>
+                )}
+
+                {userInfo.fullname === "" ? (
+                  <Skeleton variant="rectangular" width={100} height={20} />
+                ) : (
+                  <span className="lowercase text-text-color text-sm max-lg:hidden">
+                    {userInfo.fullname}
+                  </span>
+                )}
               </Link>
             </ListSubheader>
           }

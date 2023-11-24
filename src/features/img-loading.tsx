@@ -3,9 +3,24 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { styled } from "@mui/material/styles";
 
 export const imageLoader = ({ src, width }: { src: string; width: number }) => {
   return `${src}?w=${width}`;
+};
+
+export const getUrlExtension = (url: any) => {
+  return url.split(/[#?]/)[0].split(".").pop().trim();
+};
+
+export const onImageEdit = async (imgUrl: string) => {
+  var imgExt = getUrlExtension(imgUrl);
+
+  const response = await fetch(imgUrl);
+  const blob = await response.blob();
+  return new File([blob], "profileImage." + imgExt, {
+    type: blob.type,
+  });
 };
 
 export const responsive = {
@@ -49,7 +64,7 @@ export const MyRightArrow = ({ onClick, ...rest }: any) => {
       }}
       className={`${
         true ? "group hover:bg-primary-color" : ""
-      } myarrow right-0 translate-y-5 grid`}
+      } myarrow right-0 translate-y-5 grid z-0`}
     >
       <FontAwesomeIcon
         className="group-hover:text-white text-[17px] text-text-light-color"
@@ -71,7 +86,7 @@ export const MyLeftArrow = ({ onClick, ...rest }: any) => {
       }}
       className={`${
         true ? "group hover:bg-primary-color" : ""
-      } myarrow left-0 translate-y-5 grid`}
+      } myarrow left-0 translate-y-5 grid z-0`}
     >
       <FontAwesomeIcon
         className="group-hover:text-white text-[17px] text-text-light-color"
@@ -79,4 +94,46 @@ export const MyLeftArrow = ({ onClick, ...rest }: any) => {
       />
     </div>
   );
+};
+
+export const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+export const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  maxHeight: "90vh",
+  overflow: "auto",
+  bgcolor: "background.paper",
+  borderRadius: "0.25rem",
+  boxShadow: 24,
+  p: 4,
+};
+
+export const modalOrderDetailStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: {
+    xs: "80vw",
+    lg: 500,
+  },
+  height: "80vh",
+  overflow: "auto",
+  bgcolor: "background.paper",
+  borderRadius: "0.25rem",
+  boxShadow: 24,
+  p: 2,
 };

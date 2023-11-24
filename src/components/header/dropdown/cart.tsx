@@ -4,11 +4,13 @@ import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import React, { useContext } from "react";
-import { CartContext, cartItem } from "@/store/globalState";
+import { CartContext } from "@/store";
 import { Total } from "@/features/cart/TotalPrice";
 import Button from "@mui/material/Button";
 import { MaxAmounts, onlyNumbers } from "@/features/product";
 import { FormatPrice } from "@/features/product/FilterAmount";
+import { cartItem } from "@/features/types";
+import NavigateButton from "@/components/button";
 
 const CartDropdown = () => {
   const { cartItems, setCartItems } = useContext(CartContext);
@@ -114,14 +116,10 @@ const CartDropdown = () => {
           </div>
           <div className="mt-5 flex justify-between items-center font-bold">
             <Link href="/cart">
-              <Button className="text-white rounded-md bg-primary-color py-[14px] px-[26px] text-center transition-colors duration-200 hover:bg-[#333]">
-                Cart
-              </Button>
+              <NavigateButton>Cart</NavigateButton>
             </Link>
             <Link href="/cart/checkout">
-              <Button className="text-white rounded-md bg-primary-color py-[14px] px-[26px] text-center transition-colors duration-200 hover:bg-[#333]">
-                Checkout
-              </Button>
+              <NavigateButton>Checkout</NavigateButton>
             </Link>
           </div>
         </>

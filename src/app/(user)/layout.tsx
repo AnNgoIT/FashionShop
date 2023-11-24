@@ -1,79 +1,56 @@
-"use client";
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
-import usePath from "@/hooks/usePath";
-import Link from "next/link";
+import { getCookie } from "cookies-next";
+import { fetchUserCredentials } from "../page";
+import { cookies } from "next/headers";
+import { Category, Product, UserInfo } from "@/features/types";
+import { ReactNode } from "react";
+import { fetchAllCategories } from "./product/page";
+import { prefetchAllProducts } from "./product/(detail)/[id]/page";
 
-type Props = {
-  children?: React.ReactNode;
-  title?: string;
-  urlLink?: string[];
-};
+const UserLayout = async ({ children }: { children: ReactNode }) => {
+  const res = await fetchUserCredentials(
+    getCookie("accessToken", { cookies })!
+  );
+  const productRes = await prefetchAllProducts();
+  const cateRes = await fetchAllCategories();
+  let info: UserInfo = {
+    fullname: null,
+    email: "",
+    phone: "",
+    dob: null,
+    gender: null,
+    address: null,
+    avatar: null,
+    ewallet: null,
+  };
+  const userInfo: UserInfo | undefined =
+    res && res.success
+      ? {
+          ...info,
+          fullname: res.result.fullname,
+          email: res.result.email,
+          phone: res.result.phone,
+          dob: res.result.dob,
+          gender: res.result.gender,
+          address: res.result.address,
+          avatar: res.result.avatar,
+          ewallet: res.result.ewallet,
+        }
+      : undefined;
 
-const UserLayout = ({ children, urlLink, title }: Props) => {
-  const thisPaths = usePath();
-  urlLink = thisPaths;
-  title = urlLink[0];
+  const categories: Category[] =
+    cateRes && cateRes.success && cateRes.result.content;
+  const products: Product[] =
+    productRes && productRes.success && productRes.result.content;
   return (
     <>
-      <Header></Header>
-      <main className="font-montserrat min-h-[62.5rem] bg-white mt-[7rem] relative z-0">
-        <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
-          <div className={`grid grid-cols-1`}>
-            <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
-              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
-                {title}
-              </span>
-              <ul className="flex">
-                {urlLink &&
-                  urlLink?.map((value: string, index: number) => {
-                    const nextLink = urlLink![index + 1];
-                    let thisLink = null;
-                    if (nextLink !== undefined && value !== "home") {
-                      thisLink = (
-                        <>
-                          <Link
-                            className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px]"
-                            href={`/${value}`}
-                          >
-                            {value}
-                          </Link>
-                          <span className="px-[10px]">/</span>
-                        </>
-                      );
-                    } else if (value === "home") {
-                      thisLink = (
-                        <>
-                          <Link
-                            className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px]"
-                            href={`/`}
-                          >
-                            {value}
-                          </Link>
-                          <span className="px-[10px]">/</span>
-                        </>
-                      );
-                    } else
-                      thisLink = (
-                        <span className="capitalize text-[18px]">{value}</span>
-                      );
-                    return (
-                      <li
-                        key={index}
-                        className={`font-medium ${nextLink ? `group` : ``}`}
-                      >
-                        {thisLink}
-                      </li>
-                    );
-                  })}
-              </ul>
-            </div>
-          </div>
-        </section>
-        {children}
-      </main>
+      <Header
+        userInfo={userInfo}
+        categories={categories}
+        products={products}
+      ></Header>
+      {children}
       <Footer></Footer>
     </>
   );
