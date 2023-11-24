@@ -9,10 +9,11 @@ interface AuthenticatedRequest extends NextRequest {
 }
 const authPaths = ["/register", "/register", "/forgot-password", "/login"];
 export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-  const verified = request.cookies.get("accessToken");
+  // if (request.nextUrl.pathname.startsWith("/admin")) {
+  //   return NextResponse.redirect(new URL("/", request.url));
+  // }
+  const verified =
+    request.cookies.get("accessToken") || request.cookies.get("refreshToken");
   if (verified?.value) {
     if (authPaths.includes(request.nextUrl.pathname)) {
       return NextResponse.redirect(new URL("/profile", request.url));
@@ -26,7 +27,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/admin/:path*",
+    // "/admin/:path*",
     "/register",
     "/forgot-password",
     "/login",

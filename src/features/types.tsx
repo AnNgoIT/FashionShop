@@ -1,12 +1,11 @@
 import { UUID } from "crypto";
 
 export type Category = {
-  id: number;
-  length: number;
   categoryId: number;
-  parent?: Category;
   name: string;
+  parentName?: Category;
   image: string;
+  styleNames: string[];
   createdAt?: Date;
   updatedAt?: Date;
   isActive: boolean;
@@ -32,7 +31,7 @@ export type Style = {
 export type StyleValue = {
   styleValueId: number;
   name: string;
-  style: Style;
+  styleName: string;
   createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
@@ -43,20 +42,21 @@ export type Product = {
   name: string;
   description?: string;
   image: string;
+  categoryId: number;
+  categoryName: string;
+  brandId: number;
+  brandName: string;
+  totalQuantity: number;
+  totalSold: number;
   priceMin: number;
   promotionalPriceMin: number;
-  category: Category;
-  brand: Brand;
-  quantity: number;
-  sold: number;
+  rating: number;
+  stylesName: string[];
+  styleValueNames: string[];
   createdAt: Date;
   updatedAt: Date;
-  rating: number;
-  styles: Style[];
-  styleValues: StyleValue[];
-  coupons: number[] | [];
-  followers: string[] | [];
   isSelling: boolean;
+  isActive: boolean;
 };
 
 export type User = {
@@ -118,6 +118,17 @@ export type orderItem = {
   orderDate: Date;
   status: string;
   orderItemList: cartItem[];
+};
+
+export type productItem = {
+  productItemId: string;
+  parent: Product;
+  quantity: number;
+  sold: number;
+  image: string;
+  price: number;
+  promotionPrice: number;
+  styleValues: Set<StyleValue>;
 };
 
 export type Order = {

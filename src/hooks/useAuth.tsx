@@ -1,10 +1,7 @@
+"use client";
 import axios from "axios";
-import { HTTP_PORT, getAuthenticated, newAbortSignal } from "./useData";
+import { HTTP_PORT, getAuthenticated } from "./useData";
 import useSWR from "swr";
-import { useContext } from "react";
-import { UserContext } from "@/store";
-
-axios.defaults.baseURL = HTTP_PORT;
 
 export const register = async (payload: any) => {
   const config = {
@@ -184,14 +181,72 @@ export const updateProfile = async (accessToken: string, payload: any) => {
     },
   };
   try {
-    const res = await axios.post(
-      `${HTTP_PORT}/api/v1/auth/refresh-access-token`,
-      { payload },
+    const res = await axios.put(
+      `${HTTP_PORT}/api/v1/users/customers/profile`,
+      payload,
       config
     );
     const data = res && res.data ? res.data : {};
     return data;
   } catch (error: any) {
-    return error;
+    return error.response.data;
+  }
+};
+
+export const forgotPassword = async (payload: any) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const res = await axios.post(
+      `${HTTP_PORT}/api/v1/auth/forgot-password`,
+      payload,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const resetPassword = async (payload: any) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  try {
+    const res = await axios.post(
+      `${HTTP_PORT}/api/v1/auth/reset-password`,
+      payload,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const changePassword = async (accessToken: string, payload: any) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.patch(
+      `${HTTP_PORT}/api/v1/users/customers/change-password`,
+      payload,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
   }
 };

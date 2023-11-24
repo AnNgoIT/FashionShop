@@ -1,0 +1,608 @@
+"use client";
+import { FormatPrice, onlyNumbers } from "@/features/product/FilterAmount";
+import Title from "@/components/dashboard/Title";
+import Toolbar from "@mui/material/Toolbar";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Button from "@mui/material/Button";
+import TablePagination from "@mui/material/TablePagination";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import React, { useState } from "react";
+import UpdateIcon from "@mui/icons-material/Update";
+import { Brand, Category, Product, StyleValue } from "@/features/types";
+import Autocomplete from "@mui/material/Autocomplete";
+import Chip from "@mui/material/Chip";
+import NavigateButton from "@/components/button";
+import AddIcon from "@mui/icons-material/Add";
+import TextField from "@mui/material/TextField";
+import Image from "next/image";
+import {
+  VisuallyHiddenInput,
+  imageLoader,
+  modalStyle,
+} from "@/features/img-loading";
+import { product_1 } from "@/assests/images";
+import { CldImage } from "next-cloudinary";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Checkbox from "@mui/material/Checkbox";
+import ListItemText from "@mui/material/ListItemText";
+import { ImageList } from "@mui/material";
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+type AdminProductProps = {
+  products: Product[];
+  categories: Category[];
+  brands: Brand[];
+  styleValues: StyleValue[];
+};
+
+const AdminProduct = (props: AdminProductProps) => {
+  const { products, categories, brands, styleValues } = props;
+
+  const [productItem, setProductItem] = useState<Product>({
+    productId: "",
+    name: "",
+    image: "",
+    categoryId: 0,
+    categoryName: "",
+    brandId: 0,
+    brandName: "",
+    totalQuantity: 0,
+    totalSold: 0,
+    priceMin: 0,
+    promotionalPriceMin: 0,
+    rating: 0,
+    stylesName: [],
+    styleValueNames: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    isSelling: false,
+    isActive: false,
+  });
+
+  const [isUpdate, setUpdate] = useState<boolean>(false);
+
+  const [rowsPerPage, setRowsPerPage] = useState(1);
+  const [productList, setProductList] = useState<Product[]>(
+    products.slice(0, rowsPerPage)
+  );
+
+  const [open, setOpen] = useState<boolean>(false);
+  const [updateId, setUpdateId] = useState<string>("-1");
+  const [page, setPage] = useState(0);
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    resetProductItem();
+    setUpdate(false);
+    setOpen(false);
+  };
+  const openUpdateModal = (id: string) => {
+    const product = productList.find((product) => product.productId === id);
+    // setName(product?.name!);
+    // setQuantity(product?.totalQuantity!);
+    // setDes(product?.description!);
+    // setPrice(product?.priceMin!);
+    setUpdateId(id);
+    setUpdate(true);
+    handleOpen();
+  };
+
+  const handleProductItem = (e: any) => {
+    const value = e.target.value;
+    setProductItem({
+      ...productItem,
+      [e.target.name]: value,
+    });
+
+    // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
+  };
+
+  const handleStyleValuesName = (
+    event: SelectChangeEvent<typeof productItem.styleValueNames>
+  ) => {
+    const {
+      target: { value },
+    } = event;
+    setProductItem({
+      ...productItem,
+      // On autofill we get a stringified value.
+      styleValueNames: typeof value === "string" ? value.split(",") : value,
+    });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+
+    if (files && files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        if (e.target && e.target.result) {
+          const imageUrl = e.target.result.toString();
+          setProductItem({
+            ...productItem,
+            image: imageUrl,
+          });
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleChangePage = (event: any, newPage: number) => {
+    // Tính toán chỉ số bắt đầu mới của danh sách danh mục dựa trên số trang mới
+    const startIndex = newPage * rowsPerPage;
+
+    // Tạo một mảng mới từ danh sách danh mục ban đầu, bắt đầu từ chỉ số mới
+    const newProductList = products.slice(startIndex, startIndex + rowsPerPage);
+
+    // Cập nhật trang và danh sách danh mục
+    setPage(newPage);
+    setProductList(newProductList);
+  };
+
+  function handleCreateProduct(e: { preventDefault: () => void }) {
+    e.preventDefault();
+    const newId = productList[productList.length - 1].productId!;
+    const result: Product = {
+      productId: "",
+      name: "",
+      image: "",
+      categoryId: 0,
+      categoryName: "",
+      brandId: 0,
+      brandName: "",
+      totalQuantity: 0,
+      totalSold: 0,
+      priceMin: 0,
+      promotionalPriceMin: 0,
+      rating: 0,
+      stylesName: [],
+      styleValueNames: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isSelling: false,
+      isActive: false,
+    };
+    const newProductList: Product[] = [...productList, result];
+    setProductList(newProductList);
+    resetProductItem();
+    handleClose();
+  }
+
+  const handleSearchProducts = (
+    e: { preventDefault: () => void },
+    name: string
+  ) => {
+    e.preventDefault();
+    if (name == undefined) setProductList(products.slice(0, rowsPerPage));
+    else {
+      const newProductList = products.filter((item) =>
+        item.name.includes(name)
+      );
+      setProductList(newProductList);
+    }
+  };
+
+  const handleChangeRowsPerPage = (event: { target: { value: string } }) => {
+    setRowsPerPage(() => {
+      setProductList(products.slice(0, +event.target.value));
+      return +event.target.value;
+    });
+    setPage(0);
+  };
+
+  function resetProductItem() {
+    setProductItem({
+      productId: "",
+      name: "",
+      image: "",
+      categoryId: 0,
+      categoryName: "",
+      brandId: 0,
+      brandName: "",
+      totalQuantity: 0,
+      totalSold: 0,
+      priceMin: 0,
+      promotionalPriceMin: 0,
+      rating: 0,
+      stylesName: [],
+      styleValueNames: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isSelling: false,
+      isActive: false,
+    });
+  }
+
+  function handleUpdateProduct(
+    event: React.FormEvent<HTMLFormElement>,
+    id: string
+  ) {
+    event.preventDefault();
+    const newProductList = productList.map((item) => {
+      if (item.productId == id) {
+      }
+      return item;
+    });
+    setProductList(newProductList);
+    resetProductItem();
+    setUpdateId("-1");
+    handleClose();
+  }
+
+  return (
+    <Box
+      component="main"
+      sx={{
+        backgroundColor: (theme) =>
+          theme.palette.mode === "light"
+            ? theme.palette.grey[100]
+            : theme.palette.grey[900],
+        flexGrow: 1,
+        height: "100vh",
+        overflow: "auto",
+      }}
+    >
+      <Toolbar />
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalStyle}>
+          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
+            {isUpdate ? `Product ID: ${updateId}` : "Create New Product"}
+          </h2>
+          <form
+            onSubmit={
+              isUpdate
+                ? (event) => handleUpdateProduct(event, updateId)
+                : (event) => handleCreateProduct(event)
+            }
+            className="col-span-full grid grid-flow-col grid-cols-12 "
+          >
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="Name">
+                  Name
+                </InputLabel>
+                <OutlinedInput
+                  required
+                  autoComplete="off"
+                  fullWidth
+                  id="Name"
+                  name="name"
+                  value={productItem.name}
+                  onChange={handleProductItem}
+                  // placeholder="Type your Name"
+                  label="Name"
+                />
+              </FormControl>
+            </div>
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="Description">
+                  Description
+                </InputLabel>
+                <OutlinedInput
+                  rows={1}
+                  multiline
+                  autoComplete="true"
+                  fullWidth
+                  id="Description"
+                  name="description"
+                  value={productItem.description}
+                  onChange={handleProductItem}
+                  label="Description"
+                />
+              </FormControl>
+            </div>
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="Category">
+                  Category
+                </InputLabel>
+                <Select
+                  required
+                  labelId="Category"
+                  id="Category"
+                  name="categoryName"
+                  value={productItem.categoryName}
+                  label="Category"
+                  onChange={handleProductItem}
+                >
+                  {categories &&
+                    categories.length > 0 &&
+                    categories.map((category) => {
+                      return (
+                        <MenuItem
+                          key={category.categoryId}
+                          value={category.categoryId}
+                        >
+                          {category.name}
+                        </MenuItem>
+                      );
+                    })}
+                </Select>
+              </FormControl>
+            </div>
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="Brand">
+                  Brand
+                </InputLabel>
+                <Select
+                  required
+                  labelId="brand"
+                  id="Brand"
+                  name="brandName"
+                  value={productItem.brandName}
+                  label="Brand"
+                  onChange={handleProductItem}
+                >
+                  {brands &&
+                    brands.length > 0 &&
+                    brands.map((brand) => {
+                      return (
+                        <MenuItem key={brand.brandId} value={brand.brandId}>
+                          {brand.name}
+                        </MenuItem>
+                      );
+                    })}
+                </Select>
+              </FormControl>
+            </div>
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="Product Style">
+                  Product Style
+                </InputLabel>
+                <Select
+                  id="Product Style"
+                  multiple
+                  name="styleValueNames"
+                  value={productItem.styleValueNames}
+                  onChange={handleStyleValuesName}
+                  input={<OutlinedInput label="Product Style" />}
+                  renderValue={(selected) => selected.join(", ")}
+                  MenuProps={MenuProps}
+                >
+                  {styleValues.map((style) => (
+                    <MenuItem key={style.styleValueId} value={style.name}>
+                      <Checkbox
+                        checked={
+                          productItem.styleValueNames.indexOf(style.name) > -1
+                        }
+                      />
+                      <ListItemText primary={style.name} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+            <div className="col-span-full">
+              <button
+                className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+                           float-right px-[15px] text-white rounded-[5px]"
+                type="submit"
+              >
+                {isUpdate ? "Save" : "Create"}
+              </button>
+            </div>
+            <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium my-4">
+              <div className="grid grid-flow-col w-fit gap-x-2">
+                <Image
+                  loader={imageLoader}
+                  className="w-[6.25rem] h-[6.25rem] rounded-md"
+                  width={300}
+                  height={300}
+                  src={productItem.image || product_1}
+                  alt="Uploaded Image"
+                ></Image>
+              </div>
+              <Button
+                sx={{ marginTop: "1rem", background: "#639df1" }}
+                component="label"
+                variant="contained"
+                className="mt-4 bg-primary-color hover:bg-text-color w-max"
+              >
+                Upload file
+                <VisuallyHiddenInput
+                  required
+                  value={productItem.image}
+                  onChange={(e) => handleImageUpload(e)}
+                  type="file"
+                />
+              </Button>
+            </div>
+          </form>
+        </Box>
+      </Modal>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        {/* Products */}
+        <Grid item xs={12} md={4} lg={3}>
+          <Paper
+            sx={{
+              p: 2,
+              display: "flex",
+              flexDirection: "column",
+              // height: 240,
+              overflow: "auto",
+            }}
+          >
+            <Title>
+              <div className="grid grid-flow-col items-center justify-between min-w-[768px]">
+                <span> Products List</span>
+                <Autocomplete
+                  sx={{ minWidth: 350 }}
+                  onChange={(e, newProduct) =>
+                    handleSearchProducts(e, newProduct?.name!)
+                  }
+                  isOptionEqualToValue={(option, value) =>
+                    value == undefined ||
+                    value.name == "" ||
+                    option.name == value.name
+                  }
+                  options={products}
+                  getOptionLabel={(option) => option.name}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Products" />
+                  )}
+                  renderOption={(props, option) => {
+                    return (
+                      <li
+                        {...props}
+                        key={option.productId}
+                        className="flex justify-between items-center px-3 py-2 border-b border-border-color"
+                      >
+                        <Image
+                          loader={imageLoader}
+                          key={`product-img-${option.productId}`}
+                          // placeholder="blur"
+                          className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
+                          width={120}
+                          height={120}
+                          alt="productImg"
+                          src={option.image || product_1}
+                          priority
+                        ></Image>
+                        <span key={`product-name-${option.productId}`}>
+                          {option.name}
+                        </span>
+                      </li>
+                    );
+                  }}
+                  renderTags={(tagValue, getTagProps) => {
+                    return tagValue.map((option, index) => (
+                      <Chip
+                        {...getTagProps({ index })}
+                        key={option.productId}
+                        label={option.productId}
+                      />
+                    ));
+                  }}
+                />
+                <div className="w-max">
+                  <NavigateButton onClick={handleOpen}>
+                    <AddIcon sx={{ marginRight: "0.25rem" }} />
+                    New Product
+                  </NavigateButton>
+                </div>
+              </div>
+            </Title>
+
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Image</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Total Products</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Sold</TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {productList &&
+                  productList.map((item) => (
+                    <TableRow key={item.productId}>
+                      <TableCell sx={{ minWidth: "14rem", maxWidth: "16rem" }}>
+                        <span>{item.name}</span>
+                      </TableCell>
+                      <TableCell sx={{ minWidth: "8rem", minHeight: "8rem" }}>
+                        <CldImage
+                          className="w-full h-full"
+                          loader={imageLoader}
+                          width={85}
+                          height={85}
+                          alt="productImg"
+                          src={item.image}
+                        ></CldImage>
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          minWidth: "12rem",
+                          maxWidth: "13rem",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        <p className="truncate w-full">{item.description}</p>
+                      </TableCell>
+                      <TableCell>{item.totalQuantity}</TableCell>
+                      <TableCell>{`${
+                        item.isSelling ? "Available" : "Sold out"
+                      }`}</TableCell>
+                      <TableCell>
+                        <span className="max-md:block max-md:w-max">
+                          {FormatPrice(item.priceMin)} VNĐ
+                        </span>
+                      </TableCell>
+                      <TableCell>{item.totalSold}</TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => openUpdateModal(item.productId)}
+                          sx={{
+                            "&:hover": {
+                              backgroundColor: "transparent",
+                              opacity: "0.6",
+                            },
+                            color: "#639df1",
+                          }}
+                        >
+                          <UpdateIcon />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+            <TablePagination
+              sx={{ overflow: "visible" }}
+              component="div"
+              count={products.length}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[1, 10, 25, 50]}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Paper>
+        </Grid>
+      </Container>
+    </Box>
+  );
+};
+
+export default AdminProduct;

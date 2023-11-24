@@ -1,5 +1,4 @@
-import { imageLoader } from "@/features/img-loading";
-import Image, { StaticImageData } from "next/image";
+import { CldImage } from "next-cloudinary";
 import React, { useState } from "react";
 
 const ImageMagnifier = ({
@@ -11,7 +10,7 @@ const ImageMagnifier = ({
   magnifierWidth = 100,
   zoomLevel = 1.5,
 }: {
-  src: string | StaticImageData;
+  src: string;
   bgImg?: string;
   width?: number;
   height?: number;
@@ -31,7 +30,7 @@ const ImageMagnifier = ({
         width: width,
       }}
     >
-      <Image
+      <CldImage
         onMouseEnter={(e) => {
           // update image size and turn-on magnifier
           const elem = e.currentTarget;
@@ -56,7 +55,6 @@ const ImageMagnifier = ({
         }}
         className="w-fit h-fit"
         src={src}
-        loader={imageLoader}
         fill
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         alt={"productDetailImage"}

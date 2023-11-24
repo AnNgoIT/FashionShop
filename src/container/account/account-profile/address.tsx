@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ChangeCircleIcon from "@mui/icons-material/ChangeCircle";
@@ -17,31 +17,32 @@ import Chip from "@mui/material/Chip";
 import Button from "@mui/material/Button";
 import { modalStyle } from "@/features/img-loading";
 import { provinces as provincesData } from "@/store/provinces";
-export type Address = {
-  id?: number;
-  address?: string;
-  provinces?: string;
-  districts?: string;
-  wards?: string;
-};
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogActions from "@mui/material/DialogActions";
+import { UserContext } from "@/store";
+import { updateProfile } from "@/hooks/useAuth";
+import { getCookie } from "cookies-next";
+import { toast } from "react-toastify";
 
 const Address = () => {
-  const [address, setAddress] = useState<string>("");
+  const { user, setUser } = useContext(UserContext);
+  const [address, setAddress] = useState<string | null>("");
   const [provinces, setProvinces] = useState<string>("");
   const [districts, setDistricts] = useState<string>("");
   const [wards, setWards] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [isUpdate, setUpdate] = useState<boolean>(false);
   const [updateId, setUpdateId] = useState<number>(-1);
-  const [addressList, setAddressList] = useState<Address[]>([
-    {
-      id: 1,
-      address: "282 Vĩnh Phúc",
-      provinces: "Thành phố Hà Nội",
-      districts: "Quận Ba Đình",
-      wards: "Phường Vĩnh Phúc",
-    },
-  ]);
+  const [deleteId, setDeleteId] = useState<number>(-1);
+  const [addressList, setAddressList] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (user && user.address) setAddressList(user.address!.split(","));
+  }, [user]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -79,51 +80,92 @@ const Address = () => {
           .wards.map((item: any) => (item = item.name))
       : [];
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const newId = addressList[addressList.length - 1].id!;
-    const result: Address = {
-      id: newId + 1,
-      address,
-      provinces,
-      districts,
-      wards,
-    };
-    const newAddressList: Address[] = [...addressList, result];
+    const result: string = `${address!} ${
+      provinces.length != 0 ? "- " + provinces : provinces
+    } ${districts.length != 0 ? "- " + districts : districts} ${
+      wards.length != 0 ? "- " + wards : wards
+    }`;
+    const newAddressList: string[] = [...addressList, result];
     setAddressList(newAddressList);
+
+    await handleAddress(newAddressList);
     resetAddress();
     handleClose();
     // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
   };
   const openUpdateModal = (id: number) => {
-    const address = addressList.find((address) => address.id == id);
+    const address = addressList[0].split("-");
+    console.log(address);
     setUpdateId(id);
-    setAddress(address?.address!);
-    setProvinces(address?.provinces!);
-    setDistricts(address?.districts!);
-    setWards(address?.wards!);
+    setAddress(address[0] || "");
+    setProvinces(address[1] || "");
+    setDistricts(address[2] || "");
+    setWards(address[3] || "");
     setUpdate(true);
     handleOpen();
   };
 
-  const handleDeleteAddress = (id: number) => {
-    const newAddressList = addressList.filter((address) => address.id != id);
+  async function handleAddress(newAddressList: string[]) {
+    const formData = new FormData();
+    formData.append("address", newAddressList.join(","));
+
+    const id = toast.loading("Updating...");
+    const res = await updateProfile(getCookie("accessToken")!, formData);
+    if (res.success) {
+      toast.update(id, {
+        render: `Created new address`,
+        type: "success",
+        autoClose: 1500,
+        isLoading: false,
+      });
+    } else {
+      toast.update(id, {
+        render: `${res.message}`,
+        type: "error",
+        autoClose: 1500,
+        isLoading: false,
+      });
+    }
+    setUser({ ...user, address: newAddressList.join(",") });
+  }
+
+  const handleDeleteAddress = async (_thisId?: number) => {
+    const newAddressList = addressList.filter(
+      (_address, index) => index !== deleteId
+    );
     setAddressList(newAddressList);
+    await handleAddress(newAddressList);
+    setDeleteId(-1);
+    handleCloseDialog();
+  };
+  const handleOpenDialog = (id: number) => {
+    setOpenDialog(true);
+    setDeleteId(id);
+  };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
   };
 
-  const handleUpdateAddress = (
+  const handleUpdateAddress = async (
     e: { preventDefault: () => void },
-    id: number
+    _id: number
   ) => {
     e.preventDefault();
-    const newAddressList = addressList.map((item: Address) => {
-      if (item.id == id) {
-        item = { id, address, provinces, districts, wards };
+    const newAddressList = addressList.map((item: string, index) => {
+      if (index == updateId) {
+        item = `${address!} ${
+          provinces.length != 0 ? "- " + provinces : provinces
+        } ${districts.length != 0 ? "- " + districts : districts} ${
+          wards.length != 0 ? "- " + wards : wards
+        }`;
       }
       return item;
     });
     setAddressList(newAddressList);
-
+    console.log(newAddressList);
+    await handleAddress(newAddressList);
     resetAddress();
     setUpdate(false);
     setUpdateId(-1);
@@ -172,6 +214,7 @@ const Address = () => {
                 <OutlinedInput
                   autoComplete="true"
                   fullWidth
+                  required
                   id="Address"
                   value={address}
                   onChange={(event) => setAddress(event.target.value)}
@@ -195,11 +238,13 @@ const Address = () => {
                   sx={{
                     width: "100%",
                   }}
+                  readOnly={isUpdate}
+                  disabled={isUpdate}
                   isOptionEqualToValue={(option, value) =>
                     value === undefined || value === "" || option === value
                   }
                   value={provinces}
-                  onChange={(event, newProvinces) => {
+                  onChange={(_event, newProvinces) => {
                     setProvinces(newProvinces!);
                   }}
                   options={provinceList}
@@ -229,14 +274,15 @@ const Address = () => {
                   sx={{
                     width: "100%",
                   }}
+                  readOnly={isUpdate}
                   value={districts}
-                  onChange={(event, newDistricts) => {
+                  onChange={(_event, newDistricts) => {
                     setDistricts(newDistricts!);
                   }}
                   isOptionEqualToValue={(option, value) =>
                     value === undefined || value === "" || option === value
                   }
-                  disabled={provinces == ""}
+                  disabled={provinces == "" || isUpdate}
                   options={[...districtList, ""]}
                   renderInput={(params) => (
                     <TextField {...params} label="Districts" />
@@ -264,9 +310,10 @@ const Address = () => {
                   sx={{
                     width: "100%",
                   }}
-                  disabled={provinces == "" || districts == ""}
+                  readOnly={isUpdate}
+                  disabled={provinces == "" || districts == "" || isUpdate}
                   value={wards}
-                  onChange={(event, newWards) => {
+                  onChange={(_event, newWards) => {
                     setWards(newWards!);
                   }}
                   isOptionEqualToValue={(option, value) =>
@@ -298,50 +345,68 @@ const Address = () => {
           </form>
         </Box>
       </Modal>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="delete-address-title"
+        aria-describedby="delete-address-description"
+      >
+        <DialogTitle id="delete-address-title">
+          {"Confirm to delete this address?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-address-description"></DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={() => handleDeleteAddress(deleteId)} autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
       {addressList && addressList.length != 0 ? (
         <ul className="col-span-full h-[14rem] overflow-auto px-2">
-          {addressList.map((address, index) => {
+          {addressList.map((address: string, index) => {
             return (
               <li
-                key={`address-${address.id}`}
+                key={`address-${index}`}
                 className="flex justify-between items-center py-3 border-b border-text-light-color"
               >
-                <div className="">
-                  <h1 className="text-lg text-secondary-color">
-                    {address.address}
-                  </h1>
-                  <h2 className="flex">
-                    {`${address.provinces ? address.provinces + " - " : ""}${
-                      address.districts ? address.districts + " - " : ""
-                    }${address.wards}`}
-                  </h2>
-                </div>
-                <div className="flex gap-x-1">
-                  <Button
-                    onClick={() => openUpdateModal(address.id!)}
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: "#333",
-                        color: "white",
-                      },
-                      color: "#f22a59",
-                    }}
-                  >
-                    <ChangeCircleIcon />
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteAddress(address.id!)}
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: "#333",
-                        color: "white",
-                      },
-                      color: "#f22a59",
-                    }}
-                  >
-                    <DeleteIcon />
-                  </Button>
-                </div>
+                {address && (
+                  <>
+                    <div>
+                      <h1 className="text-lg text-secondary-color">
+                        {address}
+                      </h1>
+                    </div>
+                    <div className="flex gap-x-1">
+                      <Button
+                        onClick={() => openUpdateModal(index!)}
+                        sx={{
+                          "&:hover": {
+                            backgroundColor: "#333",
+                            color: "white",
+                          },
+                          color: "#f22a59",
+                        }}
+                      >
+                        <ChangeCircleIcon />
+                      </Button>
+                      <Button
+                        onClick={() => handleOpenDialog(index!)}
+                        sx={{
+                          "&:hover": {
+                            backgroundColor: "#333",
+                            color: "white",
+                          },
+                          color: "#f22a59",
+                        }}
+                      >
+                        <DeleteIcon />
+                      </Button>
+                    </div>
+                  </>
+                )}
               </li>
             );
           })}

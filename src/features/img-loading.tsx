@@ -9,6 +9,20 @@ export const imageLoader = ({ src, width }: { src: string; width: number }) => {
   return `${src}?w=${width}`;
 };
 
+export const getUrlExtension = (url: any) => {
+  return url.split(/[#?]/)[0].split(".").pop().trim();
+};
+
+export const onImageEdit = async (imgUrl: string) => {
+  var imgExt = getUrlExtension(imgUrl);
+
+  const response = await fetch(imgUrl);
+  const blob = await response.blob();
+  return new File([blob], "profileImage." + imgExt, {
+    type: blob.type,
+  });
+};
+
 export const responsive = {
   desktop: {
     breakpoint: { max: 3000, min: 1230 },
@@ -50,7 +64,7 @@ export const MyRightArrow = ({ onClick, ...rest }: any) => {
       }}
       className={`${
         true ? "group hover:bg-primary-color" : ""
-      } myarrow right-0 translate-y-5 grid`}
+      } myarrow right-0 translate-y-5 grid z-0`}
     >
       <FontAwesomeIcon
         className="group-hover:text-white text-[17px] text-text-light-color"
@@ -72,7 +86,7 @@ export const MyLeftArrow = ({ onClick, ...rest }: any) => {
       }}
       className={`${
         true ? "group hover:bg-primary-color" : ""
-      } myarrow left-0 translate-y-5 grid`}
+      } myarrow left-0 translate-y-5 grid z-0`}
     >
       <FontAwesomeIcon
         className="group-hover:text-white text-[17px] text-text-light-color"
@@ -99,6 +113,8 @@ export const modalStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 400,
+  maxHeight: "90vh",
+  overflow: "auto",
   bgcolor: "background.paper",
   borderRadius: "0.25rem",
   boxShadow: 24,

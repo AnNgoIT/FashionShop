@@ -3,13 +3,17 @@ import Header from "@/components/header/header";
 import { getCookie } from "cookies-next";
 import { fetchUserCredentials } from "../page";
 import { cookies } from "next/headers";
-import { UserInfo } from "@/features/types";
+import { Category, Product, UserInfo } from "@/features/types";
 import { ReactNode } from "react";
+import { fetchAllCategories } from "./product/page";
+import { prefetchAllProducts } from "./product/(detail)/[id]/page";
 
 const UserLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
+  const productRes = await prefetchAllProducts();
+  const cateRes = await fetchAllCategories();
   let info: UserInfo = {
     fullname: null,
     email: "",
@@ -34,9 +38,18 @@ const UserLayout = async ({ children }: { children: ReactNode }) => {
           ewallet: res.result.ewallet,
         }
       : undefined;
+
+  const categories: Category[] =
+    cateRes && cateRes.success && cateRes.result.content;
+  const products: Product[] =
+    productRes && productRes.success && productRes.result.content;
   return (
     <>
-      <Header userInfo={userInfo}></Header>
+      <Header
+        userInfo={userInfo}
+        categories={categories}
+        products={products}
+      ></Header>
       {children}
       <Footer></Footer>
     </>

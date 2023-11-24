@@ -13,11 +13,22 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { deleteUnverifyEmail, register, sendOTP } from "@/hooks/useAuth";
 import { VerifyEmailContext } from "@/store";
+import InputAdornment from "@mui/material/InputAdornment";
+import ShowHidePassword from "@/features/visibility";
 
 const RegisterForm = () => {
   const router = useRouter();
 
   const { verifyEmail, setVerifyEmail } = useContext(VerifyEmailContext);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
 
   const [account, setAccount] = useState<Account>({
     fullname: "",
@@ -87,21 +98,21 @@ const RegisterForm = () => {
     if (isError(formErrors)) {
       // Xử lý logic đăng ký ở đây
 
-      const response = await register(newAccount);
       const id = toast.loading("Please wait...");
-      
+      const response = await register(newAccount);
+
       if (response.success) {
-        toast.update(id, {
-          render: `A verify email sent to ${newAccount.email}`,
-          type: "success",
-          autoClose: 3000,
-          isLoading: false,
-        });
         setVerifyEmail({
           email: newAccount.email,
         });
         const sendEmail = await sendOTP({ email: newAccount.email });
         if (sendEmail.success) {
+          toast.update(id, {
+            render: `A verify email sent to ${newAccount.email}`,
+            type: "success",
+            autoClose: 3000,
+            isLoading: false,
+          });
           router.push("/register/verify-email");
         } else {
           const unverify = await deleteUnverifyEmail(verifyEmail.email);
@@ -130,9 +141,7 @@ const RegisterForm = () => {
           });
         }
       }
-    } else {
-      setErrors(formErrors);
-    }
+    } else setErrors(formErrors);
   };
 
   return (
@@ -198,9 +207,18 @@ const RegisterForm = () => {
           <FormControl fullWidth error={errors.password != ""}>
             <InputLabel htmlFor="password">Password *</InputLabel>
             <OutlinedInput
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={account.password}
               onChange={handleAccountValue}
+              endAdornment={
+                <InputAdornment position="end">
+                  <ShowHidePassword
+                    showPassword={showPassword}
+                    click={handleClickShowPassword}
+                    mousedownPassword={handleMouseDownPassword}
+                  />
+                </InputAdornment>
+              }
               id="password"
               autoComplete="off"
               name="password"

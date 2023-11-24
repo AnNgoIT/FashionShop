@@ -1,6 +1,12 @@
 "use client";
 import Link from "next/link";
-import React, { useContext, useEffect, useState, useTransition } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
 import {
   faSearch,
@@ -11,27 +17,103 @@ import {
 import Image from "next/image";
 import { logo } from "@/assests/images";
 import CartDropdown from "./dropdown/cart";
-import { CartContext, UserContext, UserProvider } from "@/store";
+import { CartContext, UserContext } from "@/store";
 import { user_img2 } from "@/assests/users";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
 import Menu from "./dropdown/menu";
-import { logout, useUserCredentials } from "@/hooks/useAuth";
-import { deleteCookie, getCookies } from "cookies-next";
+import { logout } from "@/hooks/useAuth";
+import { deleteCookie, getCookies, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { UserInfo } from "@/features/types";
+import { Product, UserInfo } from "@/features/types";
+import { decodeToken } from "@/features/jwt-decode";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import { styled } from "@mui/material/styles";
+import { CldImage } from "next-cloudinary";
+import { imageLoader } from "@/features/img-loading";
+import { useSearchParams } from "next/navigation";
 
-const TopNav = ({ info }: { info?: UserInfo }) => {
+const Input = styled("input")(({ theme }) => ({
+  width: 200,
+  backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
+  color: theme.palette.mode === "light" ? "#000" : "#fff",
+}));
+
+const Listbox = styled("ul")(({ theme }) => ({
+  width: 232,
+  margin: 0,
+  padding: 0,
+  zIndex: 1,
+  position: "absolute",
+  transform: "translateX(-7px)",
+  top: "56px",
+  listStyle: "none",
+
+  backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
+  overflow: "auto",
+  maxHeight: 232,
+  border: "1px solid rgba(0,0,0,.25)",
+  "& li.Mui-focused": {
+    backgroundColor: "#4a8df6",
+    color: "white",
+    cursor: "pointer",
+  },
+  "& li:active": {
+    backgroundColor: "#2977f5",
+    color: "white",
+  },
+}));
+
+const TopNav = ({
+  info,
+  token,
+  products,
+}: {
+  info?: UserInfo;
+  token?: { accessToken?: string; refreshToken?: string };
+  products: Product[];
+}) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [keyword, setKeyword] = useState("");
+  const [onSearch, setOnSearch] = useState(false);
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams);
+      params.set(name, value);
+
+      return params.toString();
+    },
+    [searchParams]
+  );
 
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
+
   const cookies = getCookies();
   const userInfo = info;
   useEffect(() => {
+    if (token && token.accessToken == "" && token.refreshToken == "") {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
+    } else if (token && token.accessToken !== "" && token.refreshToken !== "") {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+        maxAge: ACCESS_MAX_AGE,
+      });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
+    }
     setUser(
       userInfo
         ? userInfo
@@ -51,8 +133,8 @@ const TopNav = ({ info }: { info?: UserInfo }) => {
 
   const handleLogout = async () => {
     try {
-      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
       const id = toast.loading("Wating...");
+      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
       if (res.success) {
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
@@ -95,7 +177,20 @@ const TopNav = ({ info }: { info?: UserInfo }) => {
     }
   };
 
-  const searchProducts = () => {};
+  const handleChange = (e: any) => {
+    setKeyword(e.target.value);
+  };
+
+  const onSearchValue = (value: string) => {
+    setKeyword(value);
+    setOnSearch(false);
+  };
+
+  const searchProducts = async (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    router.push("/product?" + createQueryString("name", keyword));
+    setKeyword("");
+  };
 
   return (
     <nav className="col-span-12 pt-2.5 mx-auto">
@@ -114,19 +209,75 @@ const TopNav = ({ info }: { info?: UserInfo }) => {
         </Link>
         <form
           className="bg-white px-2 rounded-[0.25rem] flex"
-          action={`/search`}
-          method="post"
+          // action={`/search`}
+          // method="post"
           onSubmit={searchProducts}
         >
-          <input
-            name="keywords"
-            className="outline-none p-2 text-sm max-sm:w-[7rem]"
+          <Input
+            value={keyword}
+            onChange={handleChange}
+            onFocus={() => setOnSearch(true)}
+            name="keyword"
+            autoComplete="off"
+            className="outline-none p-2 text-sm w-[7rem] truncate"
             type="text"
             placeholder="Search..."
-          ></input>
-          <button className="transition-opacity hover:opacity-60">
+          ></Input>
+          <button
+            onClick={() => onSearchValue(keyword)}
+            type="submit"
+            className="transition-opacity hover:opacity-60"
+          >
             <FontAwesomeIcon className="icon" icon={faSearch}></FontAwesomeIcon>
           </button>
+          {onSearch && keyword.length > 0 && (
+            <Listbox
+              key={"listbox"}
+              sx={{
+                maxHeight: "14rem",
+                overflow: "auto",
+              }}
+            >
+              {products &&
+              products.filter((product) => {
+                const value = keyword.toLowerCase();
+                const name = product.name.toLowerCase();
+                return value && name.includes(value) && name !== value;
+              }).length == 0 ? (
+                <div className="w-full h-[8rem] flex justify-center items-center text-xl text-text-color">
+                  No Products Found
+                </div>
+              ) : (
+                products.map((product) => {
+                  return (
+                    <li
+                      onClick={() => onSearchValue(product.name)}
+                      key={product.productId}
+                      className="flex justify-between item-center px-2 py-3 max-h-[4.5rem] gap-x-2
+                        hover:bg-primary-color hover:text-white cursor-pointer"
+                    >
+                      <CldImage
+                        key={"image-" + product.productId}
+                        loader={imageLoader}
+                        priority
+                        className="group-hover:shadow-sd"
+                        alt="autocompleImg"
+                        src={product.image}
+                        width={120}
+                        height={40}
+                      ></CldImage>
+                      <span
+                        key={product.productId}
+                        className="truncate cursor-pointer"
+                      >
+                        {product.name}
+                      </span>
+                    </li>
+                  );
+                })
+              )}
+            </Listbox>
+          )}
         </form>
         <ul className="flex justify-center items-center">
           <li>
@@ -232,6 +383,7 @@ const TopNav = ({ info }: { info?: UserInfo }) => {
                     href={"/profile"}
                   >
                     <Avatar
+                      sizes="50vw"
                       alt="avatar"
                       src={userInfo.avatar ? userInfo.avatar : user_img2.src}
                     ></Avatar>
@@ -242,10 +394,6 @@ const TopNav = ({ info }: { info?: UserInfo }) => {
                 }
               ></Menu>
             )}
-            {/* <div className="flex justify-center items-center gap-x-2">
-              <Skeleton variant="circular" width={40} height={40} />
-              <Skeleton variant="rectangular" width={100} height={20} />
-            </div> */}
           </li>
           <li>
             <Menu

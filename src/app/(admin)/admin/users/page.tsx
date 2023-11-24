@@ -1,5 +1,9 @@
 "use client";
-import { VisuallyHiddenInput, imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
+import {
+  VisuallyHiddenInput,
+  imageLoader,
+  modalOrderDetailStyle,
+} from "@/features/img-loading";
 import Title from "@/components/dashboard/Title";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
@@ -29,6 +33,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import { onlyNumbers } from "@/features/product";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import { CldImage } from "next-cloudinary";
 
 const AdminUserPage = () => {
   const users: User[] = [];
@@ -287,7 +292,7 @@ const AdminUserPage = () => {
             </div>
             <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium mb-4">
               {avatar && (
-                <Image
+                <CldImage
                   onClick={() => {
                     handleCustomButtonClick();
                   }}
@@ -296,7 +301,7 @@ const AdminUserPage = () => {
                   height={300}
                   src={avatar}
                   alt="Uploaded Image"
-                ></Image>
+                ></CldImage>
               )}
               <Button
                 sx={{ marginTop: "1rem", background: "#639df1" }}
@@ -360,7 +365,7 @@ const AdminUserPage = () => {
                         key={option.userId}
                         className="flex justify-between items-center px-3 py-2 border-b border-border-color"
                       >
-                        <Image
+                        <CldImage
                           loader={imageLoader}
                           key={`product-img-${option.userId}`}
                           // placeholder="blur"
@@ -368,9 +373,11 @@ const AdminUserPage = () => {
                           width={120}
                           height={120}
                           alt="productImg"
-                          src={option.avatar == "" ? user_img1 : option.avatar!}
+                          src={
+                            option.avatar == "" ? user_img1.src : option.avatar!
+                          }
                           priority
-                        ></Image>
+                        ></CldImage>
                         <span key={`product-name-${option.userId}`}>
                           {option.email}
                         </span>
@@ -423,16 +430,16 @@ const AdminUserPage = () => {
                         }}
                         align="center"
                       >
-                        <Image
+                        <CldImage
                           loader={imageLoader}
                           // placeholder="blur"
                           className="w-[6.25rem] h-[6.25rem]"
                           width={120}
                           height={120}
                           alt="productImg"
-                          src={item.avatar == "" ? user_img1 : item.avatar!}
+                          src={item.avatar == "" ? user_img1.src : item.avatar!}
                           priority
-                        ></Image>
+                        ></CldImage>
                       </TableCell>
                       <TableCell align="center">{item.email}</TableCell>
                       <TableCell align="center">{item.phone}</TableCell>

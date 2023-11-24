@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import InputAdornment from "@mui/material/InputAdornment";
+import ShowHidePassword from "@/features/visibility";
 
 type Login = {
   email: string;
@@ -22,9 +24,18 @@ type Login = {
 
 const LoginForm = () => {
   const router = useRouter();
-
   const [account, setAccount] = useState<Login>({ email: "", password: "" });
   const [error, setError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
+
   const handleAccountValue = (e: any) => {
     const value = e.target.value;
     setAccount({
@@ -43,7 +54,6 @@ const LoginForm = () => {
     };
 
     const response = await login(loginAccount);
-
     if (response.success) {
       const id = toast.loading("Please wait...");
       toast.update(id, {
@@ -62,7 +72,7 @@ const LoginForm = () => {
       setCookie("refreshToken", response.result.refreshToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(response.result.accessToken)!,
+        expires: decodeToken(response.result.refreshToken)!,
         maxAge: REFRESH_MAX_AGE,
       });
       router.refresh();
@@ -110,7 +120,7 @@ const LoginForm = () => {
           <FormControl fullWidth>
             <InputLabel htmlFor="password">Password</InputLabel>
             <OutlinedInput
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={account.password}
               onChange={handleAccountValue}
               id="password"
@@ -118,6 +128,15 @@ const LoginForm = () => {
               label="Password"
               autoComplete="off"
               aria-describedby="password"
+              endAdornment={
+                <InputAdornment position="end">
+                  <ShowHidePassword
+                    showPassword={showPassword}
+                    click={handleClickShowPassword}
+                    mousedownPassword={handleMouseDownPassword}
+                  />
+                </InputAdornment>
+              }
             />
           </FormControl>
         </div>

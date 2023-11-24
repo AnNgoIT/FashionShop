@@ -126,6 +126,7 @@ const Menu = ({
                     borderRightWidth: "8px",
                     borderLeftColor: "transparent",
                     borderRightColor: "transparent",
+                    zIndex: 30,
                   },
                 }}
                 className={`${dropdownContent ? "arrow" : ""} `}

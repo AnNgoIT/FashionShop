@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "middleware.ts"
-  ],
+, "src/features/loader.js"  ],
   "exclude": ["node_modules"]
 }

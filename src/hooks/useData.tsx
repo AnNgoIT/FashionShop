@@ -8,7 +8,6 @@ export const ACCESS_MAX_AGE = 60 * 60; //1 hours
 export const REFRESH_MAX_AGE = 60 * 60 * 24; //1 days;
 
 axios.defaults.baseURL = HTTP_PORT;
-// axios.defaults.headers.common["Authorization"] = AUTH_TOKEN;
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
 export function newAbortSignal(timeoutMs: number) {
@@ -26,15 +25,15 @@ export const getData = async (url: string) => {
       "Content-Type": "application/json",
       // 'Authorization': key,
     },
-    signal: newAbortSignal(2000), // Aborts request after 5 seconds
+    signal: newAbortSignal(10000), // Aborts request after 5 seconds
   };
 
   try {
     const res = await axios.get(url, config);
     const data = res && res.data ? res.data : {};
     return data;
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.log(error);
   }
 };
 

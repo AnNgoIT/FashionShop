@@ -13,7 +13,11 @@ import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
 import Button from "@mui/material/Button";
-import { VisuallyHiddenInput, imageLoader } from "@/features/img-loading";
+import {
+  VisuallyHiddenInput,
+  imageLoader,
+  onImageEdit,
+} from "@/features/img-loading";
 import { UserInfo } from "@/features/types";
 import { UserContext } from "@/store";
 import dayjs from "dayjs";
@@ -24,19 +28,21 @@ import { toast } from "react-toastify";
 import isLeapYear from "dayjs/plugin/isLeapYear"; // import plugin
 import "dayjs/locale/en"; // import locale
 import Skeleton from "@mui/material/Skeleton";
+import MuiPhoneNumber from "mui-phone-number";
 
 dayjs.extend(isLeapYear); // use plugin
 dayjs.locale("en"); // use locale
 
 const ProfileForm = () => {
   const router = useRouter();
-  const { user, setUser } = useContext(UserContext);
-
+  const { user } = useContext(UserContext);
+  const [avatar, setAvatar] = useState<any>("");
+  const [isUpdating, setIsUpdating] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo>({
     fullname: "",
     email: "",
     phone: "",
-    dob: dayjs(),
+    dob: dayjs().toISOString(),
     gender: "",
     address: "",
     avatar: "",
@@ -49,12 +55,13 @@ const ProfileForm = () => {
       fullname: user.fullname ? user.fullname : "",
       email: user.email ? user.email : "",
       phone: user.phone ? user.phone : "",
-      dob: dayjs(),
+      dob: user.dob ? user.dob : dayjs().toISOString(),
       gender: user.gender ? user.gender : "",
       address: user.address ? user.address : "",
       avatar: user.avatar ? user.avatar : "no avatar",
       ewallet: 0,
     });
+    setAvatar(user.avatar || "");
   }, [user]);
 
   const handleUserInfo = (e: any) => {
@@ -63,8 +70,17 @@ const ProfileForm = () => {
       ...userInfo,
       [e.target.name]: value,
     });
+    setIsUpdating(true);
 
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
+  };
+
+  const handlePhone = (value: any) => {
+    setUserInfo({
+      ...userInfo,
+      phone: value,
+    });
+    setIsUpdating(true);
   };
 
   const handleUserBirthDay = (date: any) => {
@@ -72,60 +88,88 @@ const ProfileForm = () => {
       ...userInfo,
       dob: date.format("DD/MM/YYYY"),
     });
+    setIsUpdating(true);
   };
+  function resetUserInfo() {
+    setUserInfo({
+      fullname: "",
+      email: "",
+      phone: "",
+      dob: dayjs().toISOString(),
+      gender: "",
+      address: "",
+      avatar: "",
+      ewallet: 0,
+    });
+    setAvatar("");
+    setIsUpdating(false);
+  }
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-
+    if (!isUpdating) return;
     // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
     const formData = new FormData();
     formData.append("fullname", userInfo.fullname || "");
-    formData.append("email", userInfo.email || "");
+    formData.append("phone", userInfo.phone || "");
+    formData.append("dob", dayjs(userInfo.dob).format("MM/DD/YYYY"));
     formData.append("gender", userInfo.gender || "");
     formData.append("address", userInfo.address || "");
-    formData.append("dob", userInfo.dob);
-    formData.append("phone", userInfo.phone || "");
-
-    console.log(formData.getAll("dob"));
-
-    //   const profile = await updateProfile(getCookie("accessToken")!, formData);
-    //   const id = toast.loading("Updating...");
-    //   if (profile.success) {
-    //     toast.update(id, {
-    //       render: `Updated Success`,
-    //       type: "success",
-    //       autoClose: 1500,
-    //       isLoading: false,
-    //     });
-    //     const newProfile: UserInfo = {
-    //       fullname: null,
-    //       email: "",
-    //       phone: "",
-    //       dob: undefined,
-    //       gender: null,
-    //       address: null,
-    //       avatar: null,
-    //       ewallet: null,
-    //     };
-
-    //     setUser({ ...newProfile, ...user });
-    //     router.refresh();
-    //   } else if (profile.statusCode == 401) {
-    //     toast.update(id, {
-    //       render: `Please Login!`,
-    //       type: "warning",
-    //       autoClose: 1500,
-    //       isLoading: false,
-    //     });
-    //     router.push("/login");
-    //   } else {
-    //     toast.update(id, {
-    //       render: `${profile.message}!`,
-    //       type: "error",
-    //       autoClose: 1500,
-    //       isLoading: false,
-    //     });
-    //   }
+    // formData.append("avatar", avatar || "");
+    formData.append("ewallet", userInfo.ewallet?.toString() || "");
+    if (avatar instanceof File) {
+      formData.append("avatar", avatar || "");
+    }
+    const id = toast.loading("Updating...");
+    const profile = await updateProfile(getCookie("accessToken")!, formData);
+    if (profile.success) {
+      toast.update(id, {
+        render: `Updated Success`,
+        type: "success",
+        autoClose: 1500,
+        isLoading: false,
+      });
+      const newProfile: UserInfo = {
+        fullname: profile.result.fulname,
+        email: profile.result.email,
+        phone: profile.result.phone,
+        dob: profile.result.dob,
+        gender: profile.result.gender,
+        address: profile.result.address,
+        avatar: profile.result.avatar,
+        ewallet: profile.result.ewallet,
+      };
+      router.refresh();
+    } else {
+      if (profile.statusCode == 401) {
+        toast.update(id, {
+          render: `Please Login!`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.push("/login");
+      } else if (profile.statusCode == 400) {
+      }
+      if (profile.statusCode == 500) {
+        toast.update(id, {
+          render: `Only support PNG,JPG,JPEG File!`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else {
+        toast.update(id, {
+          render: `${profile.message}!`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      }
+    }
+    resetUserInfo();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,16 +177,17 @@ const ProfileForm = () => {
 
     if (files && files.length > 0) {
       const file = files[0];
+      setAvatar(file);
       const reader = new FileReader();
 
       reader.onload = (e) => {
         if (e.target && e.target.result) {
           const imageUrl = e.target.result.toString();
-          console.log(imageUrl);
           setUserInfo({
             ...userInfo,
             avatar: imageUrl,
           });
+          setIsUpdating(true);
         }
       };
 
@@ -192,15 +237,14 @@ const ProfileForm = () => {
           </div>
           <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
-              <InputLabel htmlFor="phone">Phone</InputLabel>
-              <OutlinedInput
-                value={userInfo.phone}
-                onChange={handleUserInfo}
-                fullWidth
-                name="phone"
-                id="phone"
-                // placeholder="Type your phone"
-                label="phone"
+              {/* <InputLabel htmlFor="phone">Phone</InputLabel> */}
+              <MuiPhoneNumber
+                // inputProps={{ maxLength: 10 }}
+                // value={account.phone}
+                disableAreaCodes={true}
+                // disableCountryCode={true}
+                defaultCountry={"vn"}
+                onChange={handlePhone}
               />
             </FormControl>
           </div>
@@ -242,7 +286,7 @@ const ProfileForm = () => {
           <div className="col-span-full lg:col-span-10 lg:col-start-2 flex items-center text-sm text-[#999] font-medium mb-7">
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en">
               <DatePicker
-                value={userInfo.dob}
+                value={dayjs(userInfo.dob)}
                 onChange={(newValue: any) => handleUserBirthDay(newValue)}
                 className="w-full"
               />
@@ -250,8 +294,13 @@ const ProfileForm = () => {
           </div>
           <div className="col-span-full lg:col-span-11">
             <button
-              className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
-                           float-right px-[15px] text-white rounded-[5px]"
+              disabled={!isUpdating}
+              className={`${
+                !isUpdating ? "bg-text-light-color" : "bg-primary-color"
+              } transition-all duration-200 ${
+                !isUpdating ? "" : "hover:bg-text-color"
+              } py-[8px] 
+                           float-right px-[15px] text-white rounded-[5px]`}
               type="submit"
             >
               Save

@@ -9,7 +9,6 @@ import ThemeRegistry from "@/components/ThemeRegistry/ThemeRegistry";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { ToastContainer } from "react-toastify";
 import { favico } from "@/assests/images";
-import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
   title: "Fashion Shop",

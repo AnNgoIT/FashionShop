@@ -29,6 +29,7 @@ import Chip from "@mui/material/Chip";
 import { user_img1 } from "@/assests/users";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
+import { CldImage } from "next-cloudinary";
 const AdminOrdersPage = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [statusState, setStatusState] = useState<{ [orderId: number]: string }>(
@@ -235,15 +236,15 @@ const AdminOrdersPage = () => {
                 <li className="w-full" key={orderItem.id}>
                   <div className="flex justify-between p-2">
                     <div className="flex gap-x-2">
-                      <Image
+                      <CldImage
                         className="outline outline-1 outline-border-color w-[6rem] h-[7rem]"
-                        src={product_1}
+                        src={product_1.src}
                         loader={imageLoader}
                         placeholder="blur"
                         width={100}
                         height={100}
                         alt={"orderItemImg"}
-                      ></Image>
+                      ></CldImage>
                       <h1 className="text-sm text-secondary-color font-bold">
                         {orderItem.name}
                       </h1>

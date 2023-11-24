@@ -1,6 +1,7 @@
 "use client";
 import {
   AuthAccount,
+  Product,
   User,
   UserInfo,
   VerifyEmail,
@@ -21,6 +22,11 @@ interface CartContextProps {
 interface UserContextProps {
   user: UserInfo;
   setUser: React.Dispatch<React.SetStateAction<UserInfo>>;
+}
+
+interface FilterProductContextProps {
+  product: Product;
+  setProduct: React.Dispatch<React.SetStateAction<Product>>;
 }
 
 export const UserContext = createContext<UserContextProps>({
@@ -65,6 +71,30 @@ export const VerifyEmailContext = createContext<VerifyEmailProps>({
   setVerifyEmail: () => {},
 });
 
+export const FilterProductContext = createContext<FilterProductContextProps>({
+  product: {
+    productId: "",
+    name: "",
+    image: "",
+    categoryId: 0,
+    categoryName: "",
+    brandId: 0,
+    brandName: "",
+    totalQuantity: 0,
+    totalSold: 0,
+    priceMin: 0,
+    promotionalPriceMin: 0,
+    rating: 0,
+    stylesName: [],
+    styleValueNames: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    isSelling: false,
+    isActive: false,
+  },
+  setProduct: () => {},
+});
+
 export const VerifyEmailProvider = ({ children }: any) => {
   const [verifyEmail, setVerifyEmail] = useState<VerifyEmail>({
     email: "",
@@ -74,6 +104,35 @@ export const VerifyEmailProvider = ({ children }: any) => {
     <VerifyEmailContext.Provider value={{ verifyEmail, setVerifyEmail }}>
       {children}
     </VerifyEmailContext.Provider>
+  );
+};
+
+export const FilterProductlProvider = ({ children }: any) => {
+  const [product, setProduct] = useState<Product>({
+    productId: "",
+    name: "",
+    image: "",
+    categoryId: 0,
+    categoryName: "",
+    brandId: 0,
+    brandName: "",
+    totalQuantity: 0,
+    totalSold: 0,
+    priceMin: 0,
+    promotionalPriceMin: 0,
+    rating: 0,
+    stylesName: [],
+    styleValueNames: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    isSelling: false,
+    isActive: false,
+  });
+
+  return (
+    <FilterProductContext.Provider value={{ product, setProduct }}>
+      {children}
+    </FilterProductContext.Provider>
   );
 };
 

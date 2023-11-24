@@ -5,7 +5,7 @@ import FormControl from "@mui/material/FormControl";
 import FormHelperText from "@mui/material/FormHelperText";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import { redirect, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 const OTPForm = () => {
@@ -26,18 +26,17 @@ const OTPForm = () => {
   // Kiểm tra điều kiện trước khi render
   if (verifyEmail.email === "") {
     redirect("/register");
-    return null; // hoặc return một phần tử trống
   }
 
   const handleVerifyEmail = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     // Xử lý logic ở đây
     // Ví dụ: gửi yêu cầu đến máy chủ
+    const id = toast.loading("Verifing...");
     const response = await verifyOTP({
       email: verifyEmail.email,
       otp,
     });
-    const id = toast.loading("Verifing...");
     if (response.success) {
       toast.update(id, {
         render: `Verified Successfully!`,
@@ -77,7 +76,6 @@ const OTPForm = () => {
           <FormControl fullWidth error={error != ""}>
             <InputLabel htmlFor="otp">OTP Code</InputLabel>
             <OutlinedInput
-              inputProps={{ maxLength: 6 }}
               type="number"
               value={otp}
               onChange={(e) => setOTP(e.target.value)}

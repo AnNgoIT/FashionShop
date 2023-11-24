@@ -5,9 +5,9 @@ const nextConfig = {
       transform: "@mui/icons-material/{{member}}",
     },
   },
-  experimental: {
-    serverActions: true,
-  },
+  // experimental: {
+  //   serverActions: true,
+  // },
   compiler: {
     styledComponents: true,
   },

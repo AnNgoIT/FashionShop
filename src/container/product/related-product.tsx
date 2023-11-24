@@ -2,16 +2,10 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBagShopping,
-  faChevronLeft,
-  faChevronRight,
-  faHeart,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
 import Carousel from "react-multi-carousel";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { ProductDetail } from "@/features/product";
-import { product_1, product_2, product_3 } from "@/assests/images";
 
 import {
   MyLeftArrow,
@@ -19,9 +13,15 @@ import {
   imageLoader,
   responsive,
 } from "@/features/img-loading";
+import { Product } from "@/features/types";
+import { diffInHours } from "@/features/product/date";
 
-const RelatedProduct = ({ categoryId }: any) => {
-  const productList: ProductDetail[] = [];
+type RelateProductProps = {
+  relatedProduct: Product[];
+};
+
+const RelatedProduct = (props: RelateProductProps) => {
+  const productList: Product[] = props.relatedProduct;
 
   return (
     <>
@@ -42,226 +42,92 @@ const RelatedProduct = ({ categoryId }: any) => {
           deviceType={"desktop"}
           customLeftArrow={<MyLeftArrow />}
           customRightArrow={<MyRightArrow />}
-          // removeArrowOnDeviceType={["tablet", "mobile"]}
           itemClass="carousel-item"
         >
-          {[1, 2, 3, 4, 5].map((item) => {
-            return (
-              <div
-                className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
-                key={item}
-              >
-                <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-                  <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                    New
-                  </label>
-                  <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                    Sale
-                  </label>
-                  <Link href={`/product/${item}`}>
-                    <Image
-                      loader={imageLoader}
-                      placeholder="blur"
-                      className="group-hover:shadow-lg"
-                      alt="productImage"
-                      src={product_1}
-                      width={500}
-                      height={0}
-                    ></Image>
-                  </Link>
-                </div>
-                <div className="relative w-full">
-                  <div className="px-2 py-1">
-                    <p
-                      className="text-text-color text-base pt-2.5 overflow-hidden font-medium
-                   text-ellipsis whitespace-nowrap "
-                    >
-                      {/* {product.name} */}
-                      Mens Full sleeves Collar Shirt
-                    </p>
-                    <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                      {FormatPrice(380000)} VNĐ
-                      <span className="line-through text-text-light-color ml-2 text-sm">
-                        {FormatPrice(420000)} VNĐ
-                      </span>
-                    </h3>
+          {productList &&
+            productList.length > 0 &&
+            productList.map((product: Product) => {
+              return (
+                <div
+                  className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
+                  key={product.productId}
+                >
+                  <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
+                    {diffInHours(new Date(product.createdAt), new Date()) <=
+                      72 && (
+                      <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
+                        New
+                      </label>
+                    )}
+                    {product.priceMin != product.promotionalPriceMin && (
+                      <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
+                        Sale
+                      </label>
+                    )}
+                    <Link href={`/product/${product.productId}`}>
+                      <Image
+                        loader={imageLoader}
+                        className="group-hover:shadow-lg"
+                        alt="productImage"
+                        src={product.image}
+                        width={500}
+                        height={500}
+                      ></Image>
+                    </Link>
                   </div>
-                  <div className="absolute top-0 left-0 right-0 w-full h-full">
-                    <ul
-                      className="bg-[#f5f5f5] group-hover:flex group-hover:animate-appear 
-                                    justify-center items-center h-full hidden"
-                    >
-                      <li
-                        className="border-r border-[#c6c6c6]
-                                    px-2.5 h-[1.25rem]"
+                  <div className="relative w-full">
+                    <div className="px-2 py-1">
+                      <p
+                        className="text-text-color text-base pt-2.5 overflow-hidden font-medium
+                   text-ellipsis whitespace-nowrap "
                       >
-                        <div>
-                          <Link href="/cart">
-                            <FontAwesomeIcon
-                              className="text-xl hover:text-primary-color transition-all"
-                              icon={faBagShopping}
-                            />
-                          </Link>
-                        </div>
-                      </li>
-                      <li className="px-2.5 h-[1.25rem]">
-                        <div>
-                          <Link href="/wishlist">
-                            <FontAwesomeIcon
-                              className="text-xl hover:text-primary-color transition-all"
-                              icon={faHeart}
-                            />
-                          </Link>
-                        </div>
-                      </li>
-                    </ul>
+                        {product.name}
+                      </p>
+                      <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
+                        {product && FormatPrice(product.promotionalPriceMin)}{" "}
+                        VNĐ
+                        {product &&
+                          product.priceMin != product.promotionalPriceMin && (
+                            <span className="line-through text-text-light-color ml-2 text-sm">
+                              {FormatPrice(product.priceMin)} VNĐ
+                            </span>
+                          )}
+                      </h3>
+                    </div>
+                    <div className="absolute top-0 left-0 right-0 w-full h-full">
+                      <ul
+                        className="bg-[#f5f5f5] group-hover:flex group-hover:animate-appear 
+                                    justify-center items-center h-full hidden"
+                      >
+                        <li
+                          className="border-r border-[#c6c6c6]
+                                    px-2.5 h-[1.25rem]"
+                        >
+                          <div>
+                            <Link href="/cart">
+                              <FontAwesomeIcon
+                                className="text-xl hover:text-primary-color transition-all"
+                                icon={faBagShopping}
+                              />
+                            </Link>
+                          </div>
+                        </li>
+                        <li className="px-2.5 h-[1.25rem]">
+                          <div>
+                            <Link href="/wishlist">
+                              <FontAwesomeIcon
+                                className="text-xl hover:text-primary-color transition-all"
+                                icon={faHeart}
+                              />
+                            </Link>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-          <div
-            className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
-            key={6}
-          >
-            <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-              <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                New
-              </label>
-              <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                Sale
-              </label>
-              <Link href={`/product/${6}`}>
-                <Image
-                  loader={imageLoader}
-                  placeholder="blur"
-                  className="group-hover:shadow-lg"
-                  alt="productImage"
-                  src={product_2}
-                  width={500}
-                  height={0}
-                ></Image>
-              </Link>
-            </div>
-            <div className="relative w-full">
-              <div className="px-2 py-1">
-                <p
-                  className="text-text-color text-base pt-2.5 overflow-hidden font-medium
-                   text-ellipsis whitespace-nowrap "
-                >
-                  {/* {product.name} */}
-                  Mens Full sleeves Collar Shirt
-                </p>
-                <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                  {FormatPrice(380000)} VNĐ
-                  <span className="line-through text-text-light-color ml-2 text-sm">
-                    {FormatPrice(420000)} VNĐ
-                  </span>
-                </h3>
-              </div>
-              <div className="absolute top-0 left-0 right-0 w-full h-full">
-                <ul
-                  className="bg-[#f5f5f5] group-hover:flex group-hover:animate-appear 
-                                    justify-center items-center h-full hidden"
-                >
-                  <li
-                    className="border-r border-[#c6c6c6]
-                                    px-2.5 h-[1.25rem]"
-                  >
-                    <div>
-                      <Link href="/cart">
-                        <FontAwesomeIcon
-                          className="text-xl hover:text-primary-color transition-all"
-                          icon={faBagShopping}
-                        />
-                      </Link>
-                    </div>
-                  </li>
-                  <li className="px-2.5 h-[1.25rem]">
-                    <div>
-                      <Link href="/wishlist">
-                        <FontAwesomeIcon
-                          className="text-xl hover:text-primary-color transition-all"
-                          icon={faHeart}
-                        />
-                      </Link>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div
-            className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
-            key={7}
-          >
-            <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-              <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                New
-              </label>
-              <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                Sale
-              </label>
-              <Link href={`/product/${7}`}>
-                <Image
-                  loader={imageLoader}
-                  placeholder="blur"
-                  className="group-hover:shadow-lg"
-                  alt="productImage"
-                  src={product_3}
-                  width={500}
-                  height={0}
-                ></Image>
-              </Link>
-            </div>
-            <div className="relative w-full">
-              <div className="px-2 py-1">
-                <p
-                  className="text-text-color text-base pt-2.5 overflow-hidden font-medium
-                   text-ellipsis whitespace-nowrap "
-                >
-                  {/* {product.name} */}
-                  Mens Full sleeves Collar Shirt
-                </p>
-                <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                  {FormatPrice(380000)} VNĐ
-                  <span className="line-through text-text-light-color ml-2 text-sm">
-                    {FormatPrice(420000)} VNĐ
-                  </span>
-                </h3>
-              </div>
-              <div className="absolute top-0 left-0 right-0 w-full h-full">
-                <ul
-                  className="bg-[#f5f5f5] group-hover:flex group-hover:animate-appear 
-                                    justify-center items-center h-full hidden"
-                >
-                  <li
-                    className="border-r border-[#c6c6c6]
-                                    px-2.5 h-[1.25rem]"
-                  >
-                    <div>
-                      <Link href="/cart">
-                        <FontAwesomeIcon
-                          className="text-xl hover:text-primary-color transition-all"
-                          icon={faBagShopping}
-                        />
-                      </Link>
-                    </div>
-                  </li>
-                  <li className="px-2.5 h-[1.25rem]">
-                    <div>
-                      <Link href="/wishlist">
-                        <FontAwesomeIcon
-                          className="text-xl hover:text-primary-color transition-all"
-                          icon={faHeart}
-                        />
-                      </Link>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+              );
+            })}
         </Carousel>
       </div>
     </>

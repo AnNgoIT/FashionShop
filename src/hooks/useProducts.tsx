@@ -15,8 +15,8 @@ export const useAllProducts = () => {
     `${HTTP_PORT}/api/v1/products`,
     (url: string) => getData(url),
     {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
+      // revalidateIfStale: false,
+      // revalidateOnFocus: false,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
         // Never retry on 404.
         if (error.status === 404) return;
@@ -45,8 +45,8 @@ export const useProductDetail = (productId: string) => {
     `${HTTP_PORT}/api/v1/products/` + productId,
     (url: string) => getData(url),
     {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
+      // revalidateIfStale: false,
+      // revalidateOnFocus: false,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
         // Never retry on 404.
         if (error.status === 404) return;
@@ -74,8 +74,8 @@ export const useStyleValues = () => {
     `${HTTP_PORT}/api/v1/styleValues`,
     (url: string) => getData(url),
     {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
+      // revalidateIfStale: false,
+      // revalidateOnFocus: false,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
         // Never retry on 404.
         if (error.status === 404) return;

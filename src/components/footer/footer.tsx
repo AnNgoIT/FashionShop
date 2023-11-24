@@ -22,7 +22,7 @@ const Footer = () => {
                   // loader={imageLoader}
                   className="w-auto min-w-[80px] min-h-[80px]"
                   alt="Logo of the shop"
-                  src={logo}
+                  src={logo.src}
                   width={180}
                   height={100}
                   sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
