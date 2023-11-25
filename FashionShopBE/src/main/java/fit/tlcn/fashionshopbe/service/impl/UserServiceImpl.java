@@ -1,6 +1,7 @@
 package fit.tlcn.fashionshopbe.service.impl;
 
 import com.cloudinary.Cloudinary;
+import fit.tlcn.fashionshopbe.constant.Status;
 import fit.tlcn.fashionshopbe.dto.*;
 import fit.tlcn.fashionshopbe.entity.*;
 import fit.tlcn.fashionshopbe.repository.*;
@@ -54,6 +55,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     CartRepository cartRepository;
+
+    @Autowired
+    OrderRepository orderRepository;
+
+    @Autowired
+    OrderItemRepository orderItemRepository;
 
     private static final String PHONE_NUMBER_REGEX = "^(\\+\\d{1,3}[- ]?)?\\d{10}$";
 
@@ -764,6 +771,116 @@ public class UserServiceImpl implements UserService {
                                 .build());
             }
 
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> order(String emailFromToken, OrderRequest request) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                List<CartItem> cartItemList = new ArrayList<>();
+                for (Integer cartItemId : request.getCartItemIds()) {
+                    Optional<CartItem> cartItemOptional = cartItemRepository.findByCartItemIdAndCart_User_Email(cartItemId, emailFromToken);
+                    if (cartItemOptional.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("cartItemId " + cartItemId + " does not exist")
+                                        .result("Not found")
+                                        .statusCode(HttpStatus.NOT_FOUND.value())
+                                        .build()
+                        );
+                    }
+
+                    cartItemList.add(cartItemOptional.get());
+                }
+
+                if (!isValidPhoneNumber(request.getPhone())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Invalid phone number format")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                Order order = new Order();
+                order.setCustomer(userOptional.get());
+
+                Float totalAmount = Float.valueOf(0);
+                for (CartItem cartItem : cartItemList) {
+                    totalAmount = totalAmount + (cartItem.getProductItem().getPromotionalPrice() * cartItem.getQuantity());
+                }
+                order.setTotalAmount(totalAmount);
+
+                Cart cart = cartItemList.get(0).getCart();
+
+                order.setFullName(request.getFullName());
+                order.setPhone(request.getPhone());
+                order.setAddress(request.getAddress());
+                order.setStatus(Status.NOT_PROCESSED);
+                order.setTransactionType(request.getTransactionType());
+                orderRepository.save(order);
+
+                for (CartItem cartItem : cartItemList) {
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setOrder(order);
+                    orderItem.setProductItem(cartItem.getProductItem());
+                    orderItem.setQuantity(cartItem.getQuantity());
+                    orderItem.setAmount(cartItem.getProductItem().getPromotionalPrice() * cartItem.getQuantity());
+
+                    orderItemRepository.save(orderItem);
+                }
+
+                int count = cartItemList.size();
+                for (CartItem cartItem : cartItemList) {
+                    cartItemRepository.delete(cartItem);
+                }
+
+                cart.setQuantity(cart.getQuantity() - count);
+                cartRepository.save(cart);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("customerId", userOptional.get().getUserId());
+                map.put("content", order);
+
+                List<OrderItem> orderItemList = orderItemRepository. findAllByOrder(order);
+                List<Integer> orderItemIds = new ArrayList<>();
+                for (OrderItem orderItem: orderItemList){
+                    orderItemIds.add(orderItem.getOrderItemId());
+                }
+                map.put("orderItemIds", orderItemIds);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Order successfully")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     GenericResponse.builder()

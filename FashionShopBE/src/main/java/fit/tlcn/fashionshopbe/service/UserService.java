@@ -28,4 +28,6 @@ public interface UserService {
     ResponseEntity<GenericResponse> deleteCartItem(Integer cartItemId, String emailFromToken);
 
     ResponseEntity<GenericResponse> deleteAllCartItemsInCart(String emailFromToken);
+
+    ResponseEntity<GenericResponse> order(String emailFromToken, OrderRequest request);
 }

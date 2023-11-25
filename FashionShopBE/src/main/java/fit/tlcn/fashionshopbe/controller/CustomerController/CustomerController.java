@@ -120,4 +120,25 @@ public class CustomerController {
 
         return userService.deleteAllCartItemsInCart(emailFromToken);
     }
+
+    @PostMapping("/orders")
+    public ResponseEntity<GenericResponse> order(@RequestHeader("Authorization") String authorizationHeader,
+                                                 @Valid @RequestBody OrderRequest request,
+                                                 BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message("Invalid input data")
+                            .result(bindingResult.getFieldError().getDefaultMessage())
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build()
+            );
+        }
+
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.order(emailFromToken, request);
+    }
 }
