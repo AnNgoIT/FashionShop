@@ -36,4 +36,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
             "AND p.isSelling = true " +
             "ORDER BY p.createdAt DESC")
     List<Product> findAllByFilter(String productName, String categoryName, String brandName, Float priceFrom, Float priceTo);
+
+    List<Product> findAllByOrderByCreatedAtDesc();
 }
