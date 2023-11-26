@@ -38,8 +38,6 @@ const ProductDetail = (props: ProductDetailProps) => {
   const [isSizeActive, setSizeActive] = useState<string[]>([]);
   const [isColorActive, setColorActive] = useState<string[]>([]);
 
-  console.log(relatedProduct);
-
   const { productDetail, isProductDetailError, isProductDetailLoading } =
     useProductDetail(productId);
   if (isProductDetailLoading)

@@ -19,7 +19,7 @@ import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import React, { useEffect, useState } from "react";
 import UpdateIcon from "@mui/icons-material/Update";
-import { Brand, Category, Product, StyleValue } from "@/features/types";
+import { Product, StyleValue, productItem } from "@/features/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
 import NavigateButton from "@/components/button";
@@ -31,77 +31,50 @@ import {
   imageLoader,
   modalStyle,
 } from "@/features/img-loading";
-import { product_1 } from "@/assests/images";
 import { CldImage } from "next-cloudinary";
-import Select from "@mui/material/Select";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
 import { getCookie } from "cookies-next";
 import { createData } from "@/hooks/useAdmin";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-export const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
-
-type AdminProductProps = {
+type AdminProductItemProps = {
   products: Product[];
-  categories: Category[];
-  brands: Brand[];
+  productItems: productItem[];
   styleValues: StyleValue[];
 };
 
 type StyleList = {
-  [x: string]: string[];
+  [x: string]: string;
 };
 
-const AdminProduct = (props: AdminProductProps) => {
+const AdminProductItem = (props: AdminProductItemProps) => {
   const router = useRouter();
-  const { products, categories, brands, styleValues } = props;
+  const { products, productItems, styleValues } = props;
 
-  const [productItem, setProductItem] = useState<Product>({
-    productId: -1,
-    name: "",
+  const [productItem, setProductItem] = useState<productItem>({
+    productItemId: -1,
+    parentId: 0,
+    parentName: "",
+    quantity: 0,
+    sold: 0,
     image: "",
-    categoryId: 0,
-    categoryName: "",
-    brandId: 0,
-    brandName: "",
-    totalQuantity: 0,
-    totalSold: 0,
-    priceMin: 0,
-    promotionalPriceMin: 0,
-    rating: 0,
-    styleNames: [],
+    price: 0,
+    promotionPrice: 0,
     styleValueNames: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    isSelling: false,
-    isActive: false,
+    sku: "",
   });
 
   const [isUpdate, setUpdate] = useState<boolean>(false);
   const [image, setImage] = useState<any>("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [productList, setProductList] = useState<Product[]>(
-    products.sort((a, b) => b.productId - a.productId).slice(0, rowsPerPage)
+  const [productList, setProductList] = useState<productItem[]>(
+    productItems
+      .sort((a, b) => b.productItemId - a.productItemId)
+      .slice(0, rowsPerPage)
   );
-
-  useEffect(() => {
-    products &&
-      setProductList(
-        products.sort((a, b) => b.productId - a.productId).slice(0, rowsPerPage)
-      );
-  }, [products, rowsPerPage]);
 
   const [styleValueList, setStyleValueList] = useState<
     StyleValue[] | undefined
@@ -111,6 +84,15 @@ const AdminProduct = (props: AdminProductProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [updateId, setUpdateId] = useState<string>("-1");
   const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    productItems &&
+      setProductList(
+        productItems
+          .sort((a, b) => b.productItemId - a.productItemId)
+          .slice(0, rowsPerPage)
+      );
+  }, [productItems, rowsPerPage]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -134,20 +116,12 @@ const AdminProduct = (props: AdminProductProps) => {
   function changeStyleNameToId() {
     let result: any = {};
     for (let key in styleList) {
-      if (
-        styleList &&
-        styleList.hasOwnProperty(key) &&
-        Array.isArray(styleList[key])
-      ) {
-        result[key] = styleList[key].map((item) => {
-          let foundItem = styleValues.find(
-            (element: any) => element.name === item
-          );
-          return foundItem ? foundItem.styleValueId : null;
-        });
+      if (styleList && styleList.hasOwnProperty(key)) {
+        result[key] = styleValueList!.find(
+          (element: StyleValue) => element.name === styleList[key]
+        )?.styleValueId;
       }
     }
-
     return result;
   }
 
@@ -160,36 +134,45 @@ const AdminProduct = (props: AdminProductProps) => {
 
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
   };
+
+  const handleProductName = (e: any) => {
+    const value = e.target.value;
+    setProductItem({
+      ...productItem,
+      parentName: value,
+    });
+
+    let newStyleValueList: StyleValue[] = [];
+    let newStyleList: StyleList = {};
+
+    const styleNames = products.find(
+      (item) => item.productId === e.target.value
+    )!.styleNames;
+    const productItemStyles = products.find(
+      (item) => item.productId === e.target.value
+    )!.styleValueNames;
+
+    styleNames &&
+      styleNames.forEach((styleName: string) => {
+        newStyleList = { ...newStyleList, [styleName]: "" };
+      });
+
+    newStyleValueList.push(
+      ...styleValues.filter((styleValue) =>
+        productItemStyles.includes(styleValue.name)
+      )
+    );
+    setStyleValueNames(styleNames);
+    setStyleList(newStyleList);
+    setStyleValueList(newStyleValueList);
+  };
+
   const handleStyleList = (e: any) => {
-    console.log(e.target.value);
     const value = e.target.value;
     setStyleList({
       ...styleList,
       [e.target.name]: value,
     });
-  };
-
-  const handleCategories = (e: any) => {
-    setProductItem({
-      ...productItem,
-      categoryName: e.target.value,
-    });
-    const category = categories.filter(
-      (item) => item.categoryId === e.target.value
-    )[0].styleNames;
-
-    let newStyleValueList: StyleValue[] = [];
-    let newStyleList: StyleList = {};
-    category &&
-      category.forEach((name: string) => {
-        newStyleList = { ...newStyleList, [name]: [] };
-        newStyleValueList.push(
-          ...styleValues.filter((styleValue) => styleValue.styleName === name)
-        );
-      });
-    setStyleValueNames(category);
-    setStyleList(newStyleList);
-    setStyleValueList(newStyleValueList);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,7 +202,10 @@ const AdminProduct = (props: AdminProductProps) => {
     const startIndex = newPage * rowsPerPage;
 
     // Tạo một mảng mới từ danh sách danh mục ban đầu, bắt đầu từ chỉ số mới
-    const newProductList = products.slice(startIndex, startIndex + rowsPerPage);
+    const newProductList = productItems.slice(
+      startIndex,
+      startIndex + rowsPerPage
+    );
 
     // Cập nhật trang và danh sách danh mục
     setPage(newPage);
@@ -229,33 +215,30 @@ const AdminProduct = (props: AdminProductProps) => {
   async function handleCreateProduct(e: { preventDefault: () => void }) {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("name", productItem.name);
+    formData.append("productId", productItem.parentName.toString());
     formData.append("image", image);
-    formData.append("description", productItem.description || "");
-    formData.append("categoryId", productItem.categoryName);
-    formData.append("brandId", productItem.brandName);
+    formData.append("quantity", productItem.quantity.toString() || "");
+    formData.append("price", productItem.price.toString());
     formData.append(
       "styleValueIds",
       Object.values(changeStyleNameToId()).join(",")
     );
     const payload = {
-      ...productItem,
-      name: productItem.name,
-      description: productItem.description || "",
-      image: productItem.image,
-      categoryId: productItem.categoryName,
-      branId: productItem.brandName,
+      productId: productItem.parentName,
+      quantity: productItem.quantity || 0,
+      image: image,
+      price: productItem.price || 0,
       styleValueIds: Object.values(changeStyleNameToId()).join(","),
     };
     const id = toast.loading("Creating...");
     const res = await createData(
-      "/api/v1/users/admin/products",
+      "/api/v1/users/admin/productItems",
       getCookie("accessToken")!,
       formData
     );
     if (res.success) {
       toast.update(id, {
-        render: `Created Product Success`,
+        render: `Created Product Items Success`,
         type: "success",
         autoClose: 500,
         isLoading: false,
@@ -272,7 +255,7 @@ const AdminProduct = (props: AdminProductProps) => {
       });
     } else if (res.statusCode == 409) {
       toast.update(id, {
-        render: "Product already existed",
+        render: "Product Item already existed",
         type: "error",
         autoClose: 500,
         isLoading: false,
@@ -287,15 +270,15 @@ const AdminProduct = (props: AdminProductProps) => {
     }
   }
 
-  const handleSearchProducts = (
+  const handleSearchProductItems = (
     e: { preventDefault: () => void },
     name: string
   ) => {
     e.preventDefault();
-    if (name == undefined) setProductList(products.slice(0, rowsPerPage));
+    if (name == undefined) setProductList(productItems.slice(0, rowsPerPage));
     else {
-      const newProductList = products.filter((item) =>
-        item.name.includes(name)
+      const newProductList = productItems.filter((item) =>
+        item.parentName.includes(name)
       );
       setProductList(newProductList);
     }
@@ -303,7 +286,7 @@ const AdminProduct = (props: AdminProductProps) => {
 
   const handleChangeRowsPerPage = (event: { target: { value: string } }) => {
     setRowsPerPage(() => {
-      setProductList(products.slice(0, +event.target.value));
+      setProductList(productItems.slice(0, +event.target.value));
       return +event.target.value;
     });
     setPage(0);
@@ -311,30 +294,21 @@ const AdminProduct = (props: AdminProductProps) => {
 
   function resetProductItem() {
     setProductItem({
-      productId: -1,
-      name: "",
+      productItemId: -1,
+      parentId: 0,
+      parentName: "",
+      quantity: 0,
+      sold: 0,
       image: "",
-      categoryId: 0,
-      categoryName: "",
-      brandId: 0,
-      brandName: "",
-      totalQuantity: 0,
-      totalSold: 0,
-      priceMin: 0,
-      promotionalPriceMin: 0,
-      rating: 0,
-      styleNames: [],
+      price: 0,
+      promotionPrice: 0,
       styleValueNames: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isSelling: false,
-      isActive: false,
+      sku: "",
     });
     setPage(0);
     setRowsPerPage(5);
     setStyleValueList(undefined);
     setStyleValueNames([]);
-    setImage("");
   }
 
   // function handleUpdateProduct(
@@ -375,7 +349,7 @@ const AdminProduct = (props: AdminProductProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Product ID: ${updateId}` : "Create Product"}
+            {isUpdate ? `Product ID: ${updateId}` : "Create Product Items"}
           </h2>
           <form
             onSubmit={
@@ -387,100 +361,70 @@ const AdminProduct = (props: AdminProductProps) => {
           >
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="Name">
-                  Name
-                </InputLabel>
-                <OutlinedInput
-                  required
-                  autoComplete="off"
-                  fullWidth
-                  id="Name"
-                  name="name"
-                  value={productItem.name}
-                  onChange={handleProductItem}
-                  // placeholder="Type your Name"
-                  label="Name"
-                />
-              </FormControl>
-            </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="Description">
-                  Description
-                </InputLabel>
-                <OutlinedInput
-                  inputProps={{ maxLength: 1000 }}
-                  type="text"
-                  rows={1}
-                  className="h-[5rem]"
-                  multiline
-                  autoComplete="true"
-                  fullWidth
-                  id="Description"
-                  name="description"
-                  value={productItem.description}
-                  onChange={handleProductItem}
-                  label="Description"
-                />
-              </FormControl>
-            </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="Category">
-                  Category
+                <InputLabel className="mb-2" htmlFor="parentName">
+                  Product Name
                 </InputLabel>
                 <Select
                   required
-                  labelId="Category"
-                  id="Category"
-                  name="categoryName"
-                  value={productItem.categoryName}
-                  label="Category"
-                  onChange={handleCategories}
+                  id="parentName"
+                  name="parentName"
+                  value={productItem.parentName}
+                  label="Product Name"
+                  onChange={handleProductName}
                 >
-                  {categories &&
-                    categories.length > 0 &&
-                    categories
-                      // .filter(
-                      //   (category, index, self) => category.parentName != null
-                      // )
-                      .map((category) => {
-                        return (
-                          <MenuItem
-                            key={category.categoryId}
-                            value={category.categoryId}
-                          >
-                            {category.name}
-                          </MenuItem>
-                        );
-                      })}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="Brand">
-                  Brand
-                </InputLabel>
-                <Select
-                  required
-                  labelId="brand"
-                  id="Brand"
-                  name="brandName"
-                  value={productItem.brandName}
-                  label="Brand"
-                  onChange={handleProductItem}
-                >
-                  {brands &&
-                    brands.length > 0 &&
-                    brands.map((brand) => {
+                  {products &&
+                    products.length > 0 &&
+                    products.map((product) => {
                       return (
-                        <MenuItem key={brand.brandId} value={brand.brandId}>
-                          {brand.name}
+                        <MenuItem
+                          sx={{
+                            maxWidth: "19.5rem",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                          key={product.productId}
+                          value={product.productId}
+                        >
+                          {product.name}
                         </MenuItem>
                       );
                     })}
                 </Select>
+              </FormControl>
+            </div>
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="Quantity">
+                  Quantity
+                </InputLabel>
+                <OutlinedInput
+                  type="number"
+                  autoComplete="off"
+                  fullWidth
+                  id="Quantity"
+                  name="quantity"
+                  value={productItem.quantity}
+                  onChange={handleProductItem}
+                  label="Quantity"
+                />
+              </FormControl>
+            </div>
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="Price">
+                  Price
+                </InputLabel>
+                <OutlinedInput
+                  type="number"
+                  autoComplete="off"
+                  fullWidth
+                  id="Price"
+                  name="price"
+                  value={productItem.price}
+                  onChange={handleProductItem}
+                  label="Price"
+                />
               </FormControl>
             </div>
             {styleValueList &&
@@ -498,13 +442,10 @@ const AdminProduct = (props: AdminProductProps) => {
                       </InputLabel>
                       <Select
                         id={`${name}`}
-                        multiple
                         name={name}
                         value={styleList[name]}
                         onChange={handleStyleList}
                         input={<OutlinedInput label={name} />}
-                        renderValue={(selected) => selected.join(", ")}
-                        MenuProps={MenuProps}
                       >
                         {styleValueList
                           .filter((styleValue) => styleValue.styleName == name)
@@ -513,11 +454,6 @@ const AdminProduct = (props: AdminProductProps) => {
                               key={style.styleValueId}
                               value={style.name}
                             >
-                              <Checkbox
-                                checked={
-                                  styleList[name].indexOf(style.name) > -1
-                                }
-                              />
                               <ListItemText primary={style.name} />
                             </MenuItem>
                           ))}
@@ -584,42 +520,42 @@ const AdminProduct = (props: AdminProductProps) => {
           >
             <Title>
               <div className="grid grid-flow-col items-center justify-between min-w-[768px]">
-                <span> Product List</span>
+                <span> Product Item List</span>
                 <Autocomplete
                   sx={{ minWidth: 350 }}
                   onChange={(e, newProduct) =>
-                    handleSearchProducts(e, newProduct?.name!)
+                    handleSearchProductItems(e, newProduct?.parentName!)
                   }
                   isOptionEqualToValue={(option, value) =>
                     value == undefined ||
-                    value.name == "" ||
-                    option.name == value.name
+                    value.parentName == "" ||
+                    option.parentName == value.parentName
                   }
-                  options={products}
-                  getOptionLabel={(option) => option.name}
+                  options={productItems}
+                  getOptionLabel={(option) => option.parentName}
                   renderInput={(params) => (
-                    <TextField {...params} label="Products" />
+                    <TextField {...params} label="Product Items" />
                   )}
                   renderOption={(props, option) => {
                     return (
                       <li
                         {...props}
-                        key={option.productId}
+                        key={option.productItemId}
                         className="flex justify-between items-center gap-x-4 px-3 py-2 border-b border-border-color"
                       >
                         <Image
                           loader={imageLoader}
-                          key={`product-img-${option.productId}`}
+                          key={`product-item-img-${option.productItemId}`}
                           // placeholder="blur"
                           className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
-                          width={120}
-                          height={120}
+                          width={68}
+                          height={68}
                           alt="productImg"
-                          src={option.image || product_1}
+                          src={option.image}
                           priority
                         ></Image>
-                        <span key={`product-name-${option.productId}`}>
-                          {option.name}
+                        <span key={`product-name-${option.productItemId}`}>
+                          {option.parentName}
                         </span>
                       </li>
                     );
@@ -628,8 +564,8 @@ const AdminProduct = (props: AdminProductProps) => {
                     return tagValue.map((option, index) => (
                       <Chip
                         {...getTagProps({ index })}
-                        key={option.productId}
-                        label={option.productId}
+                        key={option.productItemId}
+                        label={option.productItemId}
                       />
                     ));
                   }}
@@ -637,7 +573,7 @@ const AdminProduct = (props: AdminProductProps) => {
                 <div className="w-max">
                   <NavigateButton onClick={handleOpen}>
                     <AddIcon sx={{ marginRight: "0.25rem" }} />
-                    New Product
+                    New Product Items
                   </NavigateButton>
                 </div>
               </div>
@@ -648,9 +584,8 @@ const AdminProduct = (props: AdminProductProps) => {
                 <TableRow>
                   <TableCell>Name</TableCell>
                   <TableCell>Image</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Total Quantity</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell>Style</TableCell>
+                  <TableCell>Quantity</TableCell>
                   <TableCell>Price</TableCell>
                   <TableCell>Sold</TableCell>
                   <TableCell></TableCell>
@@ -659,43 +594,31 @@ const AdminProduct = (props: AdminProductProps) => {
               <TableBody>
                 {productList &&
                   productList.map((item) => (
-                    <TableRow key={item.productId}>
+                    <TableRow key={item.productItemId}>
                       <TableCell sx={{ minWidth: "14rem", maxWidth: "16rem" }}>
-                        <span>{item.name}</span>
+                        <span>{item.parentName}</span>
                       </TableCell>
                       <TableCell sx={{ minWidth: "5rem", minHeight: "5rem" }}>
                         <CldImage
-                          className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
                           loader={imageLoader}
+                          className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
                           width={80}
                           height={80}
                           alt="productImg"
                           src={item.image}
+                          priority
                         ></CldImage>
                       </TableCell>
-                      <TableCell
-                        sx={{
-                          minWidth: "12rem",
-                          maxWidth: "13rem",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        <p className="truncate w-full">{item.description}</p>
-                      </TableCell>
-                      <TableCell>{item.totalQuantity}</TableCell>
-                      <TableCell>{`${
-                        item.isSelling ? "Available" : "Sold out"
-                      }`}</TableCell>
+                      <TableCell>{item.styleValueNames.join(",")}</TableCell>
+                      <TableCell>{item.quantity}</TableCell>
                       <TableCell>
                         <span className="max-md:block max-md:w-max">
-                          {FormatPrice(item.priceMin)} VNĐ
+                          {FormatPrice(item.price)} VNĐ
                         </span>
                       </TableCell>
-                      <TableCell>{item.totalSold}</TableCell>
+                      <TableCell>{item.sold}</TableCell>
                       <TableCell>
-                        <Button
+                        {/* <Button
                           // onClick={() => openUpdateModal(item.productId)}
                           sx={{
                             "&:hover": {
@@ -706,7 +629,7 @@ const AdminProduct = (props: AdminProductProps) => {
                           }}
                         >
                           <UpdateIcon />
-                        </Button>
+                        </Button> */}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -715,7 +638,7 @@ const AdminProduct = (props: AdminProductProps) => {
             <TablePagination
               sx={{ overflow: "visible" }}
               component="div"
-              count={products.length}
+              count={productItems.length}
               page={page}
               onPageChange={handleChangePage}
               rowsPerPage={rowsPerPage}
@@ -729,4 +652,4 @@ const AdminProduct = (props: AdminProductProps) => {
   );
 };
 
-export default AdminProduct;
+export default AdminProductItem;

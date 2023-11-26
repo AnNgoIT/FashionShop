@@ -1,22 +1,23 @@
 import React, { ReactNode } from "react";
 
-import AccountHeader from "@/components/header/account-header";
 import Footer from "@/components/footer/footer";
 import { VerifyEmailProvider } from "@/store";
 import { fetchUserCredentials, refreshLogin } from "../page";
 import { cookies } from "next/headers";
 import { getCookie, hasCookie } from "cookies-next";
-import { Product, UserInfo } from "@/features/types";
+import { Category, Product, UserInfo } from "@/features/types";
 import { isTokenExpired } from "@/features/jwt-decode";
 import { redirect } from "next/navigation";
 import { prefetchAllProducts } from "../(user)/product/(detail)/[id]/page";
+import { fetchAllCategories } from "../(user)/product/page";
+import AccountHeader from "@/components/header/account-header";
 
 const AccountLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
   const productRes = await prefetchAllProducts();
-
+  const cateRes = await fetchAllCategories();
   let result = null,
     fullToken;
   if (res.statusCode == 401) {
@@ -71,6 +72,8 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
       : undefined;
   const products: Product[] =
     productRes && productRes.success && productRes.result.content;
+  const categories: Category[] =
+    cateRes && cateRes.success && cateRes.result.content;
   return (
     <>
       <VerifyEmailProvider>
@@ -78,6 +81,7 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
           userInfo={userInfo}
           fullToken={fullToken}
           products={products}
+          categories={categories}
         />
         <main className="font-montserrat min-h-[40rem] py-12 bg-white  relative z-0">
           <section className="container grid grid-cols-12 max-md:p-4 gap-x-2">

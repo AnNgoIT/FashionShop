@@ -18,7 +18,7 @@ export function MaxAmounts(amount: number, maxAmount: number) {
   return true;
 }
 export function FormatPrice(price: number): string {
-  const checkedPrice = price ? price : 300000;
+  const checkedPrice = price ? price : 0;
   const formattedPrice = checkedPrice.toLocaleString().replace(",", ".");
   return formattedPrice;
 }

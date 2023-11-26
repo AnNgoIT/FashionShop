@@ -3,7 +3,7 @@ import { UUID } from "crypto";
 export type Category = {
   categoryId: number;
   name: string;
-  parentName?: Category;
+  parentName?: string;
   image: string;
   styleNames: string[];
   createdAt?: Date;
@@ -23,8 +23,8 @@ export type Brand = {
 export type Style = {
   styleId: number;
   name: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   isActive: boolean;
 };
 
@@ -32,13 +32,13 @@ export type StyleValue = {
   styleValueId: number;
   name: string;
   styleName: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   isActive: boolean;
 };
 
 export type Product = {
-  productId: string;
+  productId: number;
   name: string;
   description?: string;
   image: string;
@@ -51,7 +51,7 @@ export type Product = {
   priceMin: number;
   promotionalPriceMin: number;
   rating: number;
-  stylesName: string[];
+  styleNames: string[];
   styleValueNames: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -121,14 +121,18 @@ export type orderItem = {
 };
 
 export type productItem = {
-  productItemId: string;
-  parent: Product;
+  productItemId: number;
+  parentId: number;
+  parentName: string;
   quantity: number;
   sold: number;
   image: string;
   price: number;
   promotionPrice: number;
-  styleValues: Set<StyleValue>;
+  styleValueNames: string[];
+  sku: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type Order = {

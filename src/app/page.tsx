@@ -153,9 +153,9 @@ const Home = async () => {
         userInfo={userInfo}
         fullToken={fullToken}
         categories={categories}
-        products = {products}
+        products={products}
       ></Header>
-      <main className="font-sans min-h-[800px] bg-white mt-[105px]">
+      <main className="font-sans min-h-[50rem] bg-white mt-[105px]">
         <Container></Container>
       </main>
       <Footer></Footer>

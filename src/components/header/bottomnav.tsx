@@ -8,7 +8,7 @@ const BotNav = ({ categories }: { categories?: Category[] }) => {
       <ul className="grid place-content-center grid-flow-col gap-x-4 text-white">
         {cateList &&
           cateList.length != 0 &&
-          cateList.map((item: Category) => {
+          cateList.slice(0, 5).map((item: Category) => {
             return (
               <li className="" key={item.categoryId}>
                 {item.name}

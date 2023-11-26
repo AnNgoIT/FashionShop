@@ -7,13 +7,11 @@ export const prefetchAllProducts = async () => {
   const res = await fetch(`${HTTP_PORT}/api/v1/products`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     mode: "same-origin", // no-cors, *cors, same-origin
+    cache: "no-cache",
     credentials: "include", // include, *same-origin, omit
     headers: {
       "Content-Type": "application/json",
       // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    next: {
-      revalidate: 3600,
     },
     redirect: "follow", // manual, *follow, error
     referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -33,7 +31,7 @@ export const fetchStyleVlueColorsById = async (productId: string) => {
     `${HTTP_PORT}/api/v1/products/styleValues/?productId=${productId}&styleName=Color`,
     {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
-      mode: "same-origin", // no-cors, *cors, same-origin
+      cache: "force-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
@@ -91,13 +89,11 @@ export const fetchRelatedProducts = async (productId: string) => {
     {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "same-origin", // no-cors, *cors, same-origin
+      cache: "force-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
         // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      next: {
-        revalidate: 3600,
       },
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
