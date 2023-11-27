@@ -30,4 +30,6 @@ public interface UserService {
     ResponseEntity<GenericResponse> deleteAllCartItemsInCart(String emailFromToken);
 
     ResponseEntity<GenericResponse> order(String emailFromToken, OrderRequest request);
+
+    ResponseEntity<GenericResponse> getUserRole(String emailFromToken);
 }

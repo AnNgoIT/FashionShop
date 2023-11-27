@@ -893,6 +893,41 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public ResponseEntity<GenericResponse> getUserRole(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get your role successfully")
+                                .result(userOptional.get().getRole().getName())
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
     private boolean isValidPhoneNumber(String phoneNumber) {
         Pattern pattern = Pattern.compile(PHONE_NUMBER_REGEX);
         Matcher matcher = pattern.matcher(phoneNumber);
