@@ -5,6 +5,7 @@ import fit.tlcn.fashionshopbe.dto.ProductItemResponse;
 import fit.tlcn.fashionshopbe.entity.ProductItem;
 import fit.tlcn.fashionshopbe.entity.StyleValue;
 import fit.tlcn.fashionshopbe.repository.ProductItemRepository;
+import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,4 +115,50 @@ public class ProductItemController {
 
     }
 
+    @GetMapping("parent/{productId}")
+    public ResponseEntity<GenericResponse> findByParentId(@PathVariable Integer productId){
+            List<ProductItem> productItemList =  productItemRepository.findAllByParent_ProductId((productId));
+            if(productItemList.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found product")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            List<ProductItemResponse> productItemResponseList = new ArrayList<>();
+            for(ProductItem productItem: productItemList){
+                ProductItemResponse productItemResponse = new ProductItemResponse();
+                productItemResponse.setProductItemId(productItem.getProductItemId());
+                productItemResponse.setParentId(productItem.getParent().getProductId());
+                productItemResponse.setParentName(productItem.getParent().getName());
+                productItemResponse.setQuantity(productItem.getQuantity());
+                productItemResponse.setSold(productItem.getSold());
+                productItemResponse.setImage(productItem.getImage());
+                productItemResponse.setPrice(productItem.getPrice());
+                productItemResponse.setPromotionalPrice(productItem.getPromotionalPrice());
+                List<String> styleValueNames = new ArrayList<>();
+                for (StyleValue styleValue : productItem.getStyleValues()) {
+                    styleValueNames.add(styleValue.getName());
+                }
+                productItemResponse.setStyleValueNames(styleValueNames);
+                productItemResponse.setSku(productItem.getSku());
+                productItemResponse.setCreatedAt(productItem.getCreatedAt());
+                productItemResponse.setUpdatedAt(productItem.getUpdatedAt());
+
+                productItemResponseList.add(productItemResponse);
+            }
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("content", productItemResponseList);
+            map.put("totalElements", productItemResponseList.size());
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("All ProductItems")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+    }
 }

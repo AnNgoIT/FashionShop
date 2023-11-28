@@ -6,4 +6,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface ProductItemService {
     ResponseEntity<GenericResponse> createProductItem(CreateProductItemRequest request);
+
 }

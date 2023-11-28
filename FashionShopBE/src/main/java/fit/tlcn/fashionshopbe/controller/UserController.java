@@ -5,6 +5,7 @@ import fit.tlcn.fashionshopbe.security.JwtTokenProvider;
 import fit.tlcn.fashionshopbe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,6 +17,7 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @PreAuthorize("hasAnyRole(CUSTOMER, ADMIN, SHIPPER)")
     @GetMapping("/role")
     public ResponseEntity<GenericResponse> checkUserRole(@RequestHeader("Authorization") String authorizationHeader){
         String token = authorizationHeader.substring(7);
