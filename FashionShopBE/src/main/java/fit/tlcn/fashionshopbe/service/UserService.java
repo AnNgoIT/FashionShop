@@ -32,4 +32,8 @@ public interface UserService {
     ResponseEntity<GenericResponse> order(String emailFromToken, OrderRequest request);
 
     ResponseEntity<GenericResponse> getUserRole(String emailFromToken);
+
+    ResponseEntity<GenericResponse> getAllOrdersOfCustomer(String emailFromToken);
+
+    ResponseEntity<GenericResponse> getOneOrderOfCustomer(Integer orderId, String emailFromToken);
 }

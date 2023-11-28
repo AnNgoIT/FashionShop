@@ -825,7 +825,7 @@ public class UserServiceImpl implements UserService {
                 }
                 order.setTotalAmount(totalAmount);
 
-                Cart cart = cartItemList.get(0).getCart();
+                Cart cart = cartItemList.get(0).getCart();//Để ở vị trí này sẽ giúp tránh lỗi không nhập bất kì cartItemId nào
 
                 order.setFullName(request.getFullName());
                 order.setPhone(request.getPhone());
@@ -856,9 +856,9 @@ public class UserServiceImpl implements UserService {
                 map.put("customerId", userOptional.get().getUserId());
                 map.put("content", order);
 
-                List<OrderItem> orderItemList = orderItemRepository. findAllByOrder(order);
+                List<OrderItem> orderItemList = orderItemRepository.findAllByOrder(order);
                 List<Integer> orderItemIds = new ArrayList<>();
-                for (OrderItem orderItem: orderItemList){
+                for (OrderItem orderItem : orderItemList) {
                     orderItemIds.add(orderItem.getOrderItemId());
                 }
                 map.put("orderItemIds", orderItemIds);
@@ -903,6 +903,122 @@ public class UserServiceImpl implements UserService {
                                 .success(true)
                                 .message("Get your role successfully")
                                 .result(userOptional.get().getRole().getName())
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getAllOrdersOfCustomer(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                List<Order> orderList = orderRepository.findAllByCustomer(userOptional.get());
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("customerId", userOptional.get().getUserId());
+                map.put("content", orderList);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get all your orders successfully")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getOneOrderOfCustomer(Integer orderId, String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Order> orderOptional = orderRepository.findByOrderIdAndCustomer(orderId, userOptional.get());
+                if (orderOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have orderId: " + orderId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                List<OrderItem> orderItemList = orderItemRepository.findAllByOrder(orderOptional.get());
+
+                List<OrderItemResponse> orderItemResponseList = new ArrayList<>();
+                for (OrderItem orderItem : orderItemList) {
+                    OrderItemResponse orderItemResponse = new OrderItemResponse();
+                    orderItemResponse.setOrderItemId(orderItem.getOrderItemId());
+                    orderItemResponse.setProductItemId(orderItem.getProductItem().getProductItemId());
+                    orderItemResponse.setProductName(orderItem.getProductItem().getParent().getName());
+                    List<String> styleValueNames = new ArrayList<>();
+                    for (StyleValue styleValue : orderItem.getProductItem().getStyleValues()) {
+                        styleValueNames.add(styleValue.getName());
+                    }
+                    orderItemResponse.setStyleValues(styleValueNames);
+                    orderItemResponse.setQuantity(orderItem.getQuantity());
+                    orderItemResponse.setProductPrice(orderItem.getProductItem().getPrice());
+                    orderItemResponse.setProductPromotionalPrice(orderItem.getProductItem().getPromotionalPrice());
+                    orderItemResponse.setAmount(orderItem.getAmount());
+
+                    orderItemResponseList.add(orderItemResponse);
+                }
+
+                Order order = orderOptional.get();
+                Map<String, Object> map = new HashMap<>();
+                map.put("customerId", order.getCustomer().getUserId());
+                map.put("order", order);
+                map.put("orderItems", orderItemResponseList);
+                map.put("totalOrderItems", orderItemResponseList.size());
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get this order successfully")
+                                .result(map)
                                 .statusCode(HttpStatus.OK.value())
                                 .build()
                 );

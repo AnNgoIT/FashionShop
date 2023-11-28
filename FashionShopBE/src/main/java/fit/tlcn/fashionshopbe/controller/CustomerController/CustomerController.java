@@ -141,4 +141,21 @@ public class CustomerController {
 
         return userService.order(emailFromToken, request);
     }
+
+    @GetMapping("/orders")
+    public ResponseEntity<GenericResponse> getAllOrdersOfCustomer(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.getAllOrdersOfCustomer(emailFromToken);
+    }
+
+    @GetMapping("/orders/{orderId}")
+    public ResponseEntity<GenericResponse> getOneOrderOfCustomer(@PathVariable Integer orderId,
+                                                        @RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.getOneOrderOfCustomer(orderId, emailFromToken);
+    }
 }
