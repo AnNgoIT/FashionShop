@@ -38,4 +38,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     List<Product> findAllByFilter(String productName, String categoryName, String brandName, Float priceFrom, Float priceTo);
 
     List<Product> findAllByOrderByCreatedAtDesc();
+
+    Optional<Product> findByProductId(Integer productId);
 }

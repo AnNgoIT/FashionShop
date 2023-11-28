@@ -1,5 +1,6 @@
 package fit.tlcn.fashionshopbe.repository;
 
+import fit.tlcn.fashionshopbe.entity.Product;
 import fit.tlcn.fashionshopbe.entity.ProductItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,4 +13,6 @@ public interface ProductItemRepository extends JpaRepository<ProductItem, Intege
     List<ProductItem> findAllByParent_ProductId(Integer productId);
 
     Optional<ProductItem> findBySku(String sku);
+
+    List<ProductItem> findAllByParent(Product product);
 }
