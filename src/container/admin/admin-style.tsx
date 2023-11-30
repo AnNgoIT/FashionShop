@@ -331,6 +331,7 @@ const AdminStyle = (props: AdminStyleProps) => {
               </TableHead>
               <TableBody>
                 {styleList &&
+                  styleList.length > 0 &&
                   styleList.map((item) => (
                     <TableRow key={item.styleId}>
                       <TableCell>

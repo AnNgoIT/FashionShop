@@ -98,6 +98,7 @@ const AdminProduct = (props: AdminProductProps) => {
 
   useEffect(() => {
     products &&
+      products.length > 0 &&
       setProductList(
         products.sort((a, b) => b.productId - a.productId).slice(0, rowsPerPage)
       );
@@ -658,6 +659,7 @@ const AdminProduct = (props: AdminProductProps) => {
               </TableHead>
               <TableBody>
                 {productList &&
+                  productList.length > 0 &&
                   productList.map((item) => (
                     <TableRow key={item.productId}>
                       <TableCell sx={{ minWidth: "14rem", maxWidth: "16rem" }}>

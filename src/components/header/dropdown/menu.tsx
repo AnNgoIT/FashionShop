@@ -76,6 +76,7 @@ const Menu = ({
     <>
       <Button
         sx={{
+          textTransform: "none",
           p: 1,
           fontSize: 20,
           color: "#333",

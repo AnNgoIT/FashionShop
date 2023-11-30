@@ -28,7 +28,7 @@
     @apply relative overflow-hidden;
   }
   .subbanner-shadow:before {
-    @apply absolute cursor-pointer top-0 -left-[85%] z-[2] block content-[""] w-[50%] h-full bg-gradient-to-r 
+    @apply absolute cursor-pointer top-0 -left-[85%] z-[0] block content-[""] w-[50%] h-full bg-gradient-to-r 
     from-transparent to-[rgba(255,255,255,0.3)] transform skew-x-[-25deg] opacity-0;
   }
   .subbanner-shadow:hover:before {
@@ -69,7 +69,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 span,
 p,
-table {
+div {
   user-select: none; /* standard syntax */
   -webkit-user-select: none; /* webkit (safari, chrome) browsers */
   -moz-user-select: none; /* mozilla browsers */
@@ -92,12 +92,20 @@ table {
 /* .carousel-item {
   padding: 0.5rem 0.5rem 0 0.5rem;
 } */
-.MuiInputBase-input.MuiOutlinedInput-input {
+#sort-id {
+  padding: 9px 16px !important;
+}
+/* .MuiInputBase-input.MuiOutlinedInput-input {
   padding: 14px !important;
+} */
+.MuiSelect-select MuiSelect-outlined {
+  padding: 8px 16px !important;
 }
-.MuiOutlinedInput-root .MuiAutocomplete-input {
-  padding: 6px 14px !important;
+.mui-sh22l5-MuiButtonBase-root-MuiAccordionSummary-root.Mui-expanded {
+  min-height: 2.75rem !important;
+  max-height: 2.75rem !important;
 }
+
 /* Reset CSS */
 * {
   margin: 0;

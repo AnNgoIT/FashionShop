@@ -27,7 +27,7 @@ const WishList = () => {
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
     setCartItems((prevItems: any) =>
       prevItems.map((item: cartItem) =>
-        item.id === itemId && MaxAmounts(newQuantity, item.maxQuantity)
+        item.cartItemId === itemId && MaxAmounts(newQuantity, item.amount)
           ? { ...item, quantity: newQuantity }
           : item
       )
@@ -36,13 +36,13 @@ const WishList = () => {
 
   const handleRemoveItem = (itemId: number) => {
     setCartItems((prevItems: any) =>
-      prevItems.filter((item: cartItem) => item.id !== itemId)
+      prevItems.filter((item: cartItem) => item.cartItemId !== itemId)
     );
   };
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[6rem] relative z-0">
+      <main className="font-montserrat bg-white mt-[76px] relative z-0">
         <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
@@ -104,28 +104,28 @@ const WishList = () => {
             <thead className="text-center">
               <tr className="border border-border-color text-text-color">
                 <th className=" border border-border-color min-w-[100px] p-3 text-left">
-                  Product
+                  Sản phẩm
                 </th>
                 <th className=" border border-border-color min-w-[180px] p-3 text-left">
-                  Product Name
+                  Tên
                 </th>
                 <th className=" border border-border-color min-w-[100px] p-3">
-                  Price
+                  Giá
                 </th>
                 <th className=" border border-border-color min-w-[100px] p-3">
-                  Quantity
+                  Số lượng
                 </th>
                 <th className=" border border-border-color min-w-[100px] p-3">
-                  Status
+                  Tổng
                 </th>
                 <th className=" border border-border-color min-w-[100px] p-3">
-                  Actions
+                  Trạng thái
                 </th>
               </tr>
             </thead>
             <tbody className="text-center">
               {cartItems.map((item: cartItem) => (
-                <tr key={item.id}>
+                <tr key={item.cartItemId}>
                   <td className="max-w-[120px] p-3 border border-border-color text-center">
                     <div className="max-w-[100px] border border-border-color">
                       <Image
@@ -139,18 +139,18 @@ const WishList = () => {
                     </div>
                   </td>
                   <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-left">
-                    {item.name}
+                    {item.productName}
                   </td>
                   <td className="min-w-[150px] p-3 border border-border-color  text-primary-color font-bold">{`${FormatPrice(
-                    item.price
+                    item.productPrice
                   )} VNĐ`}</td>
                   <td className="min-w-[180px] p-3 border border-border-color">
-                    {item.maxQuantity > 0 && (
+                    {item.amount > 0 && (
                       <div className="w-full flex items-center justify-center">
                         <QuantityButton
                           onClick={() =>
                             handleQuantityChange(
-                              item.id,
+                              item.cartItemId,
                               item.quantity - 1 < 0 ? 0 : item.quantity - 1
                             )
                           }
@@ -160,7 +160,10 @@ const WishList = () => {
                         <input
                           onKeyPress={(e) => onlyNumbers(e)}
                           onChange={(e) =>
-                            handleQuantityChange(item.id, +e.target.value)
+                            handleQuantityChange(
+                              item.cartItemId,
+                              +e.target.value
+                            )
                           }
                           className="border-y border-border-color w-10 py-1.5 text-center text-text-color outline-none
                       focus:border focus:border-primary-color"
@@ -170,7 +173,10 @@ const WishList = () => {
                         />
                         <QuantityButton
                           onClick={() =>
-                            handleQuantityChange(item.id, item.quantity + 1)
+                            handleQuantityChange(
+                              item.cartItemId,
+                              item.quantity + 1
+                            )
                           }
                         >
                           <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
@@ -179,7 +185,7 @@ const WishList = () => {
                     )}
                   </td>
                   <td className="max-w-[120px] p-3 border border-border-color text-primary-color font-bold">
-                    {`${item.maxQuantity > 0 ? "Available" : "Sold out"}`}
+                    {`${item.amount > 0 ? "Available" : "Sold out"}`}
                   </td>
                   <td className="min-w-[150px] p-3 border border-border-color">
                     <button
@@ -187,7 +193,7 @@ const WishList = () => {
                       className="bg-primary-color text-white py-[8px] px-[15px] disabled:opacity-25
                             disabled:hover:bg-primary-color
                             rounded-md transition-all duration-200 hover:bg-text-color mr-2"
-                      disabled={item.maxQuantity <= 0}
+                      disabled={item.amount <= 0}
                       onClick={() => {}}
                     >
                       <FontAwesomeIcon icon={faCartShopping} />
@@ -196,7 +202,7 @@ const WishList = () => {
                       title="Remove Favorite Item"
                       className="bg-primary-color text-white py-[8px] px-[15px] 
                             rounded-md transition-all duration-200 hover:bg-text-color"
-                      onClick={() => handleRemoveItem(item.id)}
+                      onClick={() => handleRemoveItem(item.cartItemId)}
                     >
                       <FontAwesomeIcon icon={faTrashCan} />
                     </button>
@@ -213,7 +219,7 @@ const WishList = () => {
                 className="text-[12px] mr-1"
                 icon={faChevronLeft}
               ></FontAwesomeIcon>
-              Continue Shopping
+              Tiếp tục mua hàng
             </NavigateButton>
           </Link>
         </div>

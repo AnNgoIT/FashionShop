@@ -75,10 +75,10 @@ export const mainListItems = (
         <ListItemIcon>
           <StyleIcon />
         </ListItemIcon>
-        <ListItemText primary="styles" />
+        <ListItemText primary="Styles" />
       </ListItemButton>
     </Link>
-    <Link href="/admin/style-values">
+    <Link href="/admin/styleValues">
       <ListItemButton>
         <ListItemIcon>
           <FormatPaintIcon />

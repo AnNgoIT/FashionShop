@@ -47,6 +47,7 @@ const ProfileForm = () => {
     address: "",
     avatar: "",
     ewallet: 0,
+    role: "GUEST",
   });
 
   useEffect(() => {
@@ -100,6 +101,7 @@ const ProfileForm = () => {
       address: "",
       avatar: "",
       ewallet: 0,
+      role: "GUEST",
     });
     setAvatar("");
     setIsUpdating(false);
@@ -129,16 +131,6 @@ const ProfileForm = () => {
         autoClose: 1500,
         isLoading: false,
       });
-      const newProfile: UserInfo = {
-        fullname: profile.result.fulname,
-        email: profile.result.email,
-        phone: profile.result.phone,
-        dob: profile.result.dob,
-        gender: profile.result.gender,
-        address: profile.result.address,
-        avatar: profile.result.avatar,
-        ewallet: profile.result.ewallet,
-      };
       router.refresh();
     } else {
       if (profile.statusCode == 401) {

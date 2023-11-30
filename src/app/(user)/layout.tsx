@@ -7,6 +7,8 @@ import { Category, Product, UserInfo } from "@/features/types";
 import { ReactNode } from "react";
 import { fetchAllCategories } from "./product/page";
 import { prefetchAllProducts } from "./product/(detail)/[id]/page";
+import Newsletter from "@/container/newsletter";
+import RelatedProduct from "@/container/product/related-product";
 
 const UserLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
@@ -23,6 +25,7 @@ const UserLayout = async ({ children }: { children: ReactNode }) => {
     address: null,
     avatar: null,
     ewallet: null,
+    role: "",
   };
   const userInfo: UserInfo | undefined =
     res && res.success

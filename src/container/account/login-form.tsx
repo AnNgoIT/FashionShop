@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -13,9 +13,11 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE, getUserRole } from "@/hooks/useData";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
+import { UserContext } from "@/store";
+import { UserInfo } from "@/features/types";
 
 type Login = {
   email: string;
@@ -24,7 +26,9 @@ type Login = {
 
 const LoginForm = () => {
   const router = useRouter();
+  const { setUser } = useContext(UserContext);
   const [account, setAccount] = useState<Login>({ email: "", password: "" });
+  const [errors, setErrors] = useState<Login>({ email: "", password: "" });
   const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -52,32 +56,59 @@ const LoginForm = () => {
       email: account.email,
       password: account.password,
     };
-
+    const id = toast.loading("Please wait...");
     const response = await login(loginAccount);
     if (response.success) {
-      const id = toast.loading("Please wait...");
+      setCookie("accessToken", response.result.accessToken, {
+        expires: decodeToken(response.result.accessToken)!,
+        maxAge: ACCESS_MAX_AGE,
+      });
+      setCookie("refreshToken", response.result.refreshToken, {
+        expires: decodeToken(response.result.refreshToken)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
       toast.update(id, {
         render: `Login Success`,
         type: "success",
         autoClose: 1500,
         isLoading: false,
       });
-
-      setCookie("accessToken", response.result.accessToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(response.result.accessToken)!,
-        maxAge: ACCESS_MAX_AGE,
-      });
-      setCookie("refreshToken", response.result.refreshToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(response.result.refreshToken)!,
-        maxAge: REFRESH_MAX_AGE,
-      });
-      router.refresh();
-      router.push("/");
+      const isAdmin = await getUserRole(response.result.accessToken);
+      if (isAdmin.success) {
+        if (isAdmin.result === "ADMIN") {
+          router.refresh();
+          router.push("/admin");
+        } else if (isAdmin.result === "SHIPPER") {
+          router.refresh();
+          router.push("/shipper");
+        } else {
+          const newProfile: UserInfo = {
+            fullname: response.result.fulname,
+            email: response.result.email,
+            phone: response.result.phone,
+            dob: response.result.dob,
+            gender: response.result.gender,
+            address: response.result.address,
+            avatar: response.result.avatar,
+            ewallet: response.result.ewallet,
+            role: response.result.role,
+          };
+          setUser(newProfile);
+          router.refresh();
+          router.push("/");
+        }
+      } else {
+        toast.update(id, {
+          render: ``,
+          type: "success",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+        router.push("/");
+      }
     } else {
+      toast.dismiss();
       setError("Incorrect Email or Password, Please try again!");
     }
     // Xử lý logic đăng nhập ở đây
@@ -101,7 +132,7 @@ const LoginForm = () => {
       )}
       <form className="col-span-full lg:col-span-10 lg:col-start-2">
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-7">
-          <FormControl fullWidth>
+          <FormControl fullWidth error={errors.email !== ""}>
             <InputLabel htmlFor="email">Email</InputLabel>
             <OutlinedInput
               type="text"
@@ -117,7 +148,7 @@ const LoginForm = () => {
         </div>
 
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-7">
-          <FormControl fullWidth>
+          <FormControl fullWidth error={errors.password !== ""}>
             <InputLabel htmlFor="password">Password</InputLabel>
             <OutlinedInput
               type={showPassword ? "text" : "password"}

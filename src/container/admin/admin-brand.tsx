@@ -357,6 +357,7 @@ const AdminBrand = (props: AdminBrandProps) => {
               </TableHead>
               <TableBody>
                 {brandList &&
+                  brandList.length > 0 &&
                   brandList.map((item) => (
                     <TableRow key={item.brandId}>
                       <TableCell>

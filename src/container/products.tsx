@@ -21,7 +21,7 @@ const Products = () => {
       <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 md:mt-12">
         <div className="col-span-full grid grid-cols-12">
           <div className={`col-span-full text-center mb-4 md:mb-8`}>
-            <span className="product-title">featured products</span>
+            <span className="product-title">Sản Phẩm Bán Chạy</span>
           </div>
           <ul className="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-6">
             {[1, 2, 3, 4].map((item) => {
@@ -89,7 +89,7 @@ const Products = () => {
             className={`font-sans col-span-full flex justify-center items-center`}
           >
             <Link href="/product">
-              <NavigateButton>See more Products</NavigateButton>
+              <NavigateButton>Xem thêm</NavigateButton>
             </Link>
           </div>
         </div>
@@ -103,7 +103,7 @@ const Products = () => {
     <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 md:mt-12">
       <div className="col-span-full grid grid-cols-12">
         <div className={`col-span-full text-center mb-4 md:mb-8`}>
-          <span className="product-title">featured products</span>
+          <span className="product-title">Sản Phẩm Bán Chạy</span>
         </div>
 
         <ul className="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-6">
@@ -115,16 +115,16 @@ const Products = () => {
                   key={product.productId}
                 >
                   <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-                    {diffInHours(new Date(product.createdAt), new Date()) <=
+                    {diffInHours(new Date(product.createdAt!), new Date()) <=
                       72 && (
                       <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                        New
+                        Mới
                       </label>
                     )}
 
                     {product.priceMin != product.promotionalPriceMin && (
                       <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                        Sale
+                        Giảm giá
                       </label>
                     )}
 
@@ -194,7 +194,7 @@ const Products = () => {
             })
           ) : (
             <div className="col-span-full text-center text-md p-4 text-secondary-color">
-              No Products Found
+              Không tìm thấy sản phẩm
             </div>
           )}
         </ul>
@@ -203,7 +203,7 @@ const Products = () => {
             className={`font-sans col-span-full flex justify-center items-center`}
           >
             <Link href="/product">
-              <NavigateButton>See more Products</NavigateButton>
+              <NavigateButton>Xem thêm</NavigateButton>
             </Link>
           </div>
         )}

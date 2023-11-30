@@ -53,7 +53,7 @@ const RelatedProduct = (props: RelateProductProps) => {
                   key={product.productId}
                 >
                   <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-                    {diffInHours(new Date(product.createdAt), new Date()) <=
+                    {diffInHours(new Date(product.createdAt!), new Date()) <=
                       72 && (
                       <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
                         New

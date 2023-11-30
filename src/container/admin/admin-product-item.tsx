@@ -42,7 +42,7 @@ import { useRouter } from "next/navigation";
 
 type AdminProductItemProps = {
   products: Product[];
-  productItems: productItem[];
+  // productItems: productItem[];
   styleValues: StyleValue[];
 };
 
@@ -52,7 +52,7 @@ type StyleList = {
 
 const AdminProductItem = (props: AdminProductItemProps) => {
   const router = useRouter();
-  const { products, productItems, styleValues } = props;
+  const { products, styleValues } = props;
 
   const [productItem, setProductItem] = useState<productItem>({
     productItemId: -1,
@@ -62,7 +62,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     sold: 0,
     image: "",
     price: 0,
-    promotionPrice: 0,
+    promotionalPrice: 0,
     styleValueNames: [],
     sku: "",
   });
@@ -70,11 +70,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
   const [isUpdate, setUpdate] = useState<boolean>(false);
   const [image, setImage] = useState<any>("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [productList, setProductList] = useState<productItem[]>(
-    productItems
-      .sort((a, b) => b.productItemId - a.productItemId)
-      .slice(0, rowsPerPage)
-  );
+  const [productList, setProductList] = useState<productItem[]>([]);
 
   const [styleValueList, setStyleValueList] = useState<
     StyleValue[] | undefined
@@ -84,15 +80,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [updateId, setUpdateId] = useState<string>("-1");
   const [page, setPage] = useState(0);
-
-  useEffect(() => {
-    productItems &&
-      setProductList(
-        productItems
-          .sort((a, b) => b.productItemId - a.productItemId)
-          .slice(0, rowsPerPage)
-      );
-  }, [productItems, rowsPerPage]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -197,21 +184,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     }
   };
 
-  const handleChangePage = (event: any, newPage: number) => {
-    // Tính toán chỉ số bắt đầu mới của danh sách danh mục dựa trên số trang mới
-    const startIndex = newPage * rowsPerPage;
-
-    // Tạo một mảng mới từ danh sách danh mục ban đầu, bắt đầu từ chỉ số mới
-    const newProductList = productItems.slice(
-      startIndex,
-      startIndex + rowsPerPage
-    );
-
-    // Cập nhật trang và danh sách danh mục
-    setPage(newPage);
-    setProductList(newProductList);
-  };
-
   async function handleCreateProduct(e: { preventDefault: () => void }) {
     e.preventDefault();
     const formData = new FormData();
@@ -243,9 +215,9 @@ const AdminProductItem = (props: AdminProductItemProps) => {
         autoClose: 500,
         isLoading: false,
       });
-      resetProductItem();
-      handleClose();
-      router.refresh();
+      // resetProductItem();
+      // handleClose();
+      // router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {
         render: `You don't have permission`,
@@ -270,28 +242,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     }
   }
 
-  const handleSearchProductItems = (
-    e: { preventDefault: () => void },
-    name: string
-  ) => {
-    e.preventDefault();
-    if (name == undefined) setProductList(productItems.slice(0, rowsPerPage));
-    else {
-      const newProductList = productItems.filter((item) =>
-        item.parentName.includes(name)
-      );
-      setProductList(newProductList);
-    }
-  };
-
-  const handleChangeRowsPerPage = (event: { target: { value: string } }) => {
-    setRowsPerPage(() => {
-      setProductList(productItems.slice(0, +event.target.value));
-      return +event.target.value;
-    });
-    setPage(0);
-  };
-
   function resetProductItem() {
     setProductItem({
       productItemId: -1,
@@ -301,7 +251,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       sold: 0,
       image: "",
       price: 0,
-      promotionPrice: 0,
+      promotionalPrice: 0,
       styleValueNames: [],
       sku: "",
     });
@@ -430,6 +380,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             {styleValueList &&
               styleValueNames &&
               styleList &&
+              styleValueNames.length > 0 &&
               styleValueNames.map((name) => {
                 return (
                   <div
@@ -521,55 +472,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             <Title>
               <div className="grid grid-flow-col items-center justify-between min-w-[768px]">
                 <span> Product Item List</span>
-                <Autocomplete
-                  sx={{ minWidth: 350 }}
-                  onChange={(e, newProduct) =>
-                    handleSearchProductItems(e, newProduct?.parentName!)
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    value == undefined ||
-                    value.parentName == "" ||
-                    option.parentName == value.parentName
-                  }
-                  options={productItems}
-                  getOptionLabel={(option) => option.parentName}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Product Items" />
-                  )}
-                  renderOption={(props, option) => {
-                    return (
-                      <li
-                        {...props}
-                        key={option.productItemId}
-                        className="flex justify-between items-center gap-x-4 px-3 py-2 border-b border-border-color"
-                      >
-                        <Image
-                          loader={imageLoader}
-                          key={`product-item-img-${option.productItemId}`}
-                          // placeholder="blur"
-                          className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
-                          width={68}
-                          height={68}
-                          alt="productImg"
-                          src={option.image}
-                          priority
-                        ></Image>
-                        <span key={`product-name-${option.productItemId}`}>
-                          {option.parentName}
-                        </span>
-                      </li>
-                    );
-                  }}
-                  renderTags={(tagValue, getTagProps) => {
-                    return tagValue.map((option, index) => (
-                      <Chip
-                        {...getTagProps({ index })}
-                        key={option.productItemId}
-                        label={option.productItemId}
-                      />
-                    ));
-                  }}
-                />
                 <div className="w-max">
                   <NavigateButton onClick={handleOpen}>
                     <AddIcon sx={{ marginRight: "0.25rem" }} />
@@ -591,60 +493,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {productList &&
-                  productList.map((item) => (
-                    <TableRow key={item.productItemId}>
-                      <TableCell sx={{ minWidth: "14rem", maxWidth: "16rem" }}>
-                        <span>{item.parentName}</span>
-                      </TableCell>
-                      <TableCell sx={{ minWidth: "5rem", minHeight: "5rem" }}>
-                        <CldImage
-                          loader={imageLoader}
-                          className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
-                          width={80}
-                          height={80}
-                          alt="productImg"
-                          src={item.image}
-                          priority
-                        ></CldImage>
-                      </TableCell>
-                      <TableCell>{item.styleValueNames.join(",")}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>
-                        <span className="max-md:block max-md:w-max">
-                          {FormatPrice(item.price)} VNĐ
-                        </span>
-                      </TableCell>
-                      <TableCell>{item.sold}</TableCell>
-                      <TableCell>
-                        {/* <Button
-                          // onClick={() => openUpdateModal(item.productId)}
-                          sx={{
-                            "&:hover": {
-                              backgroundColor: "transparent",
-                              opacity: "0.6",
-                            },
-                            color: "#639df1",
-                          }}
-                        >
-                          <UpdateIcon />
-                        </Button> */}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
             </Table>
-            <TablePagination
-              sx={{ overflow: "visible" }}
-              component="div"
-              count={productItems.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
           </Paper>
         </Grid>
       </Container>

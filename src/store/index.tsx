@@ -39,6 +39,7 @@ export const UserContext = createContext<UserContextProps>({
     address: null,
     avatar: "",
     ewallet: 0,
+    role: "GUEST",
   },
   setUser: () => {},
 });
@@ -53,6 +54,7 @@ export const UserProvider = ({ children }: any) => {
     address: null,
     avatar: "",
     ewallet: 0,
+    role: "GUEST",
   });
   return (
     <UserContext.Provider value={{ user, setUser }}>
@@ -73,7 +75,7 @@ export const VerifyEmailContext = createContext<VerifyEmailProps>({
 
 export const FilterProductContext = createContext<FilterProductContextProps>({
   product: {
-    productId: "",
+    productId: 0,
     name: "",
     image: "",
     categoryId: 0,
@@ -85,10 +87,10 @@ export const FilterProductContext = createContext<FilterProductContextProps>({
     priceMin: 0,
     promotionalPriceMin: 0,
     rating: 0,
-    stylesName: [],
+    styleNames: [],
     styleValueNames: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: undefined,
+    updatedAt: undefined,
     isSelling: false,
     isActive: false,
   },
@@ -109,7 +111,7 @@ export const VerifyEmailProvider = ({ children }: any) => {
 
 export const FilterProductlProvider = ({ children }: any) => {
   const [product, setProduct] = useState<Product>({
-    productId: "",
+    productId: 0,
     name: "",
     image: "",
     categoryId: 0,
@@ -121,7 +123,7 @@ export const FilterProductlProvider = ({ children }: any) => {
     priceMin: 0,
     promotionalPriceMin: 0,
     rating: 0,
-    stylesName: [],
+    styleNames: [],
     styleValueNames: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -137,29 +139,7 @@ export const FilterProductlProvider = ({ children }: any) => {
 };
 
 export const CartStateProvider = ({ children }: any) => {
-  const [cartItems, setCartItems] = useState<cartItem[]>([
-    {
-      id: 1,
-      name: "Men's Full Sleeves Collar Shirt",
-      price: 100000,
-      quantity: 1,
-      maxQuantity: 2,
-    },
-    {
-      id: 2,
-      name: "Women's Cape Jacket",
-      price: 150000,
-      quantity: 1,
-      maxQuantity: 1,
-    },
-    // {
-    //   id: 3,
-    //   name: "Men's Regular Fit T-Shirt",
-    //   price: 200000,
-    //   quantity: 1,
-    //   maxQuantity: 3,
-    // },
-  ]);
+  const [cartItems, setCartItems] = useState<cartItem[]>([]);
 
   return (
     <CartContext.Provider value={{ cartItems, setCartItems }}>

@@ -1,4 +1,4 @@
-import { empty_cart, img1 } from "@/assests/images";
+import { empty_notify, img1 } from "@/assests/images";
 import Image from "next/image";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,13 +6,12 @@ import Link from "next/link";
 import React, { useContext } from "react";
 import { CartContext } from "@/store";
 import { Total } from "@/features/cart/TotalPrice";
-import Button from "@mui/material/Button";
 import { MaxAmounts, onlyNumbers } from "@/features/product";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { cartItem } from "@/features/types";
 import NavigateButton from "@/components/button";
 
-const CartDropdown = () => {
+const NotifyDropdown = () => {
   const { cartItems, setCartItems } = useContext(CartContext);
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
     setCartItems((prevItems: cartItem[]) =>
@@ -35,8 +34,8 @@ const CartDropdown = () => {
       {!cartItems || cartItems.length == 0 ? (
         <div className="grid place-content-center h-[17.5rem]">
           <Image
-            alt="Empty cart"
-            src={empty_cart}
+            alt="Empty Notifications"
+            src={empty_notify}
             width={300}
             height={0}
           ></Image>
@@ -104,13 +103,13 @@ const CartDropdown = () => {
             })}
           </ul>
           <div className="flex justify-between text-text-light-color text-sm">
-            <span>Phí vận chuyển:</span>
+            <span>Shipping:</span>
             <strong className="font-black">
               {`${FormatPrice(45000)} VNĐ`}
             </strong>
           </div>
           <div className="flex justify-between text-text-light-color text-sm">
-            <span>Thành tiền:</span>
+            <span>Total:</span>
             <strong className="font-black">
               {`${FormatPrice(
                 Total(cartItems) + (cartItems.length !== 0 ? 45000 : 0)
@@ -119,10 +118,10 @@ const CartDropdown = () => {
           </div>
           <div className="mt-5 flex justify-between items-center font-bold">
             <Link href="/cart">
-              <NavigateButton>Giỏ hàng</NavigateButton>
+              <NavigateButton>Cart</NavigateButton>
             </Link>
             <Link href="/cart/checkout">
-              <NavigateButton>Thanh toán</NavigateButton>
+              <NavigateButton>Checkout</NavigateButton>
             </Link>
           </div>
         </>
@@ -131,4 +130,4 @@ const CartDropdown = () => {
   );
 };
 
-export default CartDropdown;
+export default NotifyDropdown;

@@ -43,6 +43,7 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
     address: null,
     avatar: null,
     ewallet: null,
+    role: "",
   };
   const userInfo: UserInfo | undefined =
     res && res.success
@@ -56,6 +57,7 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
           address: res.result.address,
           avatar: res.result.avatar,
           ewallet: res.result.ewallet,
+          role: res.result.role,
         }
       : result && result.success
       ? {
@@ -68,6 +70,7 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
           address: result.result.address,
           avatar: result.result.avatar,
           ewallet: result.result.ewallet,
+          role: res.result.role,
         }
       : undefined;
   const products: Product[] =

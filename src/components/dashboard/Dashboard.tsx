@@ -12,7 +12,14 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { mainListItems } from "./listItems";
-import { ReactNode, useState } from "react";
+import { ReactNode, useContext, useState } from "react";
+import { logout } from "@/hooks/useAuth";
+import { deleteCookie, getCookies } from "cookies-next";
+import { cookies } from "next/headers";
+import router from "next/router";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { UserContext } from "@/store";
 
 const drawerWidth: number = 240;
 
@@ -74,9 +81,58 @@ export default function Dashboard({
   children: ReactNode;
   title: string;
 }) {
+  const router = useRouter();
+  const { setUser } = useContext(UserContext);
+
   const [open, setOpen] = useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const cookies = getCookies();
+      const id = toast.loading("Wating...");
+      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
+      if (res.success) {
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        toast.update(id, {
+          render: `Logout Success`,
+          type: "success",
+          autoClose: 1000,
+          isLoading: false,
+        });
+        // Refresh the current route and fetch new data from the server without
+        // losing client-side browser or React state.
+        router.refresh();
+        router.push("/");
+      } else {
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        toast.update(id, {
+          render: `Please Login!`,
+          type: "warning",
+          autoClose: 1000,
+          isLoading: false,
+        });
+        router.push("/login");
+      }
+    } catch (error) {
+    } finally {
+      setUser({
+        fullname: null,
+        email: "",
+        phone: "",
+        dob: null,
+        gender: null,
+        address: null,
+        avatar: "",
+        ewallet: 0,
+        role: "GUEST",
+      });
+      router.push("/login");
+    }
   };
 
   return (
@@ -102,13 +158,30 @@ export default function Dashboard({
               <MenuIcon />
             </IconButton>
             <Typography
-              component="h1"
+              component="p"
               variant="h6"
               color="inherit"
               noWrap
               sx={{ flexGrow: 1, textTransform: "capitalize" }}
             >
               {title}
+            </Typography>
+            <Typography
+              onClick={handleLogout}
+              component="button"
+              color="inherit"
+              noWrap
+              sx={{
+                flexGrow: 0,
+                textTransform: "capitalize",
+                fontSize: "1.25rem",
+                "&:hover": {
+                  opacity: 0.6,
+                  cursor: "pointer",
+                },
+              }}
+            >
+              Logout
             </Typography>
           </Toolbar>
         </AppBar>
