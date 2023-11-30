@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { Carousel } from "react-responsive-carousel";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,7 +6,7 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { main_banner1, main_banner2, main_banner3 } from "@/assests/images";
-import { Box } from "@mui/material";
+import Box from "@mui/material/Box";
 import { imageLoader } from "@/features/img-loading";
 export const MyArrowNext = (clickHandler: () => void, hasNext: boolean) => {
   return (
@@ -76,7 +75,7 @@ const Banner = () => {
         width={400}
         height={0}
       />
-      <section className="grid grid-cols-12 p-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
+      <section className="grid grid-cols-12 p-4 max-md:px-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
         <div className="col-span-full md:col-span-8 md:col-start-3">
           <Carousel
             showStatus={false}

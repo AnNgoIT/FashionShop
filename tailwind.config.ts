@@ -19,13 +19,13 @@ const config: Config = {
       md: "768px",
       lg: "992px",
       xl: "1230px",
-      // "2xl": "1400px",
+      "2xl": "1350px",
     },
     container: {
       center: true,
-      padding: {
-        DEFAULT: "0rem",
-      },
+      // padding: {
+      //   DEFAULT: "0rem",
+      // },
     },
     colors: {
       "primary-color": "#639df1",
@@ -45,6 +45,7 @@ const config: Config = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "product-detail": "url('/src/assests/1.jpg')",
       },
       borderRadius: {
         "4xl": "2rem",
@@ -76,6 +77,7 @@ const config: Config = {
       },
       boxShadow: {
         sd: "0 35px 60px -15px rgba(0, 0, 0, 0.3)",
+        hd: "0 3px 10px 0 rgba(0,0,0,0.14)",
       },
     },
   },

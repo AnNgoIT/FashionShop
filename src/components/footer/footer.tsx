@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
@@ -7,57 +8,66 @@ import {
   faLocationDot,
   faPhone,
 } from "@fortawesome/free-solid-svg-icons";
+import FacebookIcon from "@mui/icons-material/Facebook";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import YoutubeIcon from "@mui/icons-material/Youtube";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import Divider from "@mui/material/Divider";
 const Footer = () => {
   return (
-    <footer>
+    <footer className="font-sans left-0 right-0">
       <div className=" bg-gradient-to-l md:bg-gradient-to-r transition-colors from-[#0e9de9] to-[#639df1]">
-        <div className="grid grid-cols-12 justify-items-center text-white">
+        <div className="grid grid-cols-12 justify-items-center text-white container">
           <div className="col-span-12 md:col-span-4 p-4  grid place-items-center md:place-content-start">
             <div className="">
-              <Image
-                className="w-auto min-w-[80px] min-h-[80px]"
-                alt="Logo of the shop"
-                src={logo}
-                width={180}
-                height={100}
-                sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
-                // priority={true}
-              ></Image>
+              <Link href="/" as="/">
+                <Image
+                  // loader={imageLoader}
+                  className="w-auto min-w-[80px] min-h-[80px]"
+                  alt="Logo of the shop"
+                  src={logo.src}
+                  width={180}
+                  height={100}
+                  sizes="(max-width: 768px) 80vw, (max-width: 1200px) 50vw"
+                  priority={true}
+                ></Image>
+              </Link>
             </div>
 
             <p className="max-w-[100%] justify-self-center">
-              Welcome to my website. Enjoy your shopping.
+              Chào mừng đến với cửa hàng của chúng tôi.Chúc bạn có buổi mua hàng
+              thành công
             </p>
           </div>
           <div className="col-span-12 md:col-span-4 p-4 grid items-center">
             <span className="uppercase text-[1.375rem] leading-6">
-              Information
+              THÔNG TIN
             </span>
             <ul className="grid place-items-start py-4">
               <li className="transition-opacity hover:opacity-60 p-1">
-                <Link href="/about">About</Link>
+                <Link href="/about">Về chúng tôi</Link>
               </li>
               <li className="transition-opacity hover:opacity-60 p-1">
-                <Link href="/blog">Blog</Link>
+                <Link href="/blog">Trang tin tức</Link>
               </li>
               <li className="transition-opacity hover:opacity-60 p-1">
-                <Link href="/">Privacy Policy</Link>
+                <Link href="/">Chính sách bảo mật</Link>
               </li>
             </ul>
           </div>
           <div className="col-span-12 md:col-span-4 p-4 grid items-center">
             <span className="uppercase text-[1.375rem] leading-6">
-              Contact Us
+              LIÊN LẠC
             </span>
             <ul className="grid place-items-start py-4">
               <li className="p-1">
                 <FontAwesomeIcon icon={faLocationDot} />
-                <span className="ml-2">Address</span>
+                <span className="ml-2">Địa chỉ</span>
               </li>
               <li className="p-1">
                 <FontAwesomeIcon icon={faPhone} />
-                <span className="ml-2">Phone</span>
+                <span className="ml-2">Số điện thoại</span>
               </li>
               <li className="p-1">
                 <FontAwesomeIcon icon={faEnvelope} />
@@ -65,6 +75,50 @@ const Footer = () => {
               </li>
             </ul>
           </div>
+        </div>
+      </div>
+      <Divider sx={{ width: "100%", background: "white" }} />
+
+      <div className="grid justify-center items-center w-full  bg-gradient-to-l md:bg-gradient-to-r transition-colors from-[#0e9de9] to-[#639df1]">
+        <p className={`p-[25px] text-white font-normal text-[14px] leading-6`}>
+          © Thiet ke boi{" "}
+          <span className={`font-normal text-white`}>
+            Nguyen Ngoc Thang va Ngo Thua An
+          </span>
+        </p>
+        <div className="grid grid-flow-col gap-1 justify-center items-center max-[767px]:pb-[25px] min-[991px]:pb-[26px] min-[1230px]:pb-[25px] xl:mb-[8px] md:mb-[4px] sm:mb-[8px]">
+          <article className="group my-0 mx-[5px] flex justify-center items-center">
+            <Link
+              href={"/"}
+              className="group-hover:bg-white transition-colors bg-[#E0E0E0] group-hover:text-black text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
+            >
+              <FacebookIcon />
+            </Link>
+          </article>
+          <article className="group my-0 mx-[5px]  flex justify-center items-center">
+            <Link
+              href={"/"}
+              className="group-hover:bg-white transition-colors  bg-[#E0E0E0] group-hover:text-black  text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
+            >
+              <GitHubIcon />
+            </Link>
+          </article>
+          <article className="group my-0 mx-[5px]  flex justify-center items-center">
+            <Link
+              href={"/"}
+              className="group-hover:bg-white transition-colors  bg-[#E0E0E0] group-hover:text-black  text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
+            >
+              <LinkedInIcon />
+            </Link>
+          </article>
+          <article className="group my-0 mx-[5px]  flex justify-center items-center">
+            <Link
+              href={"/"}
+              className="group-hover:bg-white transition-colors   bg-[#E0E0E0] group-hover:text-black e text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
+            >
+              <YoutubeIcon />
+            </Link>
+          </article>
         </div>
       </div>
     </footer>

@@ -21,14 +21,14 @@
     @apply text-lg cursor-pointer;
   }
   .myarrow {
-    @apply absolute z-[2] cursor-pointer bottom-[50%] bg-background w-14 h-14 rounded-full
+    @apply absolute z-[1] cursor-pointer bottom-[61%] bg-background w-14 h-14 rounded-full
     md:grid place-items-center translate-y-10 transition-all hidden;
   }
   .subbanner-shadow {
     @apply relative overflow-hidden;
   }
   .subbanner-shadow:before {
-    @apply absolute cursor-pointer top-0 -left-[85%] z-[2] block content-[""] w-[50%] h-full bg-gradient-to-r 
+    @apply absolute cursor-pointer top-0 -left-[85%] z-[0] block content-[""] w-[50%] h-full bg-gradient-to-r 
     from-transparent to-[rgba(255,255,255,0.3)] transform skew-x-[-25deg] opacity-0;
   }
   .subbanner-shadow:hover:before {
@@ -41,16 +41,40 @@
       before:h-0.5 after:bg-primary-color after:absolute 
       after:top-6 after:w-24 after:left-full after:h-0.5;
   }
+  .product-detail-tags {
+    @apply px-5 py-[10px] rounded-none transition-all duration-200 hover:text-primary-color hover:cursor-pointer
+    hover:border-b-[1px] hover:border-primary-color;
+  }
+  .product-detail-tags-active {
+    @apply text-primary-color cursor-pointer
+    border-b-[1px] border-primary-color;
+  }
 }
 
 body {
-  height: 100vh;
+  /* height: 100vh; */
   /* width: 100vw; */
   background: #f3f3f3;
 }
 
 button {
   cursor: pointer;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+span,
+p,
+div {
+  user-select: none; /* standard syntax */
+  -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+  -moz-user-select: none; /* mozilla browsers */
+  -khtml-user-select: none; /* webkit (konqueror) browsers */
+  -ms-user-select: none; /* IE10+ */
 }
 
 /* Ovveride CSS */
@@ -64,6 +88,22 @@ button {
   justify-content: center;
   gap: 0.25rem;
   bottom: -3px !important;
+}
+/* .carousel-item {
+  padding: 0.5rem 0.5rem 0 0.5rem;
+} */
+#sort-id {
+  padding: 9px 16px !important;
+}
+/* .MuiInputBase-input.MuiOutlinedInput-input {
+  padding: 14px !important;
+} */
+.MuiSelect-select MuiSelect-outlined {
+  padding: 8px 16px !important;
+}
+.mui-sh22l5-MuiButtonBase-root-MuiAccordionSummary-root.Mui-expanded {
+  min-height: 2.75rem !important;
+  max-height: 2.75rem !important;
 }
 
 /* Reset CSS */

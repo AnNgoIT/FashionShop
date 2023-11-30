@@ -5,10 +5,10 @@ import Image from "next/image";
 import { imageLoader } from "@/features/img-loading";
 const Blogs = () => {
   return (
-    <section className="container grid grid-cols-12 p-4 mt-8 md:mt-12">
+    <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 md:mt-12">
       <div className="col-span-full grid grid-cols-12">
         <div className={`col-span-full text-center mb-4 md:mb-8`}>
-          <span className="product-title">Recent Blogs</span>
+          <span className="product-title">Tin Tức Mới Nhất</span>
         </div>
       </div>
       <div className="col-span-full grid grid-cols-12 gap-7 place-content-center">
@@ -42,7 +42,7 @@ const Blogs = () => {
               minus?
             </p>
             <Link className="hover:opacity-60" href="/blog">
-              Read More
+              Đọc Thêm
             </Link>
           </div>
         </div>
@@ -76,7 +76,7 @@ const Blogs = () => {
                   minus?
                 </p>
                 <Link className="hover:opacity-60" href="/blog">
-                  Read More
+                  Đọc Thêm
                 </Link>
               </div>
             </div>
@@ -110,7 +110,7 @@ const Blogs = () => {
                   minus?
                 </p>
                 <Link className="hover:opacity-60" href="/blog">
-                  Read More
+                  Đọc Thêm
                 </Link>
               </div>
             </div>
