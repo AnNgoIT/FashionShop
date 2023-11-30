@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBagShopping,
@@ -14,38 +14,100 @@ import { QuantityButton } from "@/components/button";
 import RelatedProduct from "@/container/product/related-product";
 import ContentSwitcher from "@/container/product/content-switcher";
 import ImageMagnifier from "@/components/image-magnifier";
-import { useProductDetail } from "@/hooks/useProducts";
-import { Product, StyleValue } from "@/features/types";
+import { addProductItemToCart, useProductDetail } from "@/hooks/useProducts";
+import { Product, StyleValue, productItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import Skeleton from "@mui/material/Skeleton";
 import CircularProgress from "@mui/material/CircularProgress";
+import useLocal from "@/hooks/useLocalStorage";
+import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 type ProductDetailProps = {
   productId: string;
   color: StyleValue[];
   size: StyleValue[];
   relatedProduct: Product[];
+  productItems: productItem[];
 };
 
 const ProductDetail = (props: ProductDetailProps) => {
-  const { productId, color, size, relatedProduct } = props;
+  const { productId, color, size, relatedProduct, productItems } = props;
+  const router = useRouter();
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
-
+  const cart = useLocal();
   const [qty, setQty] = useState<number>(1);
-  const [price, setPrice] = useState<number>(380000);
   const [isSizeActive, setSizeActive] = useState<string[]>([]);
   const [isColorActive, setColorActive] = useState<string[]>([]);
+  const [isSelected, setSelected] = useState<boolean>(false);
+  const [showProductItem, setShowProductItem] = useState(false);
 
-  console.log(relatedProduct);
+  const [productItem, setProductItem] = useState<productItem>({
+    productItemId: 0,
+    parentId: 0,
+    parentName: "",
+    quantity: productItems[0].quantity,
+    sold: 0,
+    image: productItems[0].image,
+    price: productItems[0].price,
+    promotionalPrice: productItems[0].promotionalPrice,
+    styleValueNames: [],
+    sku: "",
+  });
+
+  function resetProductItem() {
+    setProductItem({
+      productItemId: 0,
+      parentId: 0,
+      parentName: "",
+      quantity: productItems[0].quantity,
+      sold: 0,
+      image: productItems[0].image,
+      price: productItems[0].price,
+      promotionalPrice: productItems[0].promotionalPrice,
+      styleValueNames: [],
+      sku: "",
+    });
+    setQty(1);
+    setSizeActive([]);
+    setColorActive([]);
+  }
+
+  useEffect(() => {
+    if (isColorActive.length > 0 && isSizeActive.length > 0) {
+      const newProductItem = productItems.find(
+        (productItem) =>
+          productItem.styleValueNames.includes(isColorActive[0]) &&
+          productItem.styleValueNames.includes(isSizeActive[0])
+      );
+
+      if (newProductItem) {
+        setProductItem(newProductItem);
+        setShowProductItem(true); // Khi đã tìm thấy sản phẩm phù hợp, hiển thị ảnh mới
+      }
+    } else if (isColorActive.length > 0) {
+      const newProductItem = productItems.find((productItem) =>
+        productItem.styleValueNames.includes(isColorActive[0])
+      );
+
+      if (newProductItem) {
+        setProductItem(newProductItem);
+        setShowProductItem(true); // Khi đã tìm thấy sản phẩm phù hợp, hiển thị ảnh mới
+      }
+    } else {
+      setShowProductItem(false); // Nếu không có size hoặc color active, ẩn ảnh
+    }
+  }, [isColorActive, isSizeActive, productItems, showProductItem]);
 
   const { productDetail, isProductDetailError, isProductDetailLoading } =
     useProductDetail(productId);
   if (isProductDetailLoading)
     return (
       <>
-        <main className="font-montserrat bg-white mt-[6rem] relative z-0">
+        <main className="font-montserrat bg-white mt-[76px] relative z-0">
           <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
             <div className={`grid grid-cols-1`}>
               <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
@@ -105,20 +167,20 @@ const ProductDetail = (props: ProductDetailProps) => {
         </main>
         <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4 overflow-hidden">
           <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
-            <div className="col-span-full md:col-span-5 lg:col-span-4 lg:col-start-2 outline outline-1 outline-border-color h-fit">
+            <div className="col-span-full md:col-span-6 lg:col-span-5 lg:col-start-2 xl:col-span-4 xl:col-start-2 outline outline-1 outline-border-color h-fit">
               <Skeleton
                 variant="rectangular"
+                sx={{ width: "100%", height: "100%" }}
                 height={485}
-                width={421}
               ></Skeleton>
             </div>
-            <div className={`col-span-full md:col-span-7 lg:col-span-5`}>
+            <div
+              className={`col-span-full md:col-span-6 lg:col-span-5 xl:col-span-5`}
+            >
               <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
                 <Skeleton
                   variant="rounded"
-                  sx={{ margin: "0.25rem 0" }}
-                  height={40}
-                  width={532}
+                  sx={{ margin: "0.25rem 0", width: "100%", height: "100%" }}
                 ></Skeleton>
               </h3>
               <h1 className="text-primary-color font-bold">
@@ -256,24 +318,28 @@ const ProductDetail = (props: ProductDetailProps) => {
   if (isProductDetailError) {
     return <div>Fail to load product detail</div>;
   }
-  const detail: Product = productDetail && productDetail.result;
+  const detail: Product = productDetail.result;
   const sizeList = size;
   const colorList = color;
 
   function handleSizeList(size: string) {
     let newSize: string[] = [];
+    if (isSizeActive.includes(size)) {
+      setSizeActive([]);
+      return;
+    }
     newSize.push(size);
     setSizeActive(newSize);
   }
 
   function handleColorList(color: string) {
     let newColor: string[] = [];
+    if (isColorActive.includes(color)) {
+      setColorActive([]);
+      return;
+    }
     newColor.push(color);
     setColorActive(newColor);
-  }
-
-  function increasePriceBySize(increase: number) {
-    setPrice(380000 + increase);
   }
 
   const handleClick = (event: any) => {
@@ -283,9 +349,20 @@ const ProductDetail = (props: ProductDetailProps) => {
     if (amount === -1 && qty === 1 && !isNaN(amount)) {
       return;
     }
+    if (isColorActive.length > 0 && isSizeActive.length > 0) {
+      setQty((qty: number) => {
+        const newQty = qty + amount;
+        return MaxAmounts(newQty, productItem.quantity)
+          ? newQty
+          : productItem.quantity;
+      });
+      return;
+    }
     setQty((qty: number) => {
       const newQty = qty + amount;
-      return MaxAmounts(newQty, 20) ? newQty : 20;
+      return MaxAmounts(newQty, detail.totalQuantity)
+        ? newQty
+        : detail.totalQuantity;
     });
   };
   const handleChangeQuantityByKeyBoard = (qty: number) => {
@@ -294,12 +371,100 @@ const ProductDetail = (props: ProductDetailProps) => {
     } else if (!qty) {
       setQty(0);
     }
-    setQty(MaxAmounts(qty, 20) ? qty : 20);
+    if (isColorActive.length > 0 && isSizeActive.length > 0) {
+      setQty(
+        MaxAmounts(qty, productItem.quantity) ? qty : productItem.quantity
+      );
+      return;
+    }
+    setQty(MaxAmounts(qty, detail.totalQuantity) ? qty : detail.totalQuantity);
+  };
+
+  const handleAddToCart = async (productItemId: number) => {
+    if (isSizeActive.length > 0 && isColorActive.length > 0) {
+      const payload = {
+        productItemId,
+        quantity: qty,
+      };
+      const id = toast.loading("Adding...");
+      if (!getCookie("accessToken")) {
+        try {
+          // Lấy dữ liệu từ localStorage
+          const storedCart = cart.getItem("cart", "local");
+
+          let updatedCart = [];
+
+          if (storedCart) {
+            updatedCart = JSON.parse(storedCart);
+
+            // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
+            const existingProductIndex = updatedCart.findIndex(
+              (item: any) => item.productItem.productItemId === productItemId
+            );
+
+            if (existingProductIndex !== -1) {
+              // Nếu sản phẩm đã tồn tại, tăng số lượng
+              updatedCart[existingProductIndex].quantity += qty;
+            } else {
+              // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
+              updatedCart.push({ productItem, quantity: qty });
+            }
+          } else {
+            // Nếu giỏ hàng rỗng, thêm sản phẩm mới vào giỏ hàng
+            updatedCart.push({ productItem, quantity: qty });
+          }
+
+          // Lưu giỏ hàng đã cập nhật vào localStorage
+          cart.setItem("cart", JSON.stringify(updatedCart), "local");
+          toast.update(id, {
+            render: `Add To Cart Success`,
+            type: "success",
+            autoClose: 500,
+            isLoading: false,
+          });
+          setSelected(false);
+          resetProductItem();
+          return;
+        } catch (error: any) {
+          toast.dismiss();
+          return;
+        }
+      }
+      const res = await addProductItemToCart(
+        getCookie("accessToken")!,
+        payload
+      );
+      if (res.success) {
+        toast.update(id, {
+          render: `Add To Cart Success`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+        setSelected(false);
+        resetProductItem();
+        router.refresh();
+      } else if (res.statusCode == 401) {
+        toast.update(id, {
+          render: `Please Login!`,
+          type: "warning",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else {
+        toast.update(id, {
+          render: res.message,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      }
+    } else setSelected(true);
   };
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[6rem] relative z-0">
+      <main className="font-montserrat bg-white mt-[76px] relative z-0">
         <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
@@ -357,27 +522,49 @@ const ProductDetail = (props: ProductDetailProps) => {
       </main>
       <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
-          <div className="col-span-full md:col-span-5 lg:col-span-4 lg:col-start-2 outline outline-1 outline-border-color h-fit">
-            <ImageMagnifier
-              src={detail.image}
-              bgImg={detail.image}
-              height={480}
-              width={420}
-              zoomLevel={2.5}
-            ></ImageMagnifier>
+          <div className="col-span-full md:col-span-6 lg:col-span-5 lg:col-start-2 xl:col-span-4 xl:col-start-2 outline outline-1 outline-border-color h-fit">
+            {showProductItem ? (
+              <ImageMagnifier
+                src={productItem.image}
+                bgImg={productItem.image}
+                height={480}
+                zoomLevel={2.5}
+              ></ImageMagnifier>
+            ) : (
+              <ImageMagnifier
+                src={detail.image}
+                bgImg={detail.image}
+                height={480}
+                zoomLevel={2.5}
+              ></ImageMagnifier>
+            )}
           </div>
-          <div className={`col-span-full md:col-span-7 lg:col-span-5`}>
+          <div
+            className={`col-span-full md:col-span-6 lg:col-span-5 xl:col-span-5`}
+          >
             <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
               {detail && detail.name}
             </h3>
-            <h1 className="text-primary-color font-bold">
-              {detail && FormatPrice(detail.promotionalPriceMin)} VNĐ
-              {detail && detail.priceMin != detail.promotionalPriceMin && (
-                <span className="line-through text-text-light-color ml-2 text-sm">
-                  {FormatPrice(price)} VNĐ
-                </span>
-              )}
-            </h1>
+            {showProductItem ? (
+              <h1 className="text-primary-color font-bold">
+                {productItem && FormatPrice(productItem.price)} VNĐ
+                {productItem &&
+                  productItem.price != productItem.promotionalPrice && (
+                    <span className="line-through text-text-light-color ml-2 text-sm">
+                      {FormatPrice(productItem.promotionalPrice)} VNĐ
+                    </span>
+                  )}
+              </h1>
+            ) : (
+              <h1 className="text-primary-color font-bold">
+                {detail && FormatPrice(detail.promotionalPriceMin)} VNĐ
+                {detail && detail.priceMin != detail.promotionalPriceMin && (
+                  <span className="line-through text-text-light-color ml-2 text-sm">
+                    {FormatPrice(detail.priceMin)} VNĐ
+                  </span>
+                )}
+              </h1>
+            )}
             <ul className=" border-b-[1px] border-border-color text-base py-4">
               <li className="flex items-center text-sm">
                 <FontAwesomeIcon
@@ -401,11 +588,10 @@ const ProductDetail = (props: ProductDetailProps) => {
                 <p className="leading-7">Fast and Convenient Delivery</p>
               </li>
             </ul>
-            <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
-              <span className="text-md mr-2 min-w-[5rem]">Sizes:</span>
-              {sizeList &&
-                sizeList.length &&
-                sizeList.map((item: StyleValue) => {
+            {sizeList && sizeList.length > 0 && (
+              <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
+                <span className="text-md mr-2 min-w-[5rem]">Sizes:</span>
+                {sizeList.map((item: StyleValue) => {
                   return (
                     <div
                       onClick={() => {
@@ -423,11 +609,12 @@ const ProductDetail = (props: ProductDetailProps) => {
                     </div>
                   );
                 })}
-            </ul>
-            <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
-              <span className="text-md mr-2 min-w-[5rem]">Colors:</span>
-              {colorList &&
-                colorList.map((item) => {
+              </ul>
+            )}
+            {colorList && colorList.length > 0 && (
+              <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
+                <span className="text-md mr-2 min-w-[5rem]">Màu:</span>
+                {colorList.map((item) => {
                   return (
                     <li
                       onClick={() => {
@@ -446,11 +633,12 @@ const ProductDetail = (props: ProductDetailProps) => {
                     </li>
                   );
                 })}
-            </ul>
+              </ul>
+            )}
             <div
               className={`flex items-center gap-2 py-4 border-b-[1px] border-border-color`}
             >
-              <span className="text-md mr-2 min-w-[5rem]">Quantity:</span>
+              <span className="text-md mr-2 min-w-[5rem]">Số lượng:</span>
               <QuantityButton onClick={() => handleChangeQuantity(-1)}>
                 <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
               </QuantityButton>
@@ -461,37 +649,42 @@ const ProductDetail = (props: ProductDetailProps) => {
                 onFocus={handleClick}
                 className="outline outline-1 outline-border-color w-10 py-1.5 text-center text-text-color focus:outline-primary-color"
                 value={qty}
-                min={1}
-                max={20}
                 required
                 type="text"
               />
               <QuantityButton onClick={() => handleChangeQuantity(1)}>
                 <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
               </QuantityButton>
-              <span className="pl-6">
-                {detail.totalQuantity} products available
-              </span>
+              {showProductItem ? (
+                <span className="pl-6">
+                  {productItem.quantity} products available
+                </span>
+              ) : (
+                <span className="pl-6">
+                  {detail.totalQuantity} products available
+                </span>
+              )}
             </div>
-
+            {isSelected && (
+              <p className="text-secondary-color text-lg p-2">
+                Please Select Product Style
+              </p>
+            )}
             <div className="pt-5 flex">
-              <Link href="/cart">
-                {/* onClick ={" "}
-                  {() => {
-                    handleAddToCart(item.id);
-                  }} */}
-                <button
-                  className="rounded-[4px] bg-primary-color text-white px-4 py-3 
+              <button
+                onClick={() => {
+                  handleAddToCart(productItem.productItemId);
+                }}
+                className="rounded-[4px] bg-primary-color text-white px-4 py-3 
                                   font-medium flex justify-center items-center hover:bg-text-color
                                   transition-all duration-200  text-ellipsis whitespace-nowrap"
-                >
-                  <FontAwesomeIcon
-                    className="pr-2 text-[20px]"
-                    icon={faBagShopping}
-                  ></FontAwesomeIcon>
-                  Add to cart
-                </button>
-              </Link>
+              >
+                <FontAwesomeIcon
+                  className="pr-2 text-[20px]"
+                  icon={faBagShopping}
+                ></FontAwesomeIcon>
+                Add to cart
+              </button>
               <Link href="/wishlist">
                 <button
                   className="rounded-[4px] bg-primary-color text-white px-[15px] py-[11px] 

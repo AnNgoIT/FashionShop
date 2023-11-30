@@ -93,7 +93,7 @@ const OTPForm = () => {
                        float-right px-[20px] text-white rounded-[5px]"
           type="submit"
         >
-          Send
+          Confirm
         </button>
       </form>
     </div>

@@ -29,10 +29,10 @@ const Services = () => {
             <h1
               className={`text-primary-color uppercase text-[20px] mt-[3px] max-[575px]:leading-[25px] font-semibold text-ellipsis whitespace-nowrap`}
             >
-              free shipping
+              Miễn phí vận chuyển
             </h1>
-            <p className="text-[#999] text-sm">
-              Free Shipping on orders over $130
+            <p className="text-[#999] text-sm w-[304px]">
+              Miễn phí vận chuyển đơn hàng trên 200k VNĐ
             </p>
           </article>
         </div>
@@ -52,10 +52,10 @@ const Services = () => {
             <h1
               className={`text-primary-color uppercase text-[20px] mt-[3px] max-[575px]:leading-[25px] font-semibold`}
             >
-              sale off
+              ƯU ĐÃI GIẢM GIÁ
             </h1>
-            <p className="text-[#999] text-sm">
-              Attractive discount on product
+            <p className="text-[#999] text-sm w-[304px]">
+              Ưu đãi hấp dẫn trên nhiều sản phẩm
             </p>
           </article>
         </div>
@@ -78,9 +78,11 @@ const Services = () => {
             <h1
               className={`text-primary-color uppercase text-[20px] mt-[3px] max-[575px]:leading-[25px] font-semibold`}
             >
-              quick support
+              CHĂM SÓC KHÁCH HÀNG
             </h1>
-            <p className="text-[#999] text-sm">Quickly support customer</p>
+            <p className="text-[#999] text-sm w-[304px]">
+              Hỗ trợ khách hàng tận tình và nhanh chóng
+            </p>
           </article>
         </div>
       </div>

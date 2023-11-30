@@ -1,5 +1,5 @@
 "use client";
-import { FormatPrice, onlyNumbers } from "@/features/product/FilterAmount";
+import { FormatPrice } from "@/features/product/FilterAmount";
 import Title from "@/components/dashboard/Title";
 import Toolbar from "@mui/material/Toolbar";
 import Modal from "@mui/material/Modal";
@@ -17,7 +17,7 @@ import TablePagination from "@mui/material/TablePagination";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UpdateIcon from "@mui/icons-material/Update";
 import { Brand, Category, Product, StyleValue } from "@/features/types";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -33,15 +33,18 @@ import {
 } from "@/features/img-loading";
 import { product_1 } from "@/assests/images";
 import { CldImage } from "next-cloudinary";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
-import { ImageList } from "@mui/material";
+import { getCookie } from "cookies-next";
+import { createData } from "@/hooks/useAdmin";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
-const MenuProps = {
+export const MenuProps = {
   PaperProps: {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
@@ -57,11 +60,16 @@ type AdminProductProps = {
   styleValues: StyleValue[];
 };
 
+type StyleList = {
+  [x: string]: string[];
+};
+
 const AdminProduct = (props: AdminProductProps) => {
+  const router = useRouter();
   const { products, categories, brands, styleValues } = props;
 
   const [productItem, setProductItem] = useState<Product>({
-    productId: "",
+    productId: -1,
     name: "",
     image: "",
     categoryId: 0,
@@ -73,7 +81,7 @@ const AdminProduct = (props: AdminProductProps) => {
     priceMin: 0,
     promotionalPriceMin: 0,
     rating: 0,
-    stylesName: [],
+    styleNames: [],
     styleValueNames: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -82,12 +90,25 @@ const AdminProduct = (props: AdminProductProps) => {
   });
 
   const [isUpdate, setUpdate] = useState<boolean>(false);
-
-  const [rowsPerPage, setRowsPerPage] = useState(1);
+  const [image, setImage] = useState<any>("");
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [productList, setProductList] = useState<Product[]>(
-    products.slice(0, rowsPerPage)
+    products.sort((a, b) => b.productId - a.productId).slice(0, rowsPerPage)
   );
 
+  useEffect(() => {
+    products &&
+      products.length > 0 &&
+      setProductList(
+        products.sort((a, b) => b.productId - a.productId).slice(0, rowsPerPage)
+      );
+  }, [products, rowsPerPage]);
+
+  const [styleValueList, setStyleValueList] = useState<
+    StyleValue[] | undefined
+  >(undefined);
+  const [styleValueNames, setStyleValueNames] = useState<string[]>([]);
+  const [styleList, setStyleList] = useState<StyleList | null>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [updateId, setUpdateId] = useState<string>("-1");
   const [page, setPage] = useState(0);
@@ -100,16 +121,36 @@ const AdminProduct = (props: AdminProductProps) => {
     setUpdate(false);
     setOpen(false);
   };
-  const openUpdateModal = (id: string) => {
-    const product = productList.find((product) => product.productId === id);
-    // setName(product?.name!);
-    // setQuantity(product?.totalQuantity!);
-    // setDes(product?.description!);
-    // setPrice(product?.priceMin!);
-    setUpdateId(id);
-    setUpdate(true);
-    handleOpen();
-  };
+  // const openUpdateModal = (id: string) => {
+  //   const product = productList.find((product) => product.productId === id);
+  //   // setName(product?.name!);
+  //   // setQuantity(product?.totalQuantity!);
+  //   // setDes(product?.description!);
+  //   // setPrice(product?.priceMin!);
+  //   setUpdateId(id);
+  //   setUpdate(true);
+  //   handleOpen();
+  // };
+
+  function changeStyleNameToId() {
+    let result: any = {};
+    for (let key in styleList) {
+      if (
+        styleList &&
+        styleList.hasOwnProperty(key) &&
+        Array.isArray(styleList[key])
+      ) {
+        result[key] = styleList[key].map((item) => {
+          let foundItem = styleValues.find(
+            (element: any) => element.name === item
+          );
+          return foundItem ? foundItem.styleValueId : null;
+        });
+      }
+    }
+
+    return result;
+  }
 
   const handleProductItem = (e: any) => {
     const value = e.target.value;
@@ -120,18 +161,36 @@ const AdminProduct = (props: AdminProductProps) => {
 
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
   };
+  const handleStyleList = (e: any) => {
+    console.log(e.target.value);
+    const value = e.target.value;
+    setStyleList({
+      ...styleList,
+      [e.target.name]: value,
+    });
+  };
 
-  const handleStyleValuesName = (
-    event: SelectChangeEvent<typeof productItem.styleValueNames>
-  ) => {
-    const {
-      target: { value },
-    } = event;
+  const handleCategories = (e: any) => {
     setProductItem({
       ...productItem,
-      // On autofill we get a stringified value.
-      styleValueNames: typeof value === "string" ? value.split(",") : value,
+      categoryName: e.target.value,
     });
+    const category = categories.filter(
+      (item) => item.categoryId === e.target.value
+    )[0].styleNames;
+
+    let newStyleValueList: StyleValue[] = [];
+    let newStyleList: StyleList = {};
+    category &&
+      category.forEach((name: string) => {
+        newStyleList = { ...newStyleList, [name]: [] };
+        newStyleValueList.push(
+          ...styleValues.filter((styleValue) => styleValue.styleName === name)
+        );
+      });
+    setStyleValueNames(category);
+    setStyleList(newStyleList);
+    setStyleValueList(newStyleValueList);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,6 +198,7 @@ const AdminProduct = (props: AdminProductProps) => {
 
     if (files && files.length > 0) {
       const file = files[0];
+      setImage(file);
       const reader = new FileReader();
 
       reader.onload = (e) => {
@@ -167,33 +227,65 @@ const AdminProduct = (props: AdminProductProps) => {
     setProductList(newProductList);
   };
 
-  function handleCreateProduct(e: { preventDefault: () => void }) {
+  async function handleCreateProduct(e: { preventDefault: () => void }) {
     e.preventDefault();
-    const newId = productList[productList.length - 1].productId!;
-    const result: Product = {
-      productId: "",
-      name: "",
-      image: "",
-      categoryId: 0,
-      categoryName: "",
-      brandId: 0,
-      brandName: "",
-      totalQuantity: 0,
-      totalSold: 0,
-      priceMin: 0,
-      promotionalPriceMin: 0,
-      rating: 0,
-      stylesName: [],
-      styleValueNames: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isSelling: false,
-      isActive: false,
+    const formData = new FormData();
+    formData.append("name", productItem.name);
+    formData.append("image", image);
+    formData.append("description", productItem.description || "");
+    formData.append("categoryId", productItem.categoryName);
+    formData.append("brandId", productItem.brandName);
+    formData.append(
+      "styleValueIds",
+      Object.values(changeStyleNameToId()).join(",")
+    );
+    const payload = {
+      ...productItem,
+      name: productItem.name,
+      description: productItem.description || "",
+      image: productItem.image,
+      categoryId: productItem.categoryName,
+      branId: productItem.brandName,
+      styleValueIds: Object.values(changeStyleNameToId()).join(","),
     };
-    const newProductList: Product[] = [...productList, result];
-    setProductList(newProductList);
-    resetProductItem();
-    handleClose();
+    const id = toast.loading("Creating...");
+    const res = await createData(
+      "/api/v1/users/admin/products",
+      getCookie("accessToken")!,
+      formData
+    );
+    if (res.success) {
+      toast.update(id, {
+        render: `Created Product Success`,
+        type: "success",
+        autoClose: 500,
+        isLoading: false,
+      });
+      resetProductItem();
+      handleClose();
+      router.refresh();
+    } else if (res.statusCode == 403 || res.statusCode == 401) {
+      toast.update(id, {
+        render: `You don't have permission`,
+        type: "error",
+        autoClose: 500,
+        isLoading: false,
+      });
+    } else if (res.statusCode == 409) {
+      toast.update(id, {
+        render: "Product already existed",
+        type: "error",
+        autoClose: 500,
+        isLoading: false,
+      });
+    } else {
+      toast.update(id, {
+        render: "Server Error",
+        type: "error",
+        autoClose: 500,
+        isLoading: false,
+      });
+    }
   }
 
   const handleSearchProducts = (
@@ -220,7 +312,7 @@ const AdminProduct = (props: AdminProductProps) => {
 
   function resetProductItem() {
     setProductItem({
-      productId: "",
+      productId: -1,
       name: "",
       image: "",
       categoryId: 0,
@@ -232,30 +324,35 @@ const AdminProduct = (props: AdminProductProps) => {
       priceMin: 0,
       promotionalPriceMin: 0,
       rating: 0,
-      stylesName: [],
+      styleNames: [],
       styleValueNames: [],
       createdAt: new Date(),
       updatedAt: new Date(),
       isSelling: false,
       isActive: false,
     });
+    setPage(0);
+    setRowsPerPage(5);
+    setStyleValueList(undefined);
+    setStyleValueNames([]);
+    setImage("");
   }
 
-  function handleUpdateProduct(
-    event: React.FormEvent<HTMLFormElement>,
-    id: string
-  ) {
-    event.preventDefault();
-    const newProductList = productList.map((item) => {
-      if (item.productId == id) {
-      }
-      return item;
-    });
-    setProductList(newProductList);
-    resetProductItem();
-    setUpdateId("-1");
-    handleClose();
-  }
+  // function handleUpdateProduct(
+  //   event: React.FormEvent<HTMLFormElement>,
+  //   id: string
+  // ) {
+  //   event.preventDefault();
+  //   const newProductList = productList.map((item) => {
+  //     if (item.productId == id) {
+  //     }
+  //     return item;
+  //   });
+  //   setProductList(newProductList);
+  //   resetProductItem();
+  //   setUpdateId("-1");
+  //   handleClose();
+  // }
 
   return (
     <Box
@@ -279,12 +376,12 @@ const AdminProduct = (props: AdminProductProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Product ID: ${updateId}` : "Create New Product"}
+            {isUpdate ? `Product ID: ${updateId}` : "Create Product"}
           </h2>
           <form
             onSubmit={
               isUpdate
-                ? (event) => handleUpdateProduct(event, updateId)
+                ? (event) => {} //handleUpdateProduct(event, updateId)
                 : (event) => handleCreateProduct(event)
             }
             className="col-span-full grid grid-flow-col grid-cols-12 "
@@ -313,7 +410,10 @@ const AdminProduct = (props: AdminProductProps) => {
                   Description
                 </InputLabel>
                 <OutlinedInput
+                  inputProps={{ maxLength: 1000 }}
+                  type="text"
                   rows={1}
+                  className="h-[5rem]"
                   multiline
                   autoComplete="true"
                   fullWidth
@@ -337,20 +437,24 @@ const AdminProduct = (props: AdminProductProps) => {
                   name="categoryName"
                   value={productItem.categoryName}
                   label="Category"
-                  onChange={handleProductItem}
+                  onChange={handleCategories}
                 >
                   {categories &&
                     categories.length > 0 &&
-                    categories.map((category) => {
-                      return (
-                        <MenuItem
-                          key={category.categoryId}
-                          value={category.categoryId}
-                        >
-                          {category.name}
-                        </MenuItem>
-                      );
-                    })}
+                    categories
+                      // .filter(
+                      //   (category, index, self) => category.parentName != null
+                      // )
+                      .map((category) => {
+                        return (
+                          <MenuItem
+                            key={category.categoryId}
+                            value={category.categoryId}
+                          >
+                            {category.name}
+                          </MenuItem>
+                        );
+                      })}
                 </Select>
               </FormControl>
             </div>
@@ -380,53 +484,66 @@ const AdminProduct = (props: AdminProductProps) => {
                 </Select>
               </FormControl>
             </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="Product Style">
-                  Product Style
-                </InputLabel>
-                <Select
-                  id="Product Style"
-                  multiple
-                  name="styleValueNames"
-                  value={productItem.styleValueNames}
-                  onChange={handleStyleValuesName}
-                  input={<OutlinedInput label="Product Style" />}
-                  renderValue={(selected) => selected.join(", ")}
-                  MenuProps={MenuProps}
-                >
-                  {styleValues.map((style) => (
-                    <MenuItem key={style.styleValueId} value={style.name}>
-                      <Checkbox
-                        checked={
-                          productItem.styleValueNames.indexOf(style.name) > -1
-                        }
-                      />
-                      <ListItemText primary={style.name} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="col-span-full">
-              <button
-                className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
-                           float-right px-[15px] text-white rounded-[5px]"
-                type="submit"
-              >
-                {isUpdate ? "Save" : "Create"}
-              </button>
-            </div>
+            {styleValueList &&
+              styleValueNames &&
+              styleList &&
+              styleValueNames.map((name) => {
+                return (
+                  <div
+                    key={`name-${name}`}
+                    className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4"
+                  >
+                    <FormControl className="col-span-full">
+                      <InputLabel className="mb-2" htmlFor={name}>
+                        {name}
+                      </InputLabel>
+                      <Select
+                        id={`${name}`}
+                        multiple
+                        name={name}
+                        value={styleList[name]}
+                        onChange={handleStyleList}
+                        input={<OutlinedInput label={name} />}
+                        renderValue={(selected) => selected.join(", ")}
+                        MenuProps={MenuProps}
+                      >
+                        {styleValueList
+                          .filter((styleValue) => styleValue.styleName == name)
+                          .map((style) => (
+                            <MenuItem
+                              key={style.styleValueId}
+                              value={style.name}
+                            >
+                              <Checkbox
+                                checked={
+                                  styleList[name].indexOf(style.name) > -1
+                                }
+                              />
+                              <ListItemText primary={style.name} />
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  </div>
+                );
+              })}
             <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium my-4">
               <div className="grid grid-flow-col w-fit gap-x-2">
-                <Image
-                  loader={imageLoader}
-                  className="w-[6.25rem] h-[6.25rem] rounded-md"
-                  width={300}
-                  height={300}
-                  src={productItem.image || product_1}
-                  alt="Uploaded Image"
-                ></Image>
+                {productItem && productItem.image ? (
+                  <Image
+                    loader={imageLoader}
+                    className="w-[6.25rem] h-[6.25rem] rounded-md"
+                    width={300}
+                    height={300}
+                    src={productItem.image}
+                    alt="Uploaded Image"
+                    priority
+                  ></Image>
+                ) : (
+                  <p className="grid place-content-center text-xl text-text-color">
+                    No Image
+                  </p>
+                )}
               </div>
               <Button
                 sx={{ marginTop: "1rem", background: "#639df1" }}
@@ -437,11 +554,19 @@ const AdminProduct = (props: AdminProductProps) => {
                 Upload file
                 <VisuallyHiddenInput
                   required
-                  value={productItem.image}
                   onChange={(e) => handleImageUpload(e)}
                   type="file"
                 />
               </Button>
+            </div>
+            <div className="col-span-full">
+              <button
+                className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+                           float-right px-[15px] text-white rounded-[5px]"
+                type="submit"
+              >
+                {isUpdate ? "Save" : "Create"}
+              </button>
             </div>
           </form>
         </Box>
@@ -460,7 +585,7 @@ const AdminProduct = (props: AdminProductProps) => {
           >
             <Title>
               <div className="grid grid-flow-col items-center justify-between min-w-[768px]">
-                <span> Products List</span>
+                <span> Product List</span>
                 <Autocomplete
                   sx={{ minWidth: 350 }}
                   onChange={(e, newProduct) =>
@@ -481,7 +606,7 @@ const AdminProduct = (props: AdminProductProps) => {
                       <li
                         {...props}
                         key={option.productId}
-                        className="flex justify-between items-center px-3 py-2 border-b border-border-color"
+                        className="flex justify-between items-center gap-x-4 px-3 py-2 border-b border-border-color"
                       >
                         <Image
                           loader={imageLoader}
@@ -525,7 +650,7 @@ const AdminProduct = (props: AdminProductProps) => {
                   <TableCell>Name</TableCell>
                   <TableCell>Image</TableCell>
                   <TableCell>Description</TableCell>
-                  <TableCell>Total Products</TableCell>
+                  <TableCell>Total Quantity</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Price</TableCell>
                   <TableCell>Sold</TableCell>
@@ -534,17 +659,18 @@ const AdminProduct = (props: AdminProductProps) => {
               </TableHead>
               <TableBody>
                 {productList &&
+                  productList.length > 0 &&
                   productList.map((item) => (
                     <TableRow key={item.productId}>
                       <TableCell sx={{ minWidth: "14rem", maxWidth: "16rem" }}>
                         <span>{item.name}</span>
                       </TableCell>
-                      <TableCell sx={{ minWidth: "8rem", minHeight: "8rem" }}>
+                      <TableCell sx={{ minWidth: "5rem", minHeight: "5rem" }}>
                         <CldImage
-                          className="w-full h-full"
+                          className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
                           loader={imageLoader}
-                          width={85}
-                          height={85}
+                          width={80}
+                          height={80}
                           alt="productImg"
                           src={item.image}
                         ></CldImage>
@@ -572,7 +698,7 @@ const AdminProduct = (props: AdminProductProps) => {
                       <TableCell>{item.totalSold}</TableCell>
                       <TableCell>
                         <Button
-                          onClick={() => openUpdateModal(item.productId)}
+                          // onClick={() => openUpdateModal(item.productId)}
                           sx={{
                             "&:hover": {
                               backgroundColor: "transparent",
@@ -595,7 +721,7 @@ const AdminProduct = (props: AdminProductProps) => {
               page={page}
               onPageChange={handleChangePage}
               rowsPerPage={rowsPerPage}
-              rowsPerPageOptions={[1, 10, 25, 50]}
+              rowsPerPageOptions={[5, 10, 25, 50]}
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
           </Paper>

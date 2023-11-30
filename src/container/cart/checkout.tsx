@@ -8,6 +8,7 @@ import Image from "next/image";
 import { CartContext } from "@/store";
 import BillForm from "@/container/order/bill-form";
 import usePath from "@/hooks/usePath";
+import { cartItem } from "@/features/types";
 
 export type OrderItem = {
   id: number;
@@ -24,7 +25,7 @@ const Checkout = () => {
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[6rem] relative z-0">
+      <main className="font-montserrat bg-white mt-[76px] relative z-0">
         <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
@@ -86,7 +87,7 @@ const Checkout = () => {
             {true ? (
               <>
                 <h1 className="text-xl font-semibold text-text-color mb-8 max-md:text-center">
-                  BILLING DETAILS
+                  Thông tin người mua
                 </h1>
                 <BillForm></BillForm>
               </>
@@ -104,12 +105,12 @@ const Checkout = () => {
           <div
             className={`col-span-full md:col-span-6 lg:col-span-4 lg:col-start-8`}
           >
-            <h1 className="text-xl font-semibold text-text-color mb-3 max-md:text-center">
-              YOUR ORDER
+            <h1 className="text-xl font-semibold text-text-color max-md:text-center">
+              Đơn hàng
             </h1>
             <ul className="flex flex-col mb-[40px]">
               {cartItems &&
-                cartItems.map((cartItem: OrderItem) => {
+                cartItems.map((cartItem: cartItem) => {
                   return (
                     <li
                       className={`py-5 ${
@@ -117,7 +118,7 @@ const Checkout = () => {
                           ? ""
                           : "border-b-[1px] border-[#e5e5e5]"
                       }`}
-                      key={cartItem.id}
+                      key={cartItem.productItemId}
                     >
                       <div className="w-[100px] pr-4 float-left">
                         <Image
@@ -131,10 +132,10 @@ const Checkout = () => {
                                         text-sm"
                       >
                         <h2 className="truncate w-full text-[#363535] font-semibold">
-                          {cartItem.name}
+                          {cartItem.productName}
                         </h2>
                         <span className="text-primary-color font-semibold text-[1.125rem]">{`${FormatPrice(
-                          cartItem.price
+                          cartItem.productPrice
                         )} VNĐ`}</span>
                         <span className="text-text-light-color font-medium">
                           Qty: {cartItem.quantity}
@@ -148,15 +149,15 @@ const Checkout = () => {
               <thead className="">
                 <tr className="border border-[#dee2e6] text-text-color">
                   <td className="min-w-[120px] p-3 text-left font-bold">
-                    Order Places:
+                    Ngày đặt hàng
                   </td>
-                  <td className="min-w-[120px] p-3 text-left">25/06/2023</td>
+                  <td className="min-w-[120px] text-left">25/06/2023</td>
                 </tr>
               </thead>
               <tbody className="">
                 <tr className="w-full border border-[#dee2e6]">
                   <td className="p-3">
-                    <h1 className="text-text-color font-bold">Total :</h1>
+                    <h1 className="text-text-color font-bold">Tổng tiền :</h1>
                   </td>
                   <td className="w-fit">
                     <span className="text-primary-color font-semibold text-[18px]">{`${FormatPrice(
@@ -166,7 +167,9 @@ const Checkout = () => {
                 </tr>
                 <tr className="w-full border border-[#dee2e6]">
                   <td className="p-3">
-                    <h1 className="text-text-color font-bold">Payment :</h1>
+                    <h1 className="text-text-color font-bold">
+                      Phương thức thanh toán :
+                    </h1>
                   </td>
                   <td className="w-fit">
                     <span>COD</span>
@@ -174,7 +177,7 @@ const Checkout = () => {
                 </tr>
                 <tr className="w-full border border-[#dee2e6]">
                   <td className="p-3">
-                    <h1 className="text-text-color font-bold">Order No. :</h1>
+                    <h1 className="text-text-color font-bold">Mã đơn hàng :</h1>
                   </td>
                   <td className="w-fit">
                     <span>#011052</span>
@@ -189,7 +192,7 @@ const Checkout = () => {
                       "
                 type="submit"
               >
-                Place Order
+                Đặt hàng
               </button>
             </Link>
           </div>

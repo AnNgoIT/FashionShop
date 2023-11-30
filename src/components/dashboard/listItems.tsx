@@ -6,6 +6,10 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleIcon from "@mui/icons-material/People";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import CategoryIcon from "@mui/icons-material/Category";
+import LayersIcon from "@mui/icons-material/Layers";
+import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
+import StyleIcon from "@mui/icons-material/Style";
+import FormatPaintIcon from "@mui/icons-material/FormatPaint";
 import Link from "next/link";
 
 export const mainListItems = (
@@ -42,12 +46,44 @@ export const mainListItems = (
         <ListItemText primary="Products" />
       </ListItemButton>
     </Link>
+    <Link href="/admin/products/items">
+      <ListItemButton>
+        <ListItemIcon>
+          <LayersIcon />
+        </ListItemIcon>
+        <ListItemText primary="Products Item" />
+      </ListItemButton>
+    </Link>
     <Link href="/admin/categories">
       <ListItemButton>
         <ListItemIcon>
           <CategoryIcon />
         </ListItemIcon>
         <ListItemText primary="Categories" />
+      </ListItemButton>
+    </Link>
+    <Link href="/admin/brands">
+      <ListItemButton>
+        <ListItemIcon>
+          <BrandingWatermarkIcon />
+        </ListItemIcon>
+        <ListItemText primary="Brands" />
+      </ListItemButton>
+    </Link>
+    <Link href="/admin/styles">
+      <ListItemButton>
+        <ListItemIcon>
+          <StyleIcon />
+        </ListItemIcon>
+        <ListItemText primary="Styles" />
+      </ListItemButton>
+    </Link>
+    <Link href="/admin/styleValues">
+      <ListItemButton>
+        <ListItemIcon>
+          <FormatPaintIcon />
+        </ListItemIcon>
+        <ListItemText primary="Style Values" />
       </ListItemButton>
     </Link>
   </>
