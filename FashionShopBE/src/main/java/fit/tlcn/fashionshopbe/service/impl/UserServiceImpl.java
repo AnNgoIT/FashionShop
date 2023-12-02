@@ -459,50 +459,90 @@ public class UserServiceImpl implements UserService {
                     );
                 }
 
-                CartItem cartItem = new CartItem();
-                Cart cart = cartRepository.findByUser(userOptional.get());
-                cartItem.setCart(cart);
-                cartItem.setProductItem(productItemOptional.get());
-                if (request.getQuantity() <= (cartItem.getProductItem().getQuantity() - cartItem.getProductItem().getSold())) {
-                    cartItem.setQuantity(request.getQuantity());
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                Optional<CartItem> cartItemOptional = cartItemRepository.findByProductItem(productItemOptional.get());
+
+                if (cartItemOptional.isPresent()) {
+                    CartItem cartItem = cartItemOptional.get();
+                    if ((cartItem.getQuantity() + request.getQuantity()) <= (cartItem.getProductItem().getQuantity() - cartItem.getProductItem().getSold())) {
+                        cartItem.setQuantity((cartItem.getQuantity() + request.getQuantity()));
+                    } else {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Total quantity must be less than or equal to the inventory")
+                                        .result("Bad request")
+                                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                                        .build()
+                        );
+                    }
+                    cartItemRepository.save(cartItem);
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("cartItemId", cartItem.getCartItemId());
+                    map.put("cartId", cartItem.getCart().getCardId());
+                    map.put("userId", cartItem.getCart().getUser().getUserId());
+                    map.put("productItemId", cartItem.getProductItem().getProductItemId());
+                    List<String> styleValueNames = new ArrayList<>();
+                    for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
+                        styleValueNames.add(styleValue.getName());
+                    }
+                    map.put("styleValueNames", styleValueNames);
+                    map.put("productId", cartItem.getProductItem().getParent().getProductId());
+                    map.put("productName", cartItem.getProductItem().getParent().getName());
+                    map.put("quantity", cartItem.getQuantity());
+
+                    return ResponseEntity.status(HttpStatus.OK).body(
                             GenericResponse.builder()
-                                    .success(false)
-                                    .message("Quantity must be less than or equal to the inventory")
-                                    .result("Bad request")
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .success(true)
+                                    .message("Add to cart successfully")
+                                    .result(map)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build()
+                    );
+                } else {
+                    CartItem cartItem = new CartItem();
+                    Cart cart = cartRepository.findByUser(userOptional.get());
+                    cartItem.setCart(cart);
+                    cartItem.setProductItem(productItemOptional.get());
+                    if (request.getQuantity() <= (cartItem.getProductItem().getQuantity() - cartItem.getProductItem().getSold())) {
+                        cartItem.setQuantity(request.getQuantity());
+                    } else {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Quantity must be less than or equal to the inventory")
+                                        .result("Bad request")
+                                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                                        .build()
+                        );
+                    }
+
+                    cart.setQuantity(cart.getQuantity() + 1);
+                    cartItemRepository.save(cartItem);
+                    cartRepository.save(cart);
+
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("cartItemId", cartItem.getCartItemId());
+                    map.put("cartId", cartItem.getCart().getCardId());
+                    map.put("userId", cartItem.getCart().getUser().getUserId());
+                    map.put("productItemId", cartItem.getProductItem().getProductItemId());
+                    List<String> styleValueNames = new ArrayList<>();
+                    for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
+                        styleValueNames.add(styleValue.getName());
+                    }
+                    map.put("styleValueNames", styleValueNames);
+                    map.put("productId", cartItem.getProductItem().getParent().getProductId());
+                    map.put("productName", cartItem.getProductItem().getParent().getName());
+                    map.put("quantity", cartItem.getQuantity());
+
+                    return ResponseEntity.status(HttpStatus.OK).body(
+                            GenericResponse.builder()
+                                    .success(true)
+                                    .message("Add to cart successfully")
+                                    .result(map)
+                                    .statusCode(HttpStatus.OK.value())
                                     .build()
                     );
                 }
-
-                cart.setQuantity(cart.getQuantity() + 1);
-                cartItemRepository.save(cartItem);
-                cartRepository.save(cart);
-
-                Map<String, Object> map = new HashMap<>();
-                map.put("cartItemId", cartItem.getCartItemId());
-                map.put("cartId", cartItem.getCart().getCardId());
-                map.put("userId", cartItem.getCart().getUser().getUserId());
-                map.put("productItemId", cartItem.getProductItem().getProductItemId());
-                List<String> styleValueNames = new ArrayList<>();
-                for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
-                    styleValueNames.add(styleValue.getName());
-                }
-                map.put("styleValueNames", styleValueNames);
-                map.put("productId", cartItem.getProductItem().getParent().getProductId());
-                map.put("productName", cartItem.getProductItem().getParent().getName());
-                map.put("quantity", cartItem.getQuantity());
-
-                return ResponseEntity.status(HttpStatus.OK).body(
-                        GenericResponse.builder()
-                                .success(true)
-                                .message("Add to cart successfully")
-                                .result(map)
-                                .statusCode(HttpStatus.OK.value())
-                                .build()
-                );
-
             } else {
                 return ResponseEntity.status(401)
                         .body(GenericResponse.builder()
