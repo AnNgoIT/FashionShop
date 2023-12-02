@@ -698,11 +698,12 @@ public class UserServiceImpl implements UserService {
             if (request.getQuantity() <= (cartItem.getProductItem().getQuantity() - cartItem.getProductItem().getSold())) {
                 cartItem.setQuantity(request.getQuantity());
             } else {
+                Integer inventory = cartItem.getProductItem().getQuantity() - cartItem.getProductItem().getSold();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         GenericResponse.builder()
                                 .success(false)
                                 .message("Quantity must be less than or equal to the inventory")
-                                .result("Bad request")
+                                .result(inventory)
                                 .statusCode(HttpStatus.BAD_REQUEST.value())
                                 .build()
                 );
