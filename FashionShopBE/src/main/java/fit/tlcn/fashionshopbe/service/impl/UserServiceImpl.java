@@ -579,6 +579,7 @@ public class UserServiceImpl implements UserService {
                         cartItemResponse.setCartItemId(cartItem.getCartItemId());
                         cartItemResponse.setProductItemId(cartItem.getProductItem().getProductItemId());
                         cartItemResponse.setProductName(cartItem.getProductItem().getParent().getName());
+                        cartItemResponse.setImage(cartItem.getProductItem().getImage());
                         List<String> styleValueNames = new ArrayList<>();
                         for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
                             styleValueNames.add(styleValue.getName());
@@ -592,7 +593,7 @@ public class UserServiceImpl implements UserService {
                         cartItemResponseList.add(cartItemResponse);
                     }
                 }
-                map.put("Items in cart", cartItemResponseList);
+                map.put("cartItems", cartItemResponseList);
                 map.put("cartId", cart.getCardId());
                 map.put("Quantity of cart items in cart", cart.getQuantity());
 
@@ -646,6 +647,7 @@ public class UserServiceImpl implements UserService {
             cartItemResponse.setCartItemId(cartItem.getCartItemId());
             cartItemResponse.setProductItemId(cartItem.getProductItem().getProductItemId());
             cartItemResponse.setProductName(cartItem.getProductItem().getParent().getName());
+            cartItemResponse.setImage(cartItem.getProductItem().getImage());
             List<String> styleValueNames = new ArrayList<>();
             for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
                 styleValueNames.add(styleValue.getName());
