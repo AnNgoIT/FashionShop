@@ -23,8 +23,14 @@ import { user_img2 } from "@/assests/users";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
 import Menu from "./dropdown/menu";
-import { logout } from "@/hooks/useAuth";
-import { deleteCookie, getCookies, setCookie } from "cookies-next";
+import { getUserCart, logout } from "@/hooks/useAuth";
+import {
+  deleteCookie,
+  getCookie,
+  getCookies,
+  hasCookie,
+  setCookie,
+} from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { Product, UserInfo } from "@/features/types";
@@ -41,6 +47,8 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import useLocal from "@/hooks/useLocalStorage";
+import { requireLogin } from "@/features/toasting";
 const Input = styled("input")(({ theme }) => ({
   width: 200,
   backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
@@ -97,11 +105,27 @@ const TopNav = ({
 
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
-  const { cartItems } = useContext(CartContext);
+  const cart = useLocal();
+  const { cartItems, setCartItems } = useContext(CartContext);
 
   const cookies = getCookies();
   const userInfo = info;
+
   useEffect(() => {
+    async function fetchUserCart() {
+      if (hasCookie("accessToken")) {
+        const res = await getUserCart(getCookie("accessToken")!);
+        if (res.success) {
+          cart.setItem("cart", JSON.stringify(res.result.cartItems));
+          setCartItems(JSON.parse(cart.getItem("cart")));
+        }
+      } else {
+        cart.removeItem("cart");
+        setCartItems([]);
+      }
+    }
+    fetchUserCart();
+
     if (token && token.accessToken == "" && token.refreshToken == "") {
       deleteCookie("accessToken");
       deleteCookie("refreshToken");
@@ -144,6 +168,7 @@ const TopNav = ({
       if (res.success) {
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
+        cart.removeItem("cart");
         toast.update(id, {
           render: `Logout Success`,
           type: "success",
@@ -157,6 +182,7 @@ const TopNav = ({
       } else {
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
+        cart.removeItem("cart");
         toast.update(id, {
           render: `Please Login!`,
           type: "warning",
@@ -505,7 +531,12 @@ const TopNav = ({
               }
               buttonChildren={
                 <Link href="/cart">
-                  <div className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
+                  <div
+                    onClick={() => {
+                      if (!userInfo) requireLogin();
+                    }}
+                    className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
+                  >
                     <FontAwesomeIcon
                       className="relative text-white"
                       icon={faCartShopping}

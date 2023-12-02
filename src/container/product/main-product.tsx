@@ -80,7 +80,7 @@ const MainProduct = (props: MainProductProps) => {
   const [filterValues, setFilterValues] = useState<FilterValue>({
     brand: "",
     category: "",
-    price: [200000, 800000],
+    price: [0, 5000000],
   });
   const [sortPrice, setSortPrice] = useState<string>("Giá");
   const [isActive, setIsActive] = useState<string>("Phổ biến");
@@ -116,13 +116,14 @@ const MainProduct = (props: MainProductProps) => {
     setFilterValues({
       brand: "",
       category: "",
-      price: [200000, 800000],
+      price: [0, 5000000],
     });
     setIsFiltering(false);
     setFitlerProductList(products);
     setIsActive("Phổ biến");
     setSortPrice("Giá");
-    router.replace("/product");
+    setPage(1);
+    router.refresh();
   }
 
   function handlePriceList(event: Event, newValue: number | number[]) {
@@ -159,7 +160,7 @@ const MainProduct = (props: MainProductProps) => {
   async function handleSearchByFilter(event: { preventDefault: () => void }) {
     event.preventDefault();
 
-    const id = toast.loading("Searching...");
+    const id = toast.loading("Đang tìm kiếm...");
 
     const name = searchParams.get("name") || "";
     const categoryName = filterValues.category || "";
@@ -172,7 +173,7 @@ const MainProduct = (props: MainProductProps) => {
       );
       if (res.success) {
         toast.update(id, {
-          render: `Found products`,
+          render: `Hoàn tất`,
           type: "success",
           autoClose: 500,
           isLoading: false,
@@ -182,12 +183,12 @@ const MainProduct = (props: MainProductProps) => {
         setFilterValues({
           brand: "",
           category: "",
-          price: [200000, 800000],
+          price: [0, 5000000],
         });
       }
     } catch (error: any) {
       toast.update(id, {
-        render: `No Products Found`,
+        render: `Không tìm thấy sản phẩm nào`,
         type: "error",
         autoClose: 500,
         isLoading: false,
@@ -525,7 +526,7 @@ const MainProduct = (props: MainProductProps) => {
             )}
             {filterProductList && filterProductList.length > 0 ? (
               filterProductList
-                .slice(page - 1, page + 4)
+                .slice((page - 1) * 5, (page - 1) * 5 + 5)
                 .map((product: Product) => {
                   return (
                     <li
@@ -632,10 +633,7 @@ const MainProduct = (props: MainProductProps) => {
               <div className="col-span-full bg-background-color p-4 outline-none grid place-items-center">
                 <Pagination
                   shape="rounded"
-                  count={Math.max(
-                    Math.ceil(filterProductList.length / 5),
-                    1 // Đảm bảo rằng count ít nhất là 1 nếu không có sản phẩm nào
-                  )}
+                  count={Math.ceil(filterProductList.length / 5)}
                   page={page}
                   onChange={handleChangePage}
                   variant="outlined"

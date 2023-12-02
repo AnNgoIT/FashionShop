@@ -19,9 +19,9 @@ const getRole = async (accessToken: string | undefined) => {
   }
 };
 
-const authPaths = ["/cart", "/checkout", "/wishlist"];
+const authPaths = ["/cart", "/cart/checkout", "/wishlist"];
 const userPaths = ["/login", "/register", "/forgot-password"];
-const adminPaths = ["/profile", "/product", "/cart", "/wishlist", "/checkout"];
+// const adminPaths = ["/profile", "/product", "/cart", "/wishlist", "/checkout"];
 
 export async function middleware(request: NextRequest) {
   const accessToken =
@@ -64,6 +64,6 @@ export const config = {
     "/product",
     "/wishlist",
     "/cart",
-    "/checkout",
+    "/cart/checkout",
   ],
 };

@@ -27,7 +27,7 @@ const ForgotPasswordForm = () => {
         email: email,
       });
       toast.update(id, {
-        render: `A verify email sent to ${email}`,
+        render: `Một tin xác nhận đã được gửi tới email ${email}`,
         type: "success",
         autoClose: 2000,
         isLoading: false,
@@ -35,12 +35,12 @@ const ForgotPasswordForm = () => {
       router.push("/forgot-password/verify");
     } else if (res.statusCode == 404) {
       toast.update(id, {
-        render: `This email is not registered`,
-        type: "success",
+        render: `Tài khoản này chưa được đăng ký`,
+        type: "error",
         autoClose: 1500,
         isLoading: false,
       });
-      setError(`This email is not registered`);
+      setError(`Tài khoản này chưa được đăng ký`);
     }
     // Reset trạng thái trường nhập liệu sau khi xử lý
   };
@@ -54,7 +54,7 @@ const ForgotPasswordForm = () => {
         className="col-span-full text-xl leading-10 tracking-[0] text-text-color uppercase font-semibold mb-[30px] 
                         text-center"
       >
-        forgot password
+        quên mật khẩu
       </h2>
       <form
         className="col-span-full lg:col-span-10 lg:col-start-2"
@@ -62,7 +62,7 @@ const ForgotPasswordForm = () => {
       >
         <div className="flex flex-col text-sm text-[#999] font-medium mb-[29px]">
           <FormControl fullWidth error={error != ""}>
-            <InputLabel htmlFor="email">Enter your Email</InputLabel>
+            <InputLabel htmlFor="email">Nhập email của bạn</InputLabel>
             <OutlinedInput
               type="email"
               value={email}
@@ -70,7 +70,7 @@ const ForgotPasswordForm = () => {
               onChange={(e) => setEmail(e.target.value)}
               id="email"
               name="email"
-              label="Enter your Email"
+              label="Nhập email của bạn"
               autoComplete="off"
               aria-describedby="email"
             />
@@ -82,7 +82,7 @@ const ForgotPasswordForm = () => {
                            float-right px-[20px] text-white rounded-[5px]"
           type="submit"
         >
-          Send
+          Gửi
         </button>
       </form>
     </div>

@@ -91,7 +91,7 @@ export const fetchRelatedProducts = async (productId: string) => {
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "force-cache",
+        cache: "no-cache",
         credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +122,7 @@ export const fetchAllProductItemsByParentId = async (productId: string) => {
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "force-cache",
+        cache: "no-cache",
         credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",

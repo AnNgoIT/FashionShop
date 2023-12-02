@@ -1,5 +1,5 @@
 "use client";
-import { useContext } from "react";
+import { useCallback, useContext, useEffect } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,25 +20,123 @@ import NavigateButton, { QuantityButton } from "@/components/button";
 import { cartItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import useLocal from "@/hooks/useLocalStorage";
-const Cart = () => {
+import { toast } from "react-toastify";
+import { deleteSuccess, maxQuanity, requireLogin } from "@/features/toasting";
+import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
+import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
+
+type CartProps = {
+  userCart: cartItem[];
+};
+
+const Cart = (props: CartProps) => {
+  // const { userCart } = props;
+  const router = useRouter();
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
-  // const cart = useLocal();
+  const cart = useLocal();
   const { cartItems, setCartItems } = useContext(CartContext);
 
+  let timeoutId: NodeJS.Timeout | null = null;
+
+  const debounce = (func: Function, delay: number) => {
+    return (...args: any[]) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
+
+  useEffect(() => {
+    const storedCart = cart.getItem("cart");
+
+    const itemInCarts = storedCart && JSON.parse(storedCart);
+    if (storedCart) {
+      setCartItems(itemInCarts);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleQuantityChangeDebounced = useCallback(
+    debounce(async (itemId: number, newQuantity: number) => {
+      try {
+        const res = await updateCartItem(
+          getCookie("accessToken")!,
+          { quantity: newQuantity },
+          itemId
+        );
+        if (res.success) {
+          const storedCart = cart.getItem("cart", "local");
+          let updatedCart = [];
+
+          if (storedCart) {
+            updatedCart = JSON.parse(storedCart);
+            // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
+            const existingProductIndex = updatedCart.findIndex(
+              (item: any) => item.productItemId === res.result.productItemId
+            );
+
+            if (existingProductIndex !== -1) {
+              // Nếu sản phẩm đã tồn tại, tăng số lượng
+              updatedCart[existingProductIndex].quantity = res.result.quantity;
+            } else {
+              // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
+              updatedCart.push(res.result);
+            }
+          } else {
+            // Nếu giỏ hàng rỗng, thêm sản phẩm mới vào giỏ hàng
+            updatedCart.push(res.result);
+          }
+          cart.setItem("cart", JSON.stringify(updatedCart));
+          setCartItems(JSON.parse(cart.getItem("cart")));
+        } else if (res.statusCode === 400) {
+          maxQuanity(res.result);
+          setCartItems(JSON.parse(cart.getItem("cart")));
+        } else if (res.statusCode === 401) {
+          requireLogin();
+          router.push("/login");
+        }
+      } catch (error: any) {
+        console.log(error);
+      }
+    }, 500),
+    []
+  );
+
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
-    setCartItems((prevItems: any) =>
+    if (newQuantity < 1) {
+      newQuantity = 1;
+    }
+    setCartItems((prevItems: cartItem[]) =>
       prevItems.map((item: cartItem) =>
         item.cartItemId === itemId ? { ...item, quantity: newQuantity } : item
       )
     );
+    handleQuantityChangeDebounced(itemId, newQuantity); // Gọi hàm debounce trong hàm này
   };
 
-  const handleRemoveItem = (itemId: number) => {
-    setCartItems((prevItems: any) =>
-      prevItems.filter((item: cartItem) => item.cartItemId !== itemId)
-    );
+  const handleRemoveItem = async (itemId: number) => {
+    const res = await deleteCartItem(getCookie("accessToken")!, itemId);
+    if (res.success) {
+      deleteSuccess();
+      const storedCart = cart.getItem("cart");
+      const deletedCart = storedCart && JSON.parse(storedCart);
+      cart.setItem(
+        "cart",
+        JSON.stringify(
+          deletedCart.filter((cartItem: any) => cartItem.cartItemId !== itemId)
+        )
+      );
+      setCartItems(JSON.parse(cart.getItem("cart")));
+    } else if (res.statusCode == 400) {
+    }
   };
 
   return (
@@ -99,17 +197,20 @@ const Cart = () => {
           </div>
         </section>
       </main>
-      {cartItems.length <= 0 ? (
+      {cartItems.length > 0 ? (
         <section className="container grid grid-cols-12 p-4 mt-8 md:mt-12">
           <div className="col-span-full grid grid-cols-12 gap-x-7 overflow-auto">
             <table className="col-span-full">
               <thead className="text-center">
                 <tr className="border border-border-color text-text-color">
-                  <th className=" border border-border-color min-w-[100px] p-3 text-left">
+                  <th className=" border border-border-color min-w-[100px] p-3 text-center">
                     Sản phẩm
                   </th>
-                  <th className=" border border-border-color min-w-[180px] p-3 text-left">
+                  <th className=" border border-border-color min-w-[180px] p-3 text-center">
                     Tên
+                  </th>
+                  <th className=" border border-border-color min-w-[180px] p-3 text-center">
+                    Phân loại
                   </th>
                   <th className=" border border-border-color min-w-[100px] p-3">
                     Giá
@@ -128,20 +229,24 @@ const Cart = () => {
               <tbody className="text-center">
                 {cartItems.map((item: cartItem) => (
                   <tr key={item.cartItemId}>
-                    <td className="max-w-[120px] p-3 border border-border-color text-center">
-                      <div className="max-w-[100px] border border-border-color">
+                    <td className="max-w-[120px] p-3 border border-border-color">
+                      <div className="max-w-[120px] border border-border-color">
                         <Image
                           loader={imageLoader}
                           placeholder="blur"
+                          blurDataURL={item.image}
                           width={120}
-                          height={0}
-                          src={product_1}
+                          height={120}
+                          src={item.image}
                           alt="cartImg"
                         ></Image>
                       </div>
                     </td>
-                    <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-left">
+                    <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
                       {item.productName}
+                    </td>
+                    <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
+                      {item.styleValues.join(" - ")}
                     </td>
                     <td className="min-w-[150px] p-3 border border-border-color  text-primary-color font-bold">{`${FormatPrice(
                       item.productPromotionalPrice
@@ -159,6 +264,7 @@ const Cart = () => {
                           <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
                         </QuantityButton>
                         <input
+                          type="number"
                           onKeyDown={(e) => onlyNumbers(e)}
                           onChange={(e) =>
                             handleQuantityChange(
@@ -170,7 +276,6 @@ const Cart = () => {
                       focus:border focus:border-primary-color"
                           value={item.quantity}
                           required
-                          type="text"
                         />
                         <QuantityButton
                           onClick={() =>
@@ -216,7 +321,7 @@ const Cart = () => {
             <table className="col-span-full min-w-[400px]">
               <thead className="text-center">
                 <tr className="border border-border-color text-text-color">
-                  <th className=" border border-border-color min-w-[100px] p-3 text-left">
+                  <th className=" border border-border-color min-w-[100px] p-3 text-center">
                     Tổng tiền
                   </th>
                 </tr>

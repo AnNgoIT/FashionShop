@@ -32,14 +32,14 @@ const OTPForm = () => {
     event.preventDefault();
     // Xử lý logic ở đây
     // Ví dụ: gửi yêu cầu đến máy chủ
-    const id = toast.loading("Verifing...");
+    const id = toast.loading("Đang xác nhận...");
     const response = await verifyOTP({
       email: verifyEmail.email,
       otp,
     });
     if (response.success) {
       toast.update(id, {
-        render: `Verified Successfully!`,
+        render: `Xác nhận thành công`,
         type: "success",
         autoClose: 3000,
         isLoading: false,
@@ -49,12 +49,12 @@ const OTPForm = () => {
       }, 2000);
     } else {
       toast.update(id, {
-        render: `Wrong OTP`,
+        render: `Sai OTP`,
         type: "error",
         autoClose: 3000,
         isLoading: false,
       });
-      setError("Wrong OTP");
+      setError("Sai OTP");
     }
   };
   return (
@@ -66,7 +66,7 @@ const OTPForm = () => {
         className="col-span-full text-xl leading-10 tracking-[0] text-text-color uppercase font-semibold mb-[30px] 
                     text-center"
       >
-        Email Verification
+        Xác nhận email
       </h2>
       <form
         className="col-span-full lg:col-span-10 lg:col-start-2"
@@ -74,7 +74,7 @@ const OTPForm = () => {
       >
         <div className="flex flex-col text-sm text-[#999] font-medium mb-[29px]">
           <FormControl fullWidth error={error != ""}>
-            <InputLabel htmlFor="otp">OTP Code</InputLabel>
+            <InputLabel htmlFor="otp">Mã OTP</InputLabel>
             <OutlinedInput
               type="number"
               value={otp}
@@ -93,7 +93,7 @@ const OTPForm = () => {
                        float-right px-[20px] text-white rounded-[5px]"
           type="submit"
         >
-          Confirm
+          Xác nhận
         </button>
       </form>
     </div>

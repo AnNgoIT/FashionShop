@@ -97,7 +97,6 @@ const Address = () => {
   };
   const openUpdateModal = (id: number) => {
     const address = addressList[0].split("-");
-    console.log(address);
     setUpdateId(id);
     setAddress(address[0] || "");
     setProvinces(address[1] || "");

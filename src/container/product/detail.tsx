@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBagShopping,
@@ -15,14 +15,16 @@ import RelatedProduct from "@/container/product/related-product";
 import ContentSwitcher from "@/container/product/content-switcher";
 import ImageMagnifier from "@/components/image-magnifier";
 import { addProductItemToCart, useProductDetail } from "@/hooks/useProducts";
-import { Product, StyleValue, productItem } from "@/features/types";
+import { Product, StyleValue, cartItem, productItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import Skeleton from "@mui/material/Skeleton";
 import CircularProgress from "@mui/material/CircularProgress";
-import useLocal from "@/hooks/useLocalStorage";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import useLocal from "@/hooks/useLocalStorage";
+import { CartContext } from "@/store";
+import { getUserCart } from "@/hooks/useAuth";
 
 type ProductDetailProps = {
   productId: string;
@@ -35,11 +37,14 @@ type ProductDetailProps = {
 const ProductDetail = (props: ProductDetailProps) => {
   const { productId, color, size, relatedProduct, productItems } = props;
   const router = useRouter();
+
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
+
   const cart = useLocal();
   const [qty, setQty] = useState<number>(1);
+
   const [isSizeActive, setSizeActive] = useState<string[]>([]);
   const [isColorActive, setColorActive] = useState<string[]>([]);
   const [isSelected, setSelected] = useState<boolean>(false);
@@ -57,6 +62,7 @@ const ProductDetail = (props: ProductDetailProps) => {
     styleValueNames: [],
     sku: "",
   });
+  const { cartItems, setCartItems } = useContext(CartContext);
 
   function resetProductItem() {
     setProductItem({
@@ -83,16 +89,14 @@ const ProductDetail = (props: ProductDetailProps) => {
           productItem.styleValueNames.includes(isColorActive[0]) &&
           productItem.styleValueNames.includes(isSizeActive[0])
       );
-
       if (newProductItem) {
         setProductItem(newProductItem);
         setShowProductItem(true); // Khi đã tìm thấy sản phẩm phù hợp, hiển thị ảnh mới
       }
-    } else if (isColorActive.length > 0) {
+    } else if (isColorActive.length > 0 || isSizeActive.length > 0) {
       const newProductItem = productItems.find((productItem) =>
         productItem.styleValueNames.includes(isColorActive[0])
       );
-
       if (newProductItem) {
         setProductItem(newProductItem);
         setShowProductItem(true); // Khi đã tìm thấy sản phẩm phù hợp, hiển thị ảnh mới
@@ -100,7 +104,7 @@ const ProductDetail = (props: ProductDetailProps) => {
     } else {
       setShowProductItem(false); // Nếu không có size hoặc color active, ẩn ảnh
     }
-  }, [isColorActive, isSizeActive, productItems, showProductItem]);
+  }, [isColorActive, isSizeActive, productItems]);
 
   const { productDetail, isProductDetailError, isProductDetailLoading } =
     useProductDetail(productId);
@@ -288,7 +292,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                     className="pr-2 text-[20px]"
                     icon={faBagShopping}
                   ></FontAwesomeIcon>
-                  Add to cart
+                  Thêm vào giỏ hàng
                 </button>
                 <button
                   className="rounded-[4px] bg-primary-color text-white px-[15px] py-[11px] 
@@ -299,7 +303,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                     className="pr-2 text-[20px]"
                     icon={faHeart}
                   ></FontAwesomeIcon>
-                  Add to wishlist
+                  Theo dõi sản phẩm
                 </button>
               </div>
             </div>
@@ -316,7 +320,7 @@ const ProductDetail = (props: ProductDetailProps) => {
       </>
     );
   if (isProductDetailError) {
-    return <div>Fail to load product detail</div>;
+    return <div>Lỗi hiển thị</div>;
   }
   const detail: Product = productDetail.result;
   const sizeList = size;
@@ -352,17 +356,17 @@ const ProductDetail = (props: ProductDetailProps) => {
     if (isColorActive.length > 0 && isSizeActive.length > 0) {
       setQty((qty: number) => {
         const newQty = qty + amount;
-        return MaxAmounts(newQty, productItem.quantity)
+        return MaxAmounts(newQty, productItem.quantity - productItem.sold)
           ? newQty
-          : productItem.quantity;
+          : productItem.quantity - productItem.sold;
       });
       return;
     }
     setQty((qty: number) => {
       const newQty = qty + amount;
-      return MaxAmounts(newQty, detail.totalQuantity)
+      return MaxAmounts(newQty, detail.totalQuantity - detail.totalSold)
         ? newQty
-        : detail.totalQuantity;
+        : detail.totalQuantity - detail.totalSold;
     });
   };
   const handleChangeQuantityByKeyBoard = (qty: number) => {
@@ -373,92 +377,125 @@ const ProductDetail = (props: ProductDetailProps) => {
     }
     if (isColorActive.length > 0 && isSizeActive.length > 0) {
       setQty(
-        MaxAmounts(qty, productItem.quantity) ? qty : productItem.quantity
+        MaxAmounts(qty, productItem.quantity - productItem.sold)
+          ? qty
+          : productItem.quantity - productItem.sold
       );
       return;
     }
-    setQty(MaxAmounts(qty, detail.totalQuantity) ? qty : detail.totalQuantity);
+    setQty(
+      MaxAmounts(qty, detail.totalQuantity - detail.totalSold)
+        ? qty
+        : detail.totalQuantity - detail.totalSold
+    );
   };
 
   const handleAddToCart = async (productItemId: number) => {
-    if (isSizeActive.length > 0 && isColorActive.length > 0) {
+    if (
+      (detail.styleNames.length == 1 &&
+        (isSizeActive.length > 0 || isColorActive.length > 0)) ||
+      (detail.styleNames.length > 1 &&
+        isSizeActive.length > 0 &&
+        isColorActive.length > 0)
+    ) {
       const payload = {
-        productItemId,
+        productItemId: productItemId,
         quantity: qty,
       };
-      const id = toast.loading("Adding...");
-      if (!getCookie("accessToken")) {
-        try {
-          // Lấy dữ liệu từ localStorage
-          const storedCart = cart.getItem("cart", "local");
+      const id = toast.loading("Vui lòng đợi...");
+      if (hasCookie("accessToken")) {
+        const res = await addProductItemToCart(
+          getCookie("accessToken")!,
+          payload
+        );
 
-          let updatedCart = [];
-
-          if (storedCart) {
-            updatedCart = JSON.parse(storedCart);
-
-            // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
-            const existingProductIndex = updatedCart.findIndex(
-              (item: any) => item.productItem.productItemId === productItemId
-            );
-
-            if (existingProductIndex !== -1) {
-              // Nếu sản phẩm đã tồn tại, tăng số lượng
-              updatedCart[existingProductIndex].quantity += qty;
-            } else {
-              // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
-              updatedCart.push({ productItem, quantity: qty });
-            }
-          } else {
-            // Nếu giỏ hàng rỗng, thêm sản phẩm mới vào giỏ hàng
-            updatedCart.push({ productItem, quantity: qty });
-          }
-
-          // Lưu giỏ hàng đã cập nhật vào localStorage
-          cart.setItem("cart", JSON.stringify(updatedCart), "local");
+        if (res.success) {
           toast.update(id, {
-            render: `Add To Cart Success`,
+            render: `Thêm vào giỏ hàng thành công`,
             type: "success",
             autoClose: 500,
             isLoading: false,
           });
           setSelected(false);
-          resetProductItem();
-          return;
-        } catch (error: any) {
-          toast.dismiss();
-          return;
+          const res = await getUserCart(getCookie("accessToken")!);
+          if (res.success) {
+            // Lưu giỏ hàng đã cập nhật vào localStorage
+            cart.setItem("cart", JSON.stringify(res.result.cartItems), "local");
+            setCartItems(JSON.parse(cart.getItem("cart")));
+            resetProductItem();
+            router.refresh();
+          }
+        } else if (res.statusCode == 401) {
+          toast.update(id, {
+            render: `Bạn phải đăng nhập để sử dụng chức năng này`,
+            type: "warning",
+            autoClose: 500,
+            isLoading: false,
+          });
+        } else {
+          toast.update(id, {
+            render: "Lỗi hệ thống",
+            type: "error",
+            autoClose: 500,
+            isLoading: false,
+          });
         }
       }
-      const res = await addProductItemToCart(
-        getCookie("accessToken")!,
-        payload
-      );
-      if (res.success) {
-        toast.update(id, {
-          render: `Add To Cart Success`,
-          type: "success",
-          autoClose: 500,
-          isLoading: false,
-        });
-        setSelected(false);
-        resetProductItem();
-        router.refresh();
-      } else if (res.statusCode == 401) {
-        toast.update(id, {
-          render: `Please Login!`,
-          type: "warning",
-          autoClose: 500,
-          isLoading: false,
-        });
-      } else {
-        toast.update(id, {
-          render: res.message,
-          type: "error",
-          autoClose: 500,
-          isLoading: false,
-        });
-      }
+      // else {
+      //   try {
+      //     // Lấy dữ liệu từ localStorage
+      //     const storedCart = cart.getItem("cart", "local");
+      //     let updatedCart = [];
+
+      //     let newCartItem: cartItem = {
+      //       cartItemId: -1,
+      //       productItemId: productItemId,
+      //       productName: productItem.parentName,
+      //       styleValues:
+      //         detail.styleNames.length == 1
+      //           ? [isColorActive[0]]
+      //           : [isColorActive[0], isSizeActive[0]],
+      //       quantity: qty,
+      //       image: productItem.image,
+      //       productPrice: productItem.price,
+      //       productPromotionalPrice: productItem.promotionalPrice,
+      //       amount: productItem.promotionalPrice * qty,
+      //     };
+      //     if (storedCart) {
+      //       updatedCart = JSON.parse(storedCart);
+      //       // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
+      //       const existingProductIndex = updatedCart.findIndex(
+      //         (item: any) => item.productItemId === productItemId
+      //       );
+
+      //       if (existingProductIndex !== -1) {
+      //         // Nếu sản phẩm đã tồn tại, tăng số lượng
+      //         updatedCart[existingProductIndex].quantity += qty;
+      //       } else {
+      //         // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
+      //         updatedCart.push(newCartItem);
+      //       }
+      //     } else {
+      //       // Nếu giỏ hàng rỗng, thêm sản phẩm mới vào giỏ hàng
+      //       updatedCart.push(newCartItem);
+      //     }
+
+      //     // Lưu giỏ hàng đã cập nhật vào localStorage
+      //     cart.setItem("cart", JSON.stringify(updatedCart), "local");
+      //     toast.update(id, {
+      //       render: `Thêm vào giỏ hàng thành công`,
+      //       type: "success",
+      //       autoClose: 500,
+      //       isLoading: false,
+      //     });
+      //     setCartItems(JSON.parse(cart.getItem("cart")!));
+      //     setSelected(false);
+      //     resetProductItem();
+      //   } catch (error: any) {
+      //     console.log(error);
+      //     toast.dismiss();
+      //   }
+      // }
     } else setSelected(true);
   };
 
@@ -571,21 +608,21 @@ const ProductDetail = (props: ProductDetailProps) => {
                   className="text-primary-color pr-1"
                   icon={faCheck}
                 />
-                <p className="leading-7">Quality Assurance Policy</p>
+                <p className="leading-7">Chính sách bảo hành chật lượng</p>
               </li>
               <li className="flex items-center text-sm">
                 <FontAwesomeIcon
                   className="text-primary-color pr-1"
                   icon={faCheck}
                 />
-                <p className="leading-7">Reasonable Pricing For Customer</p>
+                <p className="leading-7">Giá cả ưu đãi cho khách hàng</p>
               </li>
               <li className="flex items-center text-sm">
                 <FontAwesomeIcon
                   className="text-primary-color pr-1"
                   icon={faCheck}
                 />
-                <p className="leading-7">Fast and Convenient Delivery</p>
+                <p className="leading-7">Vận chuyển nhanh chóng và tiện lợi</p>
               </li>
             </ul>
             {sizeList && sizeList.length > 0 && (
@@ -657,17 +694,17 @@ const ProductDetail = (props: ProductDetailProps) => {
               </QuantityButton>
               {showProductItem ? (
                 <span className="pl-6">
-                  {productItem.quantity} products available
+                  {productItem.quantity - productItem.sold} sản phẩm có sẵn
                 </span>
               ) : (
                 <span className="pl-6">
-                  {detail.totalQuantity} products available
+                  {detail.totalQuantity - detail.totalSold} sản phẩm có sẵn
                 </span>
               )}
             </div>
             {isSelected && (
               <p className="text-secondary-color text-lg p-2">
-                Please Select Product Style
+                Vui lòng chọn phân loại sản phẩm
               </p>
             )}
             <div className="pt-5 flex">
@@ -683,7 +720,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                   className="pr-2 text-[20px]"
                   icon={faBagShopping}
                 ></FontAwesomeIcon>
-                Add to cart
+                Thêm vào giỏ hàng
               </button>
               <Link href="/wishlist">
                 <button
@@ -695,7 +732,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                     className="pr-2 text-[20px]"
                     icon={faHeart}
                   ></FontAwesomeIcon>
-                  Add to wishlist
+                  Theo dõi sản phẩm
                 </button>
               </Link>
             </div>

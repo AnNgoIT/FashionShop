@@ -122,11 +122,11 @@ const ProfileForm = () => {
     if (avatar instanceof File) {
       formData.append("avatar", avatar || "");
     }
-    const id = toast.loading("Updating...");
+    const id = toast.loading("Đang cập nhật...");
     const profile = await updateProfile(getCookie("accessToken")!, formData);
     if (profile.success) {
       toast.update(id, {
-        render: `Updated Success`,
+        render: `Cập nhật thành công`,
         type: "success",
         autoClose: 1500,
         isLoading: false,
@@ -135,7 +135,7 @@ const ProfileForm = () => {
     } else {
       if (profile.statusCode == 401) {
         toast.update(id, {
-          render: `Please Login!`,
+          render: `Cần đăng nhập để sử dụng chức năng này`,
           type: "warning",
           autoClose: 1500,
           isLoading: false,
@@ -145,7 +145,7 @@ const ProfileForm = () => {
       }
       if (profile.statusCode == 500) {
         toast.update(id, {
-          render: `Only support PNG,JPG,JPEG File!`,
+          render: `Chỉ hỗ trợ định dạng tệp PNG,JPG,JPEG`,
           type: "warning",
           autoClose: 1500,
           isLoading: false,
@@ -193,7 +193,7 @@ const ProfileForm = () => {
         bg-white p-5 max-lg:px-10 rounded-sm mb-8 h-fit`}
       >
         <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center pb-4 border-b-[0] lg:border-b border-border-color">
-          Profile
+          Thông tin cá nhân
         </h2>
         <form
           className="col-span-full lg:col-span-7 grid grid-cols-12 border-r-[0] lg:border-r border-border-color max-lg:order-2 mt-4"
@@ -201,14 +201,14 @@ const ProfileForm = () => {
         >
           <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
-              <InputLabel htmlFor="fullname">Fullname</InputLabel>
+              <InputLabel htmlFor="fullname">Tên đầy đủ</InputLabel>
               <OutlinedInput
                 value={userInfo.fullname}
                 onChange={handleUserInfo}
                 fullWidth
                 name="fullname"
                 id="fullname"
-                label="fullname"
+                label="Tên đầy đủ"
               />
             </FormControl>
           </div>
@@ -249,28 +249,30 @@ const ProfileForm = () => {
               }}
               className="flex items-center gap-x-2 flex-row"
             >
-              <FormLabel className="text-[#333] min-w-fit">Gender : </FormLabel>
+              <FormLabel className="text-[#333] min-w-fit">
+                Giới tính :{" "}
+              </FormLabel>
               <RadioGroup
                 name="gender"
                 value={userInfo.gender}
                 onChange={handleUserInfo}
                 row
-                aria-labelledby="demo-row-radio-buttons-group-label"
+                aria-labelledby="gender-label"
               >
                 <FormControlLabel
                   value="FEMALE"
                   control={<Radio />}
-                  label="Female"
+                  label="Nữ"
                 />
                 <FormControlLabel
                   value="MALE"
                   control={<Radio />}
-                  label="Male"
+                  label="Nam"
                 />
                 <FormControlLabel
                   value="OTHER"
                   control={<Radio />}
-                  label="Other"
+                  label="Khác"
                 />
               </RadioGroup>
             </FormControl>
@@ -295,7 +297,7 @@ const ProfileForm = () => {
                            float-right px-[15px] text-white rounded-[5px]`}
               type="submit"
             >
-              Save
+              Lưu
             </button>
           </div>
         </form>
@@ -305,7 +307,7 @@ const ProfileForm = () => {
               <Skeleton variant="circular" width={112} height={112} />
             ) : userInfo.avatar == "no avatar" ? (
               <div className="text-[16px] pb-4 text-center">
-                No Avatar Selected
+                Không có ảnh đại diện nào
               </div>
             ) : (
               <Image
@@ -324,17 +326,17 @@ const ProfileForm = () => {
               variant="contained"
               className="mt-4 bg-primary-color hover:bg-text-color"
             >
-              Upload file
+              Tải ảnh lên
               <VisuallyHiddenInput
                 onChange={(e) => handleImageUpload(e)}
                 type="file"
               />
             </Button>
             <p className="text-[1rem] pt-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
-              File capacity not more than 1MB
+              Dung lượng tệp không quá 1MB
             </p>
             <p className="text-[1rem] pb-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
-              File format: JPG, PNG,...
+              Định dạng tệp: JPG, PNG,...
             </p>
           </div>
         </div>

@@ -116,10 +116,12 @@ export type cartItem = {
   cartItemId: number;
   productItemId: number;
   productName: string;
+  image: string;
   styleValues: string[];
   quantity: number;
   productPrice: number;
   productPromotionalPrice: number;
+  maxQuantityCanAdd: number;
   amount: number;
 };
 

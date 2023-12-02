@@ -37,13 +37,19 @@ export default NavigateButton;
 export const QuantityButton = ({
   children,
   onClick,
+  onMouseUp,
+  onMouseDown,
 }: {
   children: ReactNode | string;
   onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onMouseUp?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  onMouseDown?: React.MouseEventHandler<HTMLButtonElement> | undefined;
 }) => {
   return (
     <button
       onClick={onClick}
+      onMouseUp={onMouseUp}
+      onMouseDown={onMouseDown}
       className="border border-border-color text-text-light-color py-1.5 px-3
         hover:bg-primary-color hover:text-white transition-all"
     >
