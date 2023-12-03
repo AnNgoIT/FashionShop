@@ -1,6 +1,7 @@
 package fit.tlcn.fashionshopbe.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import fit.tlcn.fashionshopbe.constant.Status;
 import fit.tlcn.fashionshopbe.constant.TransactionType;
 import jakarta.persistence.*;
@@ -53,4 +54,9 @@ public class Order {
 
     @UpdateTimestamp
     private Date updatedAt;
+
+    @JsonGetter("customerId")
+    public String getCustomerId(){
+        return this.customer.getUserId();
+    }
 }

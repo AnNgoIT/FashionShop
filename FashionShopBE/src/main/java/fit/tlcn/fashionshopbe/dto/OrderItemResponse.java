@@ -15,6 +15,7 @@ public class OrderItemResponse {
     private Integer orderItemId;
     private Integer productItemId;
     private String productName;
+    private String image;
     private List<String> styleValues;
     private Integer quantity;
     private Float productPrice;

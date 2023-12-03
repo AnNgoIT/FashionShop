@@ -898,7 +898,6 @@ public class UserServiceImpl implements UserService {
                 cartRepository.save(cart);
 
                 Map<String, Object> map = new HashMap<>();
-                map.put("customerId", userOptional.get().getUserId());
                 map.put("content", order);
 
                 List<OrderItem> orderItemList = orderItemRepository.findAllByOrder(order);
@@ -1039,6 +1038,7 @@ public class UserServiceImpl implements UserService {
                     orderItemResponse.setOrderItemId(orderItem.getOrderItemId());
                     orderItemResponse.setProductItemId(orderItem.getProductItem().getProductItemId());
                     orderItemResponse.setProductName(orderItem.getProductItem().getParent().getName());
+                    orderItemResponse.setImage(orderItem.getProductItem().getImage());
                     List<String> styleValueNames = new ArrayList<>();
                     for (StyleValue styleValue : orderItem.getProductItem().getStyleValues()) {
                         styleValueNames.add(styleValue.getName());
