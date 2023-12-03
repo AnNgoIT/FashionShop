@@ -223,18 +223,18 @@ public class UserServiceImpl implements UserService {
                     user.setFullname(request.getFullname());
                 }
 
-                if (!isValidPhoneNumber(request.getPhone())) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                            GenericResponse.builder()
-                                    .success(false)
-                                    .message("Invalid phone number format")
-                                    .result("Bad request")
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                                    .build()
-                    );
-                }
-
                 if (request.getPhone() != null && !request.getPhone().equals(user.getPhone())) {
+                    if (!isValidPhoneNumber(request.getPhone())) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Invalid phone number format")
+                                        .result("Bad request")
+                                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                                        .build()
+                        );
+                    }
+
                     Optional<User> userOptionalPhone = userRepository.findByPhone(request.getPhone());
                     if (userOptionalPhone.isPresent()) {
                         return ResponseEntity.status(HttpStatus.CONFLICT).body(
@@ -273,6 +273,8 @@ public class UserServiceImpl implements UserService {
                 if (request.getEWallet() != null) {
                     user.setEWallet(request.getEWallet());
                 }
+
+
 
                 userRepository.save(user);
 

@@ -3,7 +3,7 @@ package fit.tlcn.fashionshopbe.constant;
 public enum Status {
     NOT_PROCESSED,
     PROCESSING,
-    SHIPPED,
+    SHIPPING,
     DELIVERED,
     CANCELLED;
 }
