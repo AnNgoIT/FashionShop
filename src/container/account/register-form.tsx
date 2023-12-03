@@ -98,7 +98,7 @@ const RegisterForm = () => {
     if (isError(formErrors)) {
       // Xử lý logic đăng ký ở đây
 
-      const id = toast.loading("Please wait...");
+      const id = toast.loading("Vui lòng đợi...");
       const response = await register(newAccount);
 
       if (response.success) {
@@ -108,7 +108,7 @@ const RegisterForm = () => {
         const sendEmail = await sendOTP({ email: newAccount.email });
         if (sendEmail.success) {
           toast.update(id, {
-            render: `A verify email sent to ${newAccount.email}`,
+            render: `Một tin xác nhận được được gửi tới email ${newAccount.email}`,
             type: "success",
             autoClose: 3000,
             isLoading: false,
@@ -129,12 +129,12 @@ const RegisterForm = () => {
           autoClose: 2000,
           isLoading: false,
         });
-        if (response.message === "Email already in use") {
+        if (response.message === "Tài khoản đã được sử dụng") {
           setErrors({
             ...errors,
             email: response.message,
           });
-        } else if (response.message === "Phone number already in use") {
+        } else if (response.message === "Số điện thoại đã được sử dụng") {
           setErrors({
             ...errors,
             phone: response.message,
@@ -150,7 +150,7 @@ const RegisterForm = () => {
          bg-white py-5 max-lg:px-10 rounded-md`}
     >
       <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold mb-6 text-center">
-        register
+        đăng ký
       </h2>
       <Box
         component="form"
@@ -159,14 +159,14 @@ const RegisterForm = () => {
       >
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.fullname != ""}>
-            <InputLabel htmlFor="fullname">Full Name *</InputLabel>
+            <InputLabel htmlFor="fullname">Tên đầy đủ *</InputLabel>
             <OutlinedInput
               type="text"
               value={account.fullname}
               onChange={handleAccountValue}
               id="fullname"
               name="fullname"
-              label="Full Name *"
+              label="Tên đầy đủ *"
               autoComplete="off"
               aria-describedby="fullname"
             />
@@ -205,7 +205,7 @@ const RegisterForm = () => {
         </div>
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.password != ""}>
-            <InputLabel htmlFor="password">Password *</InputLabel>
+            <InputLabel htmlFor="password">Mật khẩu *</InputLabel>
             <OutlinedInput
               type={showPassword ? "text" : "password"}
               value={account.password}
@@ -222,7 +222,7 @@ const RegisterForm = () => {
               id="password"
               autoComplete="off"
               name="password"
-              label="Password *"
+              label="Mật khẩu *"
               aria-describedby="password"
             />
             <FormHelperText id="password-error">
@@ -233,16 +233,16 @@ const RegisterForm = () => {
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.confirmPassword != ""}>
             <InputLabel htmlFor="confirmPassword">
-              Confirm Password *
+              Xác nhận mật khẩu *
             </InputLabel>
             <OutlinedInput
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={account.confirmPassword}
               onChange={handleAccountValue}
               id="confirmPassword"
               autoComplete="off"
               name="confirmPassword"
-              label="Confirm Password *"
+              label="Xác nhận mật khẩu *"
               aria-describedby="confirmPassword"
             />
             <FormHelperText id="confirmPassword-error">
@@ -255,16 +255,16 @@ const RegisterForm = () => {
           className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[18px] 
                            float-right px-[26px] text-white rounded-[5px]"
         >
-          Register
+          Đăng Ký
         </button>
       </Box>
       <div className="col-span-full text-[14px] leading-[28px] text-center font-medium text-primary-color mt-5">
         <p className="text-[#999]">
-          Already have an account?
+          Đã có tài khoản?
           <Link href="/login" prefetch={false}>
             <span className="text-primary-color transition-all duration-200 hover:text-text-color cursor-pointer">
               {" "}
-              Login here
+              Đăng nhập ngay
             </span>
           </Link>
         </p>

@@ -8,16 +8,18 @@ import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import { login } from "@/hooks/useAuth";
+import { getUserCart, login } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { setCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE, getUserRole } from "@/hooks/useData";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
-import { UserContext } from "@/store";
+import { CartContext, UserContext } from "@/store";
 import { UserInfo } from "@/features/types";
+import useLocal from "@/hooks/useLocalStorage";
+import { addProductItemToCart } from "@/hooks/useProducts";
 
 type Login = {
   email: string;
@@ -27,11 +29,12 @@ type Login = {
 const LoginForm = () => {
   const router = useRouter();
   const { setUser } = useContext(UserContext);
+  const cart = useLocal();
   const [account, setAccount] = useState<Login>({ email: "", password: "" });
   const [errors, setErrors] = useState<Login>({ email: "", password: "" });
   const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
-
+  const { cartItems, setCartItems } = useContext(CartContext);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (
@@ -56,7 +59,7 @@ const LoginForm = () => {
       email: account.email,
       password: account.password,
     };
-    const id = toast.loading("Please wait...");
+    const id = toast.loading("Vui lòng đợi...");
     const response = await login(loginAccount);
     if (response.success) {
       setCookie("accessToken", response.result.accessToken, {
@@ -68,7 +71,7 @@ const LoginForm = () => {
         maxAge: REFRESH_MAX_AGE,
       });
       toast.update(id, {
-        render: `Login Success`,
+        render: `Đăng nhập thành công`,
         type: "success",
         autoClose: 1500,
         isLoading: false,
@@ -93,9 +96,16 @@ const LoginForm = () => {
             ewallet: response.result.ewallet,
             role: response.result.role,
           };
+
+          const res = await getUserCart(response.result.accessToken);
+          if (res.success) {
+            cart.setItem("cart", JSON.stringify(res.result.cartItems));
+            setCartItems(res.result.cartItems);
+          }
+
           setUser(newProfile);
           router.refresh();
-          router.push("/");
+          router.back();
         }
       } else {
         toast.update(id, {
@@ -104,12 +114,12 @@ const LoginForm = () => {
           autoClose: 1500,
           isLoading: false,
         });
-        router.refresh();
-        router.push("/");
+        // router.refresh();
+        router.back();
       }
     } else {
       toast.dismiss();
-      setError("Incorrect Email or Password, Please try again!");
+      setError("Tài khoản hoặc mật khẩu chưa chính xác, vui lòng thử lại!");
     }
     // Xử lý logic đăng nhập ở đây
     // Ví dụ: gửi yêu cầu đăng nhập đến máy chủ
@@ -123,7 +133,7 @@ const LoginForm = () => {
          bg-white py-5 max-lg:px-10 rounded-md`}
     >
       <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold mb-6 text-center">
-        LOGIN
+        ĐĂNG NHẬP
       </h2>
       {error != "" && (
         <div className="col-span-full text-center text-red-600 text-lg font-bold mb-4">
@@ -135,6 +145,7 @@ const LoginForm = () => {
           <FormControl fullWidth error={errors.email !== ""}>
             <InputLabel htmlFor="email">Email</InputLabel>
             <OutlinedInput
+              required
               type="text"
               value={account.email}
               onChange={handleAccountValue}
@@ -149,14 +160,15 @@ const LoginForm = () => {
 
         <div className="flex flex-col text-sm text-text-light-color font-medium mb-7">
           <FormControl fullWidth error={errors.password !== ""}>
-            <InputLabel htmlFor="password">Password</InputLabel>
+            <InputLabel htmlFor="password">Mật Khẩu</InputLabel>
             <OutlinedInput
+              required
               type={showPassword ? "text" : "password"}
               value={account.password}
               onChange={handleAccountValue}
               id="password"
               name="password"
-              label="Password"
+              label="Mật Khẩu"
               autoComplete="off"
               aria-describedby="password"
               endAdornment={
@@ -172,16 +184,16 @@ const LoginForm = () => {
           </FormControl>
         </div>
         <div className="h-fit float-right">
-          <NavigateButton onClick={handleLogin}>Log In</NavigateButton>
+          <NavigateButton onClick={handleLogin}>Đăng Nhập</NavigateButton>
         </div>
       </form>
       <h1
         className="col-span-full lg:col-span-10 lg:col-start-2 grid place-items-center w-full pt-2 place-self-start
-            relative before:bg-primary-color before:absolute before:top-5 before:w-10 before:right-[40%]
+            relative before:bg-primary-color before:absolute before:top-5 before:w-10 before:right-[38%]
             before:h-0.5 after:bg-primary-color after:absolute 
-            after:top-5 after:w-10 after:left-[40%] after:h-0.5 max-xl:after:left-[35%] max-xl:before:right-[35%] -translate-x-2"
+            after:top-5 after:w-10 after:left-[38%] after:h-0.5 max-xl:after:left-[33%] max-xl:before:right-[33%] -translate-x-2"
       >
-        Or
+        Hoặc
       </h1>
       <div className="col-span-full lg:col-span-6 lg:col-start-4 grid grid-flow-col place-content-center gap-6 pt-2">
         <Button
@@ -226,14 +238,14 @@ const LoginForm = () => {
             className="hover:text-text-color transition-all duration-200 cursor-pointer
                         py-3 w-fit"
           >
-            Forgot your password?
+            Quên mật khẩu?
           </h1>
         </Link>
         <p className="text-text-light-color flex justify-center items-center gap-x-2">
-          Don&#39;t have an account?
+          Chưa có tài khoản?
           <Link href="/register" prefetch={false}>
             <span className="text-primary-color transition-all duration-200 hover:text-text-color cursor-pointer">
-              Create New Account
+              Đăng ký ngay
             </span>
           </Link>
         </p>

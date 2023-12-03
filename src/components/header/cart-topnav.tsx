@@ -1,18 +1,10 @@
 "use client";
 import Link from "next/link";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
 import {
-  faSearch,
   faCartShopping,
   faUser,
-  faHeart,
   faBell,
 } from "@fortawesome/free-solid-svg-icons"; // import the icons you need
 import Image from "next/image";
@@ -36,9 +28,6 @@ import { useRouter } from "next/navigation";
 import { Product, UserInfo } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
-import { styled } from "@mui/material/styles";
-import { CldImage } from "next-cloudinary";
-import { imageLoader } from "@/features/img-loading";
 import { useSearchParams } from "next/navigation";
 import SwipeableTemporaryDrawer from "../drawer";
 import NotifyDropdown from "./dropdown/notifications";
@@ -49,59 +38,15 @@ import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import useLocal from "@/hooks/useLocalStorage";
 import { requireLogin } from "@/features/toasting";
-const Input = styled("input")(({ theme }) => ({
-  width: 200,
-  backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
-  color: theme.palette.mode === "light" ? "#000" : "#fff",
-}));
 
-const Listbox = styled("ul")(({ theme }) => ({
-  width: 232,
-  margin: 0,
-  padding: 0,
-  zIndex: 1,
-  position: "absolute",
-  top: "100%",
-  listStyle: "none",
-  borderRadius: "4px",
-  backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
-  overflow: "auto",
-  maxHeight: 232,
-  border: "1px solid rgba(0,0,0,.25)",
-  "& li.Mui-focused": {
-    backgroundColor: "#4a8df6",
-    color: "white",
-    cursor: "pointer",
-  },
-  "& li:active": {
-    backgroundColor: "#2977f5",
-    color: "white",
-  },
-}));
-
-const TopNav = ({
+const CartTopNav = ({
   info,
   token,
-  products,
 }: {
   info?: UserInfo;
   token?: { accessToken?: string; refreshToken?: string };
-  products: Product[];
 }) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [keyword, setKeyword] = useState("");
-  const [onSearch, setOnSearch] = useState(false);
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams);
-      params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams]
-  );
 
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
@@ -208,21 +153,6 @@ const TopNav = ({
     }
   };
 
-  const handleChange = (e: any) => {
-    setKeyword(e.target.value);
-  };
-
-  const onSearchValue = (value: string) => {
-    setKeyword(value);
-    setOnSearch(false);
-  };
-
-  const searchProducts = async (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-    router.push("/product?" + createQueryString("name", keyword));
-    setKeyword("");
-  };
-
   return (
     <nav className="col-span-full py-3 px-4 grid">
       <div className="grid grid-flow-col grid-cols-12 items-center">
@@ -242,85 +172,8 @@ const TopNav = ({
             priority={true}
           ></Image>
         </Link>
-        <form
-          className="bg-white rounded-[0.25rem] flex items-center relative col-span-6 sm:col-span-7 md:col-span-4 lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-[2.75rem]"
-          // action={`/search`}
-          // method="post"
-          onSubmit={searchProducts}
-        >
-          <Input
-            value={keyword}
-            onChange={handleChange}
-            onFocus={() => setOnSearch(true)}
-            name="keyword"
-            autoComplete="off"
-            className="outline-none px-2 text-sm truncate flex-1"
-            type="text"
-            placeholder="Tìm kiếm sản phẩm..."
-          ></Input>
-          <button
-            onClick={() => onSearchValue(keyword)}
-            type="submit"
-            className="absolute right-[0.25rem] transition-opacity hover:opacity-60 bg-primary-color
-             cursor-pointer text-white grid place-content-center rounded-md py-[10px] px-5"
-          >
-            <FontAwesomeIcon className="icon" icon={faSearch}></FontAwesomeIcon>
-          </button>
-          {onSearch && keyword.length > 0 && (
-            <Listbox
-              key={"listbox"}
-              sx={{
-                width: "100%",
-                maxHeight: "14rem",
-                overflow: "auto",
-              }}
-            >
-              {products &&
-              products.filter((product) => {
-                const value = keyword.toLowerCase();
-                const name = product.name.toLowerCase();
-                return value && name.includes(value) && name !== value;
-              }).length == 0 ? (
-                <div className="w-full h-[8rem] flex justify-center items-center text-xl text-text-color">
-                  Không tìm thấy sản phẩm
-                </div>
-              ) : (
-                products.map((product) => {
-                  return (
-                    <Link
-                      key={product.productId}
-                      href={`/product/${product.productId}`}
-                    >
-                      <li
-                        className="flex justify-between item-center px-2 py-3 max-h-[6rem] gap-x-2
-                        hover:bg-primary-color hover:text-white cursor-pointer"
-                      >
-                        <CldImage
-                          key={"image-" + product.productId}
-                          loader={imageLoader}
-                          priority
-                          className="max-w-[5rem] group-hover:shadow-sd"
-                          alt="autocompleImg"
-                          src={product.image}
-                          width={120}
-                          height={40}
-                        ></CldImage>
-                        <span
-                          key={product.productId}
-                          className="truncate cursor-pointer"
-                        >
-                          {product.name}
-                        </span>
-                      </li>
-                    </Link>
-                  );
-                })
-              )}
-            </Listbox>
-          )}
-        </form>
         <ul
-          className={`justify-end items-center md:col-span-5 xl:col-span-4 max-md:hidden flex`}
+          className={`flex justify-end items-center col-span-8 sm:col-span-8 md:col-span-9`}
         >
           <li>
             {!userInfo && (
@@ -551,12 +404,9 @@ const TopNav = ({
             ></Menu>
           </li>
         </ul>
-        <div className="md:hidden block">
-          <SwipeableTemporaryDrawer />
-        </div>
       </div>
     </nav>
   );
 };
 
-export default TopNav;
+export default CartTopNav;

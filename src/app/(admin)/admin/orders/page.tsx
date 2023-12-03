@@ -39,107 +39,8 @@ const AdminOrdersPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(1);
 
-  const orders = [
-    {
-      id: 1,
-      amount: 10,
-      orderItem: {
-        id: 20110456,
-        orderDate: new Date(),
-        status: "Not Processed",
-        orderItemList: [
-          {
-            id: 1,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 2,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 3,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 4,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 5,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 6,
-            name: "Women's Cape Jacket",
-            price: 150000,
-            quantity: 1,
-            maxQuantity: 1,
-          },
-        ],
-      },
-      address: "Ha Noi",
-      phone: "0909090909",
-      status: "Not Processed",
-    },
-    {
-      id: 2,
-      amount: 20,
-      orderItem: {
-        id: 20110457,
-        orderDate: new Date(),
-        status: "Not Processed",
-        orderItemList: [
-          {
-            id: 1,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 2,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 3,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-          {
-            id: 4,
-            name: "Men's Full Sleeves Collar Shirt",
-            price: 100000,
-            quantity: 1,
-            maxQuantity: 2,
-          },
-        ],
-      },
-      address: "Ha Noi",
-      phone: "0909090909",
-      status: "Processing",
-    },
-  ];
-  const [orderList, setOrderList] = useState<Order[]>(
+  const orders: orderItem[] = [];
+  const [orderList, setOrderList] = useState<orderItem[]>(
     orders.slice(0, rowsPerPage)
   );
   const handleOpen = () => {
@@ -233,7 +134,7 @@ const AdminOrdersPage = () => {
           <ul>
             {orderDetail?.orderItemList.map((orderItem) => {
               return (
-                <li className="w-full" key={orderItem.id}>
+                <li className="w-full" key={orderItem.cartItemId}>
                   <div className="flex justify-between p-2">
                     <div className="flex gap-x-2">
                       <CldImage
@@ -246,7 +147,7 @@ const AdminOrdersPage = () => {
                         alt={"orderItemImg"}
                       ></CldImage>
                       <h1 className="text-sm text-secondary-color font-bold">
-                        {orderItem.name}
+                        {orderItem.productName}
                       </h1>
                     </div>
                     <span className="text-text-light-color text-md">{`x${orderItem.quantity}`}</span>
@@ -326,7 +227,7 @@ const AdminOrdersPage = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center">Amount</TableCell>
+                  <TableCell align="center">Date</TableCell>
                   <TableCell align="center">Address</TableCell>
                   <TableCell align="center">Phone</TableCell>
                   <TableCell align="center">Status</TableCell>
@@ -337,9 +238,9 @@ const AdminOrdersPage = () => {
                 {orderList &&
                   orderList.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell align="center">{item.amount}</TableCell>
-                      <TableCell align="center">{item.address}</TableCell>
-                      <TableCell align="center">{item.phone}</TableCell>
+                      <TableCell align="center">{""}</TableCell>
+                      <TableCell align="center">{""}</TableCell>
+                      <TableCell align="center">{""}</TableCell>
                       <TableCell sx={{ width: "10rem" }} align="center">
                         <FormControl sx={{ minWidth: "10rem" }}>
                           <Select
@@ -364,7 +265,7 @@ const AdminOrdersPage = () => {
                       </TableCell>
                       <TableCell sx={{ width: "14rem" }} align="center">
                         <Button
-                          onClick={() => openInfoModal(item.orderItem)}
+                          onClick={() => openInfoModal(item)}
                           sx={{
                             "&:hover": {
                               color: "#999",

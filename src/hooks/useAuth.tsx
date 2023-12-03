@@ -250,3 +250,107 @@ export const changePassword = async (accessToken: string, payload: any) => {
     return error.response.data;
   }
 };
+
+export const getUserCart = async (accessToken: string) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.get(
+      `${HTTP_PORT}/api/v1/users/customers/carts`,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const updateCartItem = async (
+  accessToken: string,
+  payload: any,
+  cartItemId: number
+) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.patch(
+      `${HTTP_PORT}/api/v1/users/customers/carts/cartItems/${cartItemId}`,
+      payload,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const deleteCartItem = async (
+  accessToken: string,
+  cartItemId: number
+) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.delete(
+      `${HTTP_PORT}/api/v1/users/customers/carts/cartItems/${cartItemId}`,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const deleteAllCartItem = async (accessToken: string) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.delete(
+      `${HTTP_PORT}/api/v1/users/customers/carts/cartItems`,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const makeAnOrder = async (accessToken: string, payload: any) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.post(
+      `${HTTP_PORT}/api/v1/users/customers/orders`,
+      payload,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};

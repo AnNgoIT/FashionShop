@@ -1,4 +1,4 @@
-import { fetchAllBrands, fetchAllCategories } from "@/app/(user)/product/page";
+import { fetchAllCategories, fetchAllBrands } from "@/app/(guest)/product/page";
 import { HTTP_PORT } from "@/app/page";
 import AdminProduct from "@/container/admin/admin-product";
 import { getCookie } from "cookies-next";

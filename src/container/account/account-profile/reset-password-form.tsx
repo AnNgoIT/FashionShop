@@ -95,11 +95,11 @@ const ResetPasswordForm = () => {
     const formErrors = validateResetPasswordForm(password);
 
     if (isError(formErrors)) {
-      const id = toast.loading("Reset Password...");
+      const id = toast.loading("Đang đặt lại...");
       const res = await resetPassword(password);
       if (res.success) {
         toast.update(id, {
-          render: `Your password has been reset`,
+          render: `Mật khẩu của bạn đã được thay đổi`,
           type: "success",
           autoClose: 2000,
           isLoading: false,
@@ -107,12 +107,12 @@ const ResetPasswordForm = () => {
         router.push("/login");
       } else if (res.statusCode == 400) {
         toast.update(id, {
-          render: `Wrong OTP`,
+          render: `Sai OTP`,
           type: "error",
           autoClose: 1500,
           isLoading: false,
         });
-        setErrors({ ...formErrors, otp: "Wrong OTP" });
+        setErrors({ ...formErrors, otp: "Sai OTP" });
       }
       // Reset trạng thái trường nhập liệu sau khi xử lý
     } else setErrors(formErrors);
@@ -127,7 +127,7 @@ const ResetPasswordForm = () => {
         className="col-span-full text-xl leading-10 tracking-[0] text-text-color uppercase font-semibold mb-[30px] 
                         text-center"
       >
-        reset password
+        đặt lại mật khẩu
       </h2>
       <form
         className="col-span-full lg:col-span-10 lg:col-start-2"
@@ -135,7 +135,7 @@ const ResetPasswordForm = () => {
       >
         <div className="flex flex-col text-sm text-[#999] font-medium mb-[29px]">
           <FormControl fullWidth error={errors.otp != ""}>
-            <InputLabel htmlFor="otp">OTP Code</InputLabel>
+            <InputLabel htmlFor="otp">Mã OTP</InputLabel>
             <OutlinedInput
               type="number"
               value={newPassword.otp}
@@ -143,7 +143,7 @@ const ResetPasswordForm = () => {
               onChange={handleNewPassword}
               id="otp"
               name="otp"
-              label="OTP Code"
+              label="Mã OTP"
               autoComplete="off"
               aria-describedby="otp"
             />
@@ -152,7 +152,7 @@ const ResetPasswordForm = () => {
         </div>
         <div className="flex flex-col text-sm text-[#999] font-medium mb-[29px]">
           <FormControl fullWidth error={errors.newPassword != ""}>
-            <InputLabel htmlFor="newPassword">New Password</InputLabel>
+            <InputLabel htmlFor="newPassword">Mật khẩu mới</InputLabel>
             <OutlinedInput
               type={showPassword ? "text" : "password"}
               value={newPassword.newPassword}
@@ -169,7 +169,7 @@ const ResetPasswordForm = () => {
                   />
                 </InputAdornment>
               }
-              label="New Password"
+              label="Mật khẩu mới"
               autoComplete="off"
               aria-describedby="newPassword"
             />
@@ -180,15 +180,17 @@ const ResetPasswordForm = () => {
         </div>
         <div className="flex flex-col text-sm text-[#999] font-medium mb-[29px]">
           <FormControl fullWidth error={errors.confirmPassword != ""}>
-            <InputLabel htmlFor="confirmPassword">Confirm Password</InputLabel>
+            <InputLabel htmlFor="confirmPassword">
+              Xác nhận mật khẩu mới
+            </InputLabel>
             <OutlinedInput
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={newPassword.confirmPassword}
               required
               onChange={handleNewPassword}
               id="confirmPassword"
               name="confirmPassword"
-              label="Confirm Password"
+              label="Xác nhận mật khẩu mới"
               autoComplete="off"
               aria-describedby="confirmPassword"
             />
@@ -202,7 +204,7 @@ const ResetPasswordForm = () => {
                            float-right px-[20px] text-white rounded-[5px]"
           type="submit"
         >
-          Change
+          Đặt lại
         </button>
       </form>
     </div>

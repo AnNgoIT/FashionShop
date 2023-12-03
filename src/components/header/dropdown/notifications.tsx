@@ -102,28 +102,6 @@ const NotifyDropdown = () => {
               );
             })}
           </ul>
-          <div className="flex justify-between text-text-light-color text-sm">
-            <span>Shipping:</span>
-            <strong className="font-black">
-              {`${FormatPrice(45000)} VNĐ`}
-            </strong>
-          </div>
-          <div className="flex justify-between text-text-light-color text-sm">
-            <span>Total:</span>
-            <strong className="font-black">
-              {`${FormatPrice(
-                Total(cartItems) + (cartItems.length !== 0 ? 45000 : 0)
-              )} VNĐ`}
-            </strong>
-          </div>
-          <div className="mt-5 flex justify-between items-center font-bold">
-            <Link href="/cart">
-              <NavigateButton>Cart</NavigateButton>
-            </Link>
-            <Link href="/cart/checkout">
-              <NavigateButton>Checkout</NavigateButton>
-            </Link>
-          </div>
         </>
       )}
     </>

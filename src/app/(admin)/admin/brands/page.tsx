@@ -1,4 +1,4 @@
-import { fetchAllBrands } from "@/app/(user)/product/page";
+import { fetchAllBrands } from "@/app/(guest)/product/page";
 import AdminBrand from "@/container/admin/admin-brand";
 import React from "react";
 

@@ -6,8 +6,8 @@ import { Category, Product, UserInfo } from "@/features/types";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { fetchAllCategories } from "./(user)/product/page";
-import { prefetchAllProducts } from "./(user)/product/(detail)/[id]/page";
+import { fetchAllCategories } from "./(guest)/product/page";
+import { prefetchAllProducts } from "./(guest)/product/(detail)/[id]/page";
 
 export const HTTP_PORT = "http://localhost:8080";
 
@@ -45,15 +45,13 @@ export const fetchUserCredentials = async (accessToken: string) => {
   try {
     const res = await fetch(`${HTTP_PORT}/api/v1/users/customers/profile`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
+      cache: "no-cache",
       mode: "same-origin", // no-cors, *cors, same-origin
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
         // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      next: {
-        revalidate: 3600,
       },
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
