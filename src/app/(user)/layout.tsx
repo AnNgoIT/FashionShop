@@ -11,12 +11,14 @@ import { redirect } from "next/navigation";
 
 import { prefetchAllProducts } from "../(guest)/product/(detail)/[id]/page";
 import CartHeader from "@/components/header/cart-header";
+import { userCart } from "./cart/page";
 
 const CartLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
-  const productRes = await prefetchAllProducts();
+  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+
   let result = null,
     fullToken;
   if (res.statusCode == 401) {
@@ -72,10 +74,11 @@ const CartLayout = async ({ children }: { children: ReactNode }) => {
           role: res.result.role,
         }
       : undefined;
+  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
 
   return (
     <>
-      <CartHeader userInfo={userInfo} fullToken={fullToken} />
+      <CartHeader userInfo={userInfo} fullToken={fullToken} userCart={cart} />
       {children}
       <Footer />
     </>

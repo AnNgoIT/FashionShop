@@ -121,7 +121,6 @@ export type cartItem = {
   quantity: number;
   productPrice: number;
   productPromotionalPrice: number;
-  maxQuantityCanAdd: number;
   amount: number;
 };
 

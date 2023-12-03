@@ -25,7 +25,7 @@ import {
 } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Product, UserInfo } from "@/features/types";
+import { Product, UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { useSearchParams } from "next/navigation";
@@ -42,9 +42,11 @@ import { requireLogin } from "@/features/toasting";
 const CartTopNav = ({
   info,
   token,
+  userCart,
 }: {
   info?: UserInfo;
   token?: { accessToken?: string; refreshToken?: string };
+  userCart?: cartItem[];
 }) => {
   const router = useRouter();
 
@@ -356,7 +358,9 @@ const CartTopNav = ({
                     Thông báo
                   </span>
                   <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems.length}
+                    {cartItems && cartItems.length == 0
+                      ? userCart && userCart.length
+                      : cartItems.length}
                   </div>
                 </div>
               }
@@ -376,7 +380,7 @@ const CartTopNav = ({
                     className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
                                 max-h-[420px] overflow-y-auto"
                   >
-                    <CartDropdown></CartDropdown>
+                    <CartDropdown userCart={userCart!}></CartDropdown>
                   </div>
                 </Paper>
               }
@@ -397,7 +401,9 @@ const CartTopNav = ({
                     </span>
                   </div>
                   <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems.length}
+                    {cartItems && cartItems.length == 0
+                      ? userCart && userCart.length
+                      : cartItems.length}
                   </div>
                 </Link>
               }

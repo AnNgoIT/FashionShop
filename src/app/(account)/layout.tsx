@@ -11,12 +11,15 @@ import { redirect } from "next/navigation";
 
 import AccountHeader from "@/components/header/account-header";
 import { prefetchAllProducts } from "../(guest)/product/(detail)/[id]/page";
+import { userCart } from "../(user)/cart/page";
 
 const AccountLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
   const productRes = await prefetchAllProducts();
+  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+
   let result = null,
     fullToken;
   if (res.statusCode == 401) {
@@ -75,11 +78,14 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
   const products: Product[] =
     productRes && productRes.success && productRes.result.content;
 
+  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
+
   return (
     <>
       <VerifyEmailProvider>
         <AccountHeader
           userInfo={userInfo}
+          userCart={cart}
           fullToken={fullToken}
           products={products}
         />

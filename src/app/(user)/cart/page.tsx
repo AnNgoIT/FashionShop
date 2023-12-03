@@ -24,7 +24,6 @@ export const userCart = async (accessToken: string) => {
 
     // The return value is *not* serialized
     // You can return Date, Map, Set, etc.
-
     return res.json(); // parses JSON response into native JavaScript objects
   } catch (error: any) {
     console.log(error);

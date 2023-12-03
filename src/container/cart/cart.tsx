@@ -22,21 +22,21 @@ import usePath from "@/hooks/usePath";
 import useLocal from "@/hooks/useLocalStorage";
 import { toast } from "react-toastify";
 import { deleteSuccess, maxQuanity, requireLogin } from "@/features/toasting";
-import { deleteCartItem, updateCartItem } from "@/hooks/useAuth";
+import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
+import LoadingComponent from "@/components/loading";
 
-type CartProps = {
+export type CartProps = {
   userCart: cartItem[];
 };
 
 const Cart = (props: CartProps) => {
-  // const { userCart } = props;
+  const { userCart } = props;
   const router = useRouter();
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
-  const cart = useLocal();
   const { cartItems, setCartItems } = useContext(CartContext);
 
   let timeoutId: NodeJS.Timeout | null = null;
@@ -53,16 +53,6 @@ const Cart = (props: CartProps) => {
     };
   };
 
-  useEffect(() => {
-    const storedCart = cart.getItem("cart");
-
-    const itemInCarts = storedCart && JSON.parse(storedCart);
-    if (storedCart) {
-      setCartItems(itemInCarts);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuantityChangeDebounced = useCallback(
     debounce(async (itemId: number, newQuantity: number) => {
@@ -73,32 +63,10 @@ const Cart = (props: CartProps) => {
           itemId
         );
         if (res.success) {
-          const storedCart = cart.getItem("cart", "local");
-          let updatedCart = [];
-
-          if (storedCart) {
-            updatedCart = JSON.parse(storedCart);
-            // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
-            const existingProductIndex = updatedCart.findIndex(
-              (item: any) => item.productItemId === res.result.productItemId
-            );
-
-            if (existingProductIndex !== -1) {
-              // Nếu sản phẩm đã tồn tại, tăng số lượng
-              updatedCart[existingProductIndex].quantity = res.result.quantity;
-            } else {
-              // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
-              updatedCart.push(res.result);
-            }
-          } else {
-            // Nếu giỏ hàng rỗng, thêm sản phẩm mới vào giỏ hàng
-            updatedCart.push(res.result);
-          }
-          cart.setItem("cart", JSON.stringify(updatedCart));
-          setCartItems(JSON.parse(cart.getItem("cart")));
+          router.refresh();
         } else if (res.statusCode === 400) {
           maxQuanity(res.result);
-          setCartItems(JSON.parse(cart.getItem("cart")));
+          setCartItems(userCart);
         } else if (res.statusCode === 401) {
           requireLogin();
           router.push("/login");
@@ -126,16 +94,11 @@ const Cart = (props: CartProps) => {
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
       deleteSuccess();
-      const storedCart = cart.getItem("cart");
-      const deletedCart = storedCart && JSON.parse(storedCart);
-      cart.setItem(
-        "cart",
-        JSON.stringify(
-          deletedCart.filter((cartItem: any) => cartItem.cartItemId !== itemId)
-        )
-      );
-      setCartItems(JSON.parse(cart.getItem("cart")));
-    } else if (res.statusCode == 400) {
+      const newCart = await getUserCart(getCookie("accessToken")!);
+      if (newCart.success) {
+        setCartItems(newCart.result.cartItems);
+        router.refresh();
+      }
     }
   };
 
@@ -197,7 +160,19 @@ const Cart = (props: CartProps) => {
           </div>
         </section>
       </main>
-      {cartItems.length > 0 ? (
+      {userCart && userCart.length == 0 && (
+        <div className="grid place-content-center h-[25rem]">
+          <Image
+            alt="Empty cart"
+            className="w-full h-[18rem]"
+            src={empty_cart}
+          ></Image>
+          <Link href="/product" className="flex items-center justify-center">
+            <NavigateButton>Mua hàng ngay</NavigateButton>
+          </Link>
+        </div>
+      )}
+      {cartItems && cartItems.length > 0 ? (
         <section className="container grid grid-cols-12 p-4 mt-8 md:mt-12">
           <div className="col-span-full grid grid-cols-12 gap-x-7 overflow-auto">
             <table className="col-span-full">
@@ -373,16 +348,7 @@ const Cart = (props: CartProps) => {
           </div>
         </section>
       ) : (
-        <div className="grid place-content-center h-[25rem]">
-          <Image
-            alt="Empty cart"
-            className="w-full h-[18rem]"
-            src={empty_cart}
-          ></Image>
-          <Link href="/product" className="flex items-center justify-center">
-            <NavigateButton>Mua hàng ngay</NavigateButton>
-          </Link>
-        </div>
+        userCart.length > 0 && <LoadingComponent />
       )}
     </>
   );

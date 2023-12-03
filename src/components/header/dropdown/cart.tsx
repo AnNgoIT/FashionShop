@@ -13,14 +13,17 @@ import NavigateButton from "@/components/button";
 import { imageLoader } from "@/features/img-loading";
 import { deleteSuccess, maxQuanity, requireLogin } from "@/features/toasting";
 import useLocal from "@/hooks/useLocalStorage";
-import { updateCartItem, deleteCartItem } from "@/hooks/useAuth";
+import { updateCartItem, deleteCartItem, getUserCart } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import router from "next/router";
+import { CartProps } from "@/container/cart/cart";
+import { useRouter } from "next/navigation";
 
-const CartDropdown = () => {
+const CartDropdown = (props: CartProps) => {
+  const router = useRouter();
+  const { userCart } = props;
   const { cartItems, setCartItems } = useContext(CartContext);
   const { user, setUser } = useContext(UserContext);
-  const cart = useLocal();
 
   let timeoutId: NodeJS.Timeout | null = null;
 
@@ -36,16 +39,6 @@ const CartDropdown = () => {
     };
   };
 
-  useEffect(() => {
-    const storedCart = cart.getItem("cart");
-
-    const itemInCarts = storedCart && JSON.parse(storedCart);
-    if (storedCart) {
-      setCartItems(itemInCarts);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuantityChangeDebounced = useCallback(
     debounce(async (itemId: number, newQuantity: number) => {
@@ -56,32 +49,10 @@ const CartDropdown = () => {
           itemId
         );
         if (res.success) {
-          const storedCart = cart.getItem("cart", "local");
-          let updatedCart = [];
-
-          if (storedCart) {
-            updatedCart = JSON.parse(storedCart);
-            // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
-            const existingProductIndex = updatedCart.findIndex(
-              (item: any) => item.productItemId === res.result.productItemId
-            );
-
-            if (existingProductIndex !== -1) {
-              // Nếu sản phẩm đã tồn tại, tăng số lượng
-              updatedCart[existingProductIndex].quantity = res.result.quantity;
-            } else {
-              // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
-              updatedCart.push(res.result);
-            }
-          } else {
-            // Nếu giỏ hàng rỗng, thêm sản phẩm mới vào giỏ hàng
-            updatedCart.push(res.result);
-          }
-          cart.setItem("cart", JSON.stringify(updatedCart));
-          setCartItems(JSON.parse(cart.getItem("cart")));
+          router.refresh();
         } else if (res.statusCode === 400) {
           maxQuanity(res.result);
-          setCartItems(JSON.parse(cart.getItem("cart")));
+          setCartItems(userCart);
         } else if (res.statusCode === 401) {
           requireLogin();
           router.push("/login");
@@ -109,16 +80,11 @@ const CartDropdown = () => {
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
       deleteSuccess();
-      const storedCart = cart.getItem("cart");
-      const deletedCart = storedCart && JSON.parse(storedCart);
-      cart.setItem(
-        "cart",
-        JSON.stringify(
-          deletedCart.filter((cartItem: any) => cartItem.cartItemId !== itemId)
-        )
-      );
-      setCartItems(JSON.parse(cart.getItem("cart")));
-    } else if (res.statusCode == 400) {
+      const newCart = await getUserCart(getCookie("accessToken")!);
+      if (newCart.success) {
+        setCartItems(newCart.result.cartItems);
+        router.refresh();
+      }
     }
   };
 

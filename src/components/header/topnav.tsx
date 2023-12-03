@@ -33,7 +33,7 @@ import {
 } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Product, UserInfo } from "@/features/types";
+import { Product, UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { styled } from "@mui/material/styles";
@@ -47,7 +47,6 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import useLocal from "@/hooks/useLocalStorage";
 import { requireLogin } from "@/features/toasting";
 const Input = styled("input")(({ theme }) => ({
   width: 200,
@@ -78,16 +77,15 @@ const Listbox = styled("ul")(({ theme }) => ({
     color: "white",
   },
 }));
-
-const TopNav = ({
-  info,
-  token,
-  products,
-}: {
+type NavProps = {
   info?: UserInfo;
+  userCart?: cartItem[];
   token?: { accessToken?: string; refreshToken?: string };
   products: Product[];
-}) => {
+};
+
+const TopNav = (props: NavProps) => {
+  const { info, userCart, token, products } = props;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
@@ -105,27 +103,16 @@ const TopNav = ({
 
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
-  const cart = useLocal();
+  // const cart = useLocal();
   const { cartItems, setCartItems } = useContext(CartContext);
 
   const cookies = getCookies();
   const userInfo = info;
 
   useEffect(() => {
-    async function fetchUserCart() {
-      if (hasCookie("accessToken")) {
-        const res = await getUserCart(getCookie("accessToken")!);
-        if (res.success) {
-          cart.setItem("cart", JSON.stringify(res.result.cartItems));
-          setCartItems(JSON.parse(cart.getItem("cart")));
-        }
-      } else {
-        cart.removeItem("cart");
-        setCartItems([]);
-      }
+    if (userCart) {
+      setCartItems(userCart);
     }
-    fetchUserCart();
-
     if (token && token.accessToken == "" && token.refreshToken == "") {
       deleteCookie("accessToken");
       deleteCookie("refreshToken");
@@ -168,7 +155,6 @@ const TopNav = ({
       if (res.success) {
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
-        cart.removeItem("cart");
         toast.update(id, {
           render: `Đăng xuất thành công`,
           type: "success",
@@ -182,13 +168,6 @@ const TopNav = ({
       } else {
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
-        cart.removeItem("cart");
-        toast.update(id, {
-          render: `Vui lòng đăng nhập`,
-          type: "warning",
-          autoClose: 1000,
-          isLoading: false,
-        });
         router.push("/login");
       }
     } catch (error) {
@@ -503,7 +482,9 @@ const TopNav = ({
                     Thông báo
                   </span>
                   <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems.length}
+                    {cartItems && cartItems.length == 0
+                      ? userCart && userCart.length
+                      : cartItems.length}
                   </div>
                 </div>
               }
@@ -523,7 +504,7 @@ const TopNav = ({
                     className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
                                 max-h-[420px] overflow-y-auto"
                   >
-                    <CartDropdown></CartDropdown>
+                    <CartDropdown userCart={userCart!}></CartDropdown>
                   </div>
                 </Paper>
               }
@@ -544,7 +525,9 @@ const TopNav = ({
                     </span>
                   </div>
                   <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems.length}
+                    {cartItems && cartItems.length == 0
+                      ? userCart && userCart.length
+                      : cartItems.length}
                   </div>
                 </Link>
               }

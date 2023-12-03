@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { fetchAllCategories } from "./(guest)/product/page";
 import { prefetchAllProducts } from "./(guest)/product/(detail)/[id]/page";
+import { userCart } from "./(user)/cart/page";
 
 export const HTTP_PORT = "http://localhost:8080";
 
@@ -98,6 +99,8 @@ const Home = async () => {
   );
   const cateRes = await fetchAllCategories();
   const productRes = await prefetchAllProducts();
+  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+  
   let result = null,
     fullToken;
   if (res.statusCode == 401) {
@@ -160,10 +163,13 @@ const Home = async () => {
     cateRes && cateRes.success && cateRes.result.content;
   const products: Product[] =
     productRes && productRes.success && productRes.result.content;
+
+  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
   return (
     <>
       <Header
         userInfo={userInfo}
+        userCart={cart}
         fullToken={fullToken}
         products={products}
       ></Header>
