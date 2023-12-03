@@ -1,4 +1,4 @@
-import ProfileForm from "@/container/account/profile-form";
+import ProfileForm from "@/container/account/account-profile/profile-form";
 
 const ProfilePage = () => {
   return <ProfileForm />;

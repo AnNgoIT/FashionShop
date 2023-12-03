@@ -1,32 +1,104 @@
 "use client";
-import { product_2 } from "@/assests/images";
 import { Total } from "@/features/cart/TotalPrice";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import Link from "next/link";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { CartContext } from "@/store";
-import BillForm from "@/container/order/bill-form";
 import usePath from "@/hooks/usePath";
-import { cartItem } from "@/features/types";
+import { UserInfo, cartItem } from "@/features/types";
+import { imageLoader } from "@/features/img-loading";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import OrderInfo from "@/container/order/info";
+import LocalMallIcon from "@mui/icons-material/LocalMall";
+import Button from "@mui/material/Button";
+import { deleteAllCartItem, makeAnOrder } from "@/hooks/useAuth";
+import { getCookie } from "cookies-next";
+import { toast } from "react-toastify";
+import { requireLogin } from "@/features/toasting";
+import { useRouter } from "next/navigation";
+import useLocal from "@/hooks/useLocalStorage";
 
-export type OrderItem = {
-  id: number;
-  name?: string;
-  price: number;
-  quantity: number;
+type CheckOutProps = {
+  userInfo?: UserInfo;
+  userCart?: cartItem[];
 };
 
-const Checkout = () => {
+type OrderInfo = {
+  cartItemIds: number[];
+  fullName: string;
+  phone: string;
+  address: string;
+  transactionType: string;
+};
+
+const Checkout = (props: CheckOutProps) => {
+  const router = useRouter();
+  const { userInfo, userCart } = props;
+  const { cartItems, setCartItems } = useContext(CartContext);
+  const cart = useLocal();
+  const [orderInfo, setOrderInfo] = useState<OrderInfo>({
+    cartItemIds: userCart?.map((cart) => cart.cartItemId) || [],
+    fullName: userInfo?.fullname || "",
+    phone: userInfo?.phone || "",
+    address: "",
+    transactionType: "COD",
+  });
+
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
-  const { cartItems } = useContext(CartContext);
+
+  const handleAddress = (value: string) => {
+    setOrderInfo({
+      ...orderInfo,
+      address: value,
+    });
+  };
+
+  const handleSubmitOrder = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    const newOrder: OrderInfo = orderInfo;
+    try {
+      const id = toast.loading("Vui lòng chờ...");
+      const res = await makeAnOrder(getCookie("accessToken")!, newOrder);
+      if (res.success) {
+        toast.update(id, {
+          render: `Bạn đã đặt hàng thành công`,
+          type: "success",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        cart.removeItem("cart");
+        setCartItems([]);
+        router.refresh();
+      } else if (res.statusCode == 500) {
+        toast.update(id, {
+          render: `Lỗi hệ thống`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+      } else if (res.statusCode == 401) {
+        requireLogin();
+        router.push("/login");
+      } else {
+        toast.update(id, {
+          render: `${res.message}`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+      }
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[76px] relative z-0">
-        <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
+      <main className="font-montserrat bg-white relative z-0">
+        <section className="lg:container border-white bg-background py-16 md:py-28 px-8">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
               <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
@@ -82,119 +154,183 @@ const Checkout = () => {
         </section>
       </main>
       <section className="container grid grid-cols-12 py-4 max-md:px-4 mt-8 md:mt-12">
-        <div className="col-span-full grid grid-cols-12 gap-x-7">
-          <div className={`col-span-full md:col-span-5 md:col-start-2`}>
-            {true ? (
-              <>
-                <h1 className="text-xl font-semibold text-text-color mb-8 max-md:text-center">
-                  Thông tin người mua
-                </h1>
-                <BillForm></BillForm>
-              </>
-            ) : (
-              <h1 className="text-base ">
-                You are not login.{" "}
-                <Link href="/login">
-                  <span className="text-primary-color font-semibold">
-                    Login here
-                  </span>
-                </Link>
-              </h1>
-            )}
+        <div className="col-span-full grid grid-cols-12 gap-7">
+          <div
+            className={`col-span-full lg:col-span-10 lg:col-start-2 outline outline-2 outline-border-color`}
+          >
+            <h1
+              className="text-xl font-semibold text-secondary-color max-md:text-center flex 
+            items-center max-md:justify-center border-b p-3 border-border-color"
+            >
+              <LocationOnIcon
+                sx={{ color: "#f22a59", marginRight: "0.25rem" }}
+              />
+              Địa chỉ nhận hàng
+            </h1>
+            <OrderInfo
+              info={userInfo}
+              handleOrderInfo={handleAddress}
+            ></OrderInfo>
           </div>
           <div
-            className={`col-span-full md:col-span-6 lg:col-span-4 lg:col-start-8`}
+            className={`col-span-full lg:col-span-10 lg:col-start-2 outline outline-2 outline-border-color`}
           >
-            <h1 className="text-xl font-semibold text-text-color max-md:text-center">
+            <h1
+              className="text-xl font-semibold text-secondary-color max-md:text-center flex 
+            items-center max-md:justify-center border-b p-3 border-border-color"
+            >
+              <LocalMallIcon
+                sx={{ color: "#f22a59", marginRight: "0.25rem" }}
+              />
               Đơn hàng
             </h1>
-            <ul className="flex flex-col mb-[40px]">
-              {cartItems &&
-                cartItems.map((cartItem: cartItem) => {
+            <ul className="flex flex-col">
+              {userCart &&
+                userCart.map((cartItem: cartItem) => {
                   return (
                     <li
-                      className={`py-5 ${
-                        cartItem === cartItems[cartItems.length - 1]
+                      className={`p-4 ${
+                        cartItem === userCart[userCart.length - 1]
                           ? ""
-                          : "border-b-[1px] border-[#e5e5e5]"
+                          : "border-b border-[#e5e5e5]"
                       }`}
                       key={cartItem.productItemId}
                     >
-                      <div className="w-[100px] pr-4 float-left">
+                      <div className="pr-4 float-left">
                         <Image
-                          src={product_2}
+                          loader={imageLoader}
+                          src={cartItem.image}
+                          width={120}
+                          height={120}
                           className="border boder-[#e5e5e5]"
                           alt="lastestProductImg"
                         ></Image>
                       </div>
-                      <article
-                        className="flex flex-col items-start w-fit
-                                        text-sm"
-                      >
-                        <h2 className="truncate w-full text-[#363535] font-semibold">
+                      <div className="flex flex-col items-start w-fit text-sm py-2">
+                        <h2 className=" text-text-color font-bold text-lg text-ellipsis line-clamp-2">
                           {cartItem.productName}
                         </h2>
-                        <span className="text-primary-color font-semibold text-[1.125rem]">{`${FormatPrice(
+                        <span className="text-text-light-color font-medium">{`Giá: ${FormatPrice(
                           cartItem.productPrice
                         )} VNĐ`}</span>
                         <span className="text-text-light-color font-medium">
-                          Qty: {cartItem.quantity}
+                          Số lượng: {cartItem.quantity} sản phẩm
                         </span>
-                      </article>
+                        <span className="text-text-light-color font-medium">
+                          Phân loại: {cartItem.styleValues.join(", ")}
+                        </span>
+                        <span className="text-secondary-color font-semibold text-[1.125rem] py-2">
+                          Thành tiền:{" "}
+                          {`${FormatPrice(
+                            cartItem.quantity * cartItem.productPrice
+                          )} VNĐ`}
+                        </span>
+                      </div>
                     </li>
                   );
                 })}
             </ul>
-            <table className="w-full bg-[#f5f5f5] text-sm mb-[30px]">
-              <thead className="">
-                <tr className="border border-[#dee2e6] text-text-color">
-                  <td className="min-w-[120px] p-3 text-left font-bold">
-                    Ngày đặt hàng
-                  </td>
-                  <td className="min-w-[120px] text-left">25/06/2023</td>
-                </tr>
-              </thead>
-              <tbody className="">
-                <tr className="w-full border border-[#dee2e6]">
-                  <td className="p-3">
-                    <h1 className="text-text-color font-bold">Tổng tiền :</h1>
-                  </td>
-                  <td className="w-fit">
-                    <span className="text-primary-color font-semibold text-[18px]">{`${FormatPrice(
-                      Total(cartItems) + (cartItems.length !== 0 ? 45000 : 0)
-                    )} VNĐ`}</span>
-                  </td>
-                </tr>
-                <tr className="w-full border border-[#dee2e6]">
-                  <td className="p-3">
-                    <h1 className="text-text-color font-bold">
-                      Phương thức thanh toán :
-                    </h1>
-                  </td>
-                  <td className="w-fit">
-                    <span>COD</span>
-                  </td>
-                </tr>
-                <tr className="w-full border border-[#dee2e6]">
-                  <td className="p-3">
-                    <h1 className="text-text-color font-bold">Mã đơn hàng :</h1>
-                  </td>
-                  <td className="w-fit">
-                    <span>#011052</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <Link href={"/checkout/place-order"}>
+          </div>
+          <div
+            className={`col-span-full lg:col-span-10 lg:col-start-2 grid grid-cols-12 outline outline-2 outline-border-color`}
+          >
+            <h1 className="col-span-full text-xl font-semibold text-secondary-color max-md:text-center flex items-center max-md:justify-center border-b p-3 border-border-color">
+              <LocationOnIcon
+                sx={{ color: "#f22a59", marginRight: "0.25rem" }}
+              />
+              Phương thức thanh toán
+            </h1>
+            <div className="col-span-full md:col-span-6 p-4 max-md:flex max-md:items-center max-md:justify-center">
+              {["Ví VNPay", "Thanh toán khi nhận"].map((item, index) => {
+                return (
+                  <Button
+                    onClick={() =>
+                      setOrderInfo({
+                        ...orderInfo,
+                        transactionType:
+                          item == "Thanh toán khi nhận" ? "COD" : "E_WALLET",
+                      })
+                    }
+                    sx={{
+                      color: "#f22a59",
+                      borderColor: "#f22a59",
+                      margin: "0 0.5rem",
+                      "&:hover": {
+                        opacity: "0.6",
+                        background: "transparent",
+                        borderColor: "#f22a59",
+                      },
+                    }}
+                    className="truncate"
+                    key={item}
+                    variant="outlined"
+                  >
+                    {item}
+                  </Button>
+                );
+              })}
+            </div>
+            <div className="col-span-full md:col-span-6 p-4">
+              <table className=" bg-[#f5f5f5] text-sm mb-4 w-full">
+                <tbody className="">
+                  <tr className="w-full border border-[#dee2e6]">
+                    <td className="p-3">
+                      <h1 className="text-text-color font-bold">
+                        Tổng tiền hàng :
+                      </h1>
+                    </td>
+                    <td className="w-fit">
+                      <span className="text-text-color font-bold">{`${FormatPrice(
+                        Total(cartItems)
+                      )} VNĐ`}</span>
+                    </td>
+                  </tr>
+                  <tr className="w-full border border-[#dee2e6]">
+                    <td className="p-3">
+                      <h1 className="text-text-color font-bold">
+                        Phí vận chuyển :
+                      </h1>
+                    </td>
+                    <td className="w-fit">
+                      <span>{`${FormatPrice(45000)} VNĐ`}</span>
+                    </td>
+                  </tr>
+                  <tr className="w-full border border-[#dee2e6]">
+                    <td className="p-3">
+                      <h1 className="text-text-color font-bold">
+                        Phương thức thanh toán :
+                      </h1>
+                    </td>
+                    <td className="w-[12rem]">
+                      <span>
+                        {orderInfo.transactionType == "COD"
+                          ? "Thanh toán khi nhận"
+                          : "Ví VNPay"}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr className="w-full border border-[#dee2e6]">
+                    <td className="p-3">
+                      <h1 className="text-text-color font-bold">
+                        Tổng thanh toán:
+                      </h1>
+                    </td>
+                    <td className="w-fit">
+                      <span className="text-secondary-color font-semibold text-lg">{`${FormatPrice(
+                        Total(cartItems) + 45000
+                      )} VNĐ `}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
               <button
-                className="bg-primary-color w-full transition-all duration-200 hover:bg-text-color py-[18px] 
-                       float-right px-[26px] font-medium text-white rounded-[5px] text-base leading-[16px]
-                      "
-                type="submit"
+                onClick={handleSubmitOrder}
+                className="bg-secondary-color  transition-all duration-200 hover:opacity-60 py-[1.125rem]
+                float-right px-6 font-medium text-white rounded-md text-base"
               >
                 Đặt hàng
               </button>
-            </Link>
+            </div>
           </div>
         </div>
       </section>

@@ -273,7 +273,7 @@ export const getUserCart = async (accessToken: string) => {
 export const updateCartItem = async (
   accessToken: string,
   payload: any,
-  cartItemId: number,
+  cartItemId: number
 ) => {
   const config = {
     headers: {
@@ -307,6 +307,45 @@ export const deleteCartItem = async (
   try {
     const res = await axios.delete(
       `${HTTP_PORT}/api/v1/users/customers/carts/cartItems/${cartItemId}`,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const deleteAllCartItem = async (accessToken: string) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.delete(
+      `${HTTP_PORT}/api/v1/users/customers/carts/cartItems`,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const makeAnOrder = async (accessToken: string, payload: any) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.post(
+      `${HTTP_PORT}/api/v1/users/customers/orders`,
+      payload,
       config
     );
     const data = res && res.data ? res.data : {};

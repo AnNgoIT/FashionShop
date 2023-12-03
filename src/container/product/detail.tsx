@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import useLocal from "@/hooks/useLocalStorage";
 import { CartContext } from "@/store";
 import { getUserCart } from "@/hooks/useAuth";
+import { requireLogin } from "@/features/toasting";
 
 type ProductDetailProps = {
   productId: string;
@@ -402,8 +403,8 @@ const ProductDetail = (props: ProductDetailProps) => {
         productItemId: productItemId,
         quantity: qty,
       };
-      const id = toast.loading("Vui lòng đợi...");
       if (hasCookie("accessToken")) {
+        const id = toast.loading("Vui lòng đợi...");
         const res = await addProductItemToCart(
           getCookie("accessToken")!,
           payload
@@ -440,7 +441,11 @@ const ProductDetail = (props: ProductDetailProps) => {
             isLoading: false,
           });
         }
+      } else {
+        router.push("/login");
+        requireLogin();
       }
+
       // else {
       //   try {
       //     // Lấy dữ liệu từ localStorage

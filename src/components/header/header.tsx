@@ -9,11 +9,10 @@ export type HeaderProps = {
     accessToken?: string;
     refreshToken?: string;
   };
-  categories?: Category[];
   products: Product[];
 };
 const Header = (props: HeaderProps) => {
-  const { userInfo, fullToken, categories, products } = props;
+  const { userInfo, fullToken, products } = props;
   return (
     <header className="font-sans">
       <div className="bg-gradient-to-l md:bg-gradient-to-r from-[#0e9de9] to-[#639df1] fixed top-0 left-0 right-0 z-[1]">
@@ -23,7 +22,6 @@ const Header = (props: HeaderProps) => {
             info={userInfo}
             token={fullToken}
           ></TopNav>
-          {/* <BotNav categories={categories}></BotNav> */}
         </div>
       </div>
     </header>

@@ -1,4 +1,4 @@
-import { fetchAllCategories } from "@/app/(user)/product/page";
+import { fetchAllCategories } from "@/app/(guest)/product/page";
 import { HTTP_PORT } from "@/app/page";
 import AdminCategory from "@/container/admin/admin-category";
 import React from "react";

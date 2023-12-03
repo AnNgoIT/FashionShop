@@ -110,12 +110,19 @@ const Address = () => {
     const formData = new FormData();
     formData.append("address", newAddressList.join(","));
 
-    const id = toast.loading("Updating...");
+    const id = toast.loading("Vui lòng chờ...");
     const res = await updateProfile(getCookie("accessToken")!, formData);
     if (res.success) {
       toast.update(id, {
-        render: `Created new address`,
+        render: `Tạo địa chỉ mới thành công`,
         type: "success",
+        autoClose: 1500,
+        isLoading: false,
+      });
+    } else if (res.statusCode == 500) {
+      toast.update(id, {
+        render: `Lỗi hệ thống`,
+        type: "error",
         autoClose: 1500,
         isLoading: false,
       });
@@ -134,11 +141,13 @@ const Address = () => {
     const newAddressList = addressList.filter(
       (_address, index) => index !== deleteId
     );
-    setAddressList(newAddressList);
+    console.log(newAddressList);
     await handleAddress(newAddressList);
+    setAddressList(newAddressList);
     setDeleteId(-1);
     handleCloseDialog();
   };
+
   const handleOpenDialog = (id: number) => {
     setOpenDialog(true);
     setDeleteId(id);
@@ -163,7 +172,6 @@ const Address = () => {
       return item;
     });
     setAddressList(newAddressList);
-    console.log(newAddressList);
     await handleAddress(newAddressList);
     resetAddress();
     setUpdate(false);
@@ -191,9 +199,13 @@ const Address = () => {
         aria-describedby="modal-modal-description"
       >
         <Box sx={modalStyle}>
-          {isUpdate && (
-            <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-left pb-4">
-              Address ID: {updateId}
+          {isUpdate ? (
+            <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
+              Cập nhật địa chỉ
+            </h2>
+          ) : (
+            <h2 className="w-full text-2xl tracking-[0] text-secondary-color uppercase font-semibold text-center pb-4">
+              Tạo địa chỉ mới
             </h2>
           )}
 
@@ -206,7 +218,7 @@ const Address = () => {
             className="col-span-full grid grid-flow-col grid-cols-12 "
           >
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-8">
+              <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Address">
                   Address
                 </InputLabel>
@@ -221,15 +233,6 @@ const Address = () => {
                   label="Address"
                 />
               </FormControl>
-              <div className="col-span-3 col-start-10">
-                <button
-                  className="bg-primary-color transition-all duration-200 hover:bg-text-color py-4 
-                           float-right px-6 text-white rounded-[5px]"
-                  type="submit"
-                >
-                  {isUpdate ? "Update" : "Add"}
-                </button>
-              </div>
             </div>
             <div className="col-span-full grid grid-cols-12 gap-4">
               <div className="col-span-full">
@@ -340,6 +343,15 @@ const Address = () => {
                   }}
                 />
               </div>
+            </div>
+            <div className="col-span-full mt-4 flex gap-x-4 justify-end">
+              <button
+                className="bg-secondary-color transition-all duration-200 hover:bg-text-color py-4 
+                           float-right px-6 text-white rounded-md w-[7rem]"
+                type="submit"
+              >
+                Thêm
+              </button>
             </div>
           </form>
         </Box>

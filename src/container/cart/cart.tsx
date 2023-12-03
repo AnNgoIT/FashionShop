@@ -22,7 +22,7 @@ import usePath from "@/hooks/usePath";
 import useLocal from "@/hooks/useLocalStorage";
 import { toast } from "react-toastify";
 import { deleteSuccess, maxQuanity, requireLogin } from "@/features/toasting";
-import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
+import { deleteCartItem, updateCartItem } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 
@@ -141,8 +141,8 @@ const Cart = (props: CartProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[76px] relative z-0">
-        <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
+      <main className="font-montserrat bg-white relative z-0">
+        <section className="lg:container border-white bg-background py-16 md:py-28 px-8">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
               <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">

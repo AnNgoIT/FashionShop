@@ -231,8 +231,9 @@ const ProfileForm = () => {
             <FormControl className="w-full">
               {/* <InputLabel htmlFor="phone">Phone</InputLabel> */}
               <MuiPhoneNumber
+                disabled={true}
                 // inputProps={{ maxLength: 10 }}
-                // value={account.phone}
+                value={userInfo.phone}
                 disableAreaCodes={true}
                 // disableCountryCode={true}
                 defaultCountry={"vn"}

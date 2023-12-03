@@ -34,7 +34,7 @@ export const userCart = async (accessToken: string) => {
 const CartPage = async () => {
   const res = await userCart(getCookie("accessToken", { cookies })!);
 
-  const cart = res && res.success && res.result;
+  const cart = res && res.success && res.result.cartItems;
   return <Cart userCart={cart} />;
 };
 

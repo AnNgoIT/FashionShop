@@ -144,7 +144,7 @@ const CartDropdown = () => {
                     className="text-text-light-color pb-[15px] mb-[15px] border-b-2 border-b-border-color text-[14px] col-span-1"
                   >
                     <div className="grid items-center gap-5 grid-flow-col">
-                      <div className="border-b-2 border-b-border-color h-full">
+                      <div className="border border-b-border-color h-full">
                         <Image
                           loader={imageLoader}
                           className="h-full"

@@ -105,7 +105,7 @@ const LoginForm = () => {
 
           setUser(newProfile);
           router.refresh();
-          router.push("/");
+          router.back();
         }
       } else {
         toast.update(id, {
@@ -114,8 +114,8 @@ const LoginForm = () => {
           autoClose: 1500,
           isLoading: false,
         });
-        router.refresh();
-        router.push("/");
+        // router.refresh();
+        router.back();
       }
     } else {
       toast.dismiss();
