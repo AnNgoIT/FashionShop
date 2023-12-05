@@ -18,16 +18,13 @@ export const userCart = async (accessToken: string) => {
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
     if (!res.ok) {
-      console.log(res.status);
       return [];
     }
 
     // The return value is *not* serialized
     // You can return Date, Map, Set, etc.
     return res.json(); // parses JSON response into native JavaScript objects
-  } catch (error: any) {
-    console.log(error);
-  }
+  } catch (error: any) {}
 };
 
 const CartPage = async () => {

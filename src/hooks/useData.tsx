@@ -2,10 +2,18 @@ import axios from "axios";
 import { getCookie, hasCookie } from "cookies-next";
 import { refreshLogin } from "./useAuth";
 
-export const HTTP_PORT = "http://localhost:8080";
+export const HTTP_PORT = process.env.NEXT_PUBLIC_API_URL;
+export const ACCESS_MAX_AGE = Number.isInteger(
+  parseInt(process.env.NEXT_PUBLIC_ACCESS_MAX_AGE || "")
+)
+  ? parseInt(process.env.NEXT_PUBLIC_ACCESS_MAX_AGE || "")
+  : 60 * 60;
 
-export const ACCESS_MAX_AGE = 60 * 60; //1 hours
-export const REFRESH_MAX_AGE = 60 * 60 * 24; //1 days;
+export const REFRESH_MAX_AGE = Number.isInteger(
+  parseInt(process.env.NEXT_PUBLIC_REFRESH_MAX_AGE || "")
+)
+  ? parseInt(process.env.NEXT_PUBLIC_REFRESH_MAX_AGE || "")
+  : 60 * 60 * 24;
 
 export function newAbortSignal(timeoutMs: number) {
   const abortController = new AbortController();

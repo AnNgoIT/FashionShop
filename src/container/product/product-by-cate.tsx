@@ -187,9 +187,9 @@ export const ProductByCate = (props: ProductByCateProps) => {
           </Carousel>
         </div>
       </div>
-      <section className="container grid grid-cols-12 max-md:px-4  mt-8 md:mt-12">
+      <section className="container grid grid-cols-12 max-md:px-4">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-[30px]">
-          <ul className="col-span-full md:col-span-12 grid grid-cols-2 md:grid-cols-12 gap-[30px] h-fit">
+          <ul className="col-span-full md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-[30px] h-fit">
             <div
               className="col-span-full bg-[#f5f5f5] text-base text-text-color py-4 rounded-sm flex items-center px-4
                 shadow-md"
@@ -235,6 +235,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
                     }}
+                    // variant="standard"
                   >
                     <Select
                       id="sort-id"
@@ -259,7 +260,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
             </div>
             {productByCateList && productByCateList.length > 0 ? (
               productByCateList
-                .slice(page - 1, page + 4)
+                .slice((page - 1) * 4, (page - 1) * 4 + 4)
                 .map((product: Product) => {
                   return (
                     <li
@@ -291,7 +292,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                               // crop="fill"
                               width={500}
                               height={500}
-                              sizes="50vw"
+                              // sizes="50vw"
                             ></CldImage>
                           ) : (
                             <Skeleton
@@ -366,11 +367,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               <div className="col-span-full bg-background-color p-4 outline-none grid place-items-center">
                 <Pagination
                   shape="rounded"
-                  count={
-                    Math.ceil(productByCateList.length / 5) <= 0
-                      ? 1
-                      : Math.ceil(productByCateList.length / 5)
-                  }
+                  count={Math.ceil(productByCateList.length / 4)}
                   page={page}
                   onChange={handleChangePage}
                   variant="outlined"

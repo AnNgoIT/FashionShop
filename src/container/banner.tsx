@@ -68,12 +68,13 @@ const Banner = () => {
     >
       <Image
         loader={imageLoader}
+        blurDataURL={main_banner3.src}
         src={main_banner3}
         alt="mainBanner3"
         placeholder="blur"
         className="w-full h-full"
         width={400}
-        height={0}
+        height={300}
       />
       <section className="grid grid-cols-12 p-4 max-md:px-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
         <div className="col-span-full md:col-span-8 md:col-start-3">

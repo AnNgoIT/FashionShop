@@ -1,4 +1,4 @@
-import { ResetPassword } from "@/container/account/account-profile/reset-password-form";
+import { ResetPassword } from "@/container/profile/reset-password-form";
 import { Account } from "./types";
 
 // Hàm validate

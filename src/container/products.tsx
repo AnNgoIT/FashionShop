@@ -108,7 +108,7 @@ const Products = () => {
 
         <ul className="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-6">
           {productList && productList.length ? (
-            productList.map((product: Product) => {
+            productList.slice(0,4).map((product: Product) => {
               return (
                 <li
                   className={`group transition-all hover:cursor-pointer hover:shadow-sd`}

@@ -5,52 +5,33 @@ import { VerifyEmailProvider } from "@/store";
 import { fetchUserCredentials, refreshLogin } from "../page";
 import { cookies } from "next/headers";
 import { getCookie, hasCookie } from "cookies-next";
-import { Category, Product, UserInfo } from "@/features/types";
-import { isTokenExpired } from "@/features/jwt-decode";
-import { redirect } from "next/navigation";
+import { Product, UserInfo } from "@/features/types";
 
 import AccountHeader from "@/components/header/account-header";
-import { prefetchAllProducts } from "../(guest)/product/(detail)/[id]/page";
 import { userCart } from "../(user)/cart/page";
+import { prefetchAllProducts } from "../(guest)/product/page";
 
 const AccountLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
-  const productRes = await prefetchAllProducts();
   const cartRes = await userCart(getCookie("accessToken", { cookies })!);
-
-  let result = null,
-    fullToken;
+  let result = undefined,
+    fullToken = undefined;
   if (res.statusCode == 401) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
-      if (isTokenExpired(refreshToken)) {
-        redirect("/login");
-      }
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
         fullToken = refresh.result;
         const res2 = await fetchUserCredentials(refresh.result.accessToken);
         result = res2;
-      } else redirect("/login");
+      }
     }
   }
-  let info: UserInfo = {
-    fullname: null,
-    email: "",
-    phone: "",
-    dob: null,
-    gender: null,
-    address: null,
-    avatar: null,
-    ewallet: null,
-    role: "",
-  };
   const userInfo: UserInfo | undefined =
     res && res.success
       ? {
-          ...info,
           fullname: res.result.fullname,
           email: res.result.email,
           phone: res.result.phone,
@@ -63,7 +44,6 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
         }
       : result && result.success
       ? {
-          ...info,
           fullname: result.result.fullname,
           email: result.result.email,
           phone: result.result.phone,
@@ -75,9 +55,10 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
           role: res.result.role,
         }
       : undefined;
+
+  const productRes = await prefetchAllProducts();
   const products: Product[] =
     productRes && productRes.success && productRes.result.content;
-
   const cart = cartRes && cartRes.success && cartRes.result.cartItems;
 
   return (

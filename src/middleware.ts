@@ -21,7 +21,6 @@ const getRole = async (accessToken: string | undefined) => {
 
 const authPaths = ["/cart", "/cart/checkout", "/wishlist"];
 const userPaths = ["/login", "/register", "/forgot-password"];
-// const adminPaths = ["/profile", "/product", "/cart", "/wishlist", "/checkout"];
 
 export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken");
@@ -53,6 +52,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  runtime: "experimental-edge",
   matcher: [
     "/",
     "/admin/:path*",

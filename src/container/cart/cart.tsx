@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useContext, useEffect } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -26,6 +26,8 @@ import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import LoadingComponent from "@/components/loading";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
 
 export type CartProps = {
   userCart: cartItem[];
@@ -33,6 +35,7 @@ export type CartProps = {
 
 const Cart = (props: CartProps) => {
   const { userCart } = props;
+  const [isCartItemChecked, setCartItemChecked] = useState<number[]>([]);
   const router = useRouter();
   const thisPaths = usePath();
   const urlLink = thisPaths;
@@ -53,6 +56,23 @@ const Cart = (props: CartProps) => {
     };
   };
 
+  const handleCartItemChecked = (cartItemId: number) => {
+    const updatedCartItemChecked = [...isCartItemChecked];
+
+    // Kiểm tra xem sản phẩm đã chọn có trong danh sách hay không
+    const index = updatedCartItemChecked.indexOf(cartItemId);
+
+    // Nếu sản phẩm đã được chọn thì loại bỏ khỏi danh sách, ngược lại thêm vào
+    if (index === -1) {
+      updatedCartItemChecked.push(cartItemId);
+    } else {
+      updatedCartItemChecked.splice(index, 1);
+    }
+
+    // Cập nhật state với danh sách sản phẩm đã cập nhật
+    setCartItemChecked(updatedCartItemChecked);
+  };
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuantityChangeDebounced = useCallback(
     debounce(async (itemId: number, newQuantity: number) => {
@@ -63,10 +83,17 @@ const Cart = (props: CartProps) => {
           itemId
         );
         if (res.success) {
+          setCartItems((prevItems) =>
+            prevItems.map((item) =>
+              item.cartItemId === itemId
+                ? { ...item, quantity: newQuantity }
+                : item
+            )
+          );
           router.refresh();
         } else if (res.statusCode === 400) {
           maxQuanity(res.result);
-          setCartItems(userCart);
+          router.refresh();
         } else if (res.statusCode === 401) {
           requireLogin();
           router.push("/login");
@@ -74,7 +101,7 @@ const Cart = (props: CartProps) => {
       } catch (error: any) {
         console.log(error);
       }
-    }, 500),
+    }, 1000),
     []
   );
 
@@ -94,11 +121,8 @@ const Cart = (props: CartProps) => {
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
       deleteSuccess();
-      const newCart = await getUserCart(getCookie("accessToken")!);
-      if (newCart.success) {
-        setCartItems(newCart.result.cartItems);
-        router.refresh();
-      }
+      setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
+      router.refresh();
     }
   };
 
@@ -179,6 +203,9 @@ const Cart = (props: CartProps) => {
               <thead className="text-center">
                 <tr className="border border-border-color text-text-color">
                   <th className=" border border-border-color min-w-[100px] p-3 text-center">
+                    Chọn
+                  </th>
+                  <th className=" border border-border-color min-w-[100px] p-3 text-center">
                     Sản phẩm
                   </th>
                   <th className=" border border-border-color min-w-[180px] p-3 text-center">
@@ -204,6 +231,22 @@ const Cart = (props: CartProps) => {
               <tbody className="text-center">
                 {cartItems.map((item: cartItem) => (
                   <tr key={item.cartItemId}>
+                    <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
+                      <FormControlLabel
+                        sx={{ marginLeft: "0" }}
+                        label=""
+                        control={
+                          <Checkbox
+                            checked={isCartItemChecked.includes(
+                              item.cartItemId
+                            )}
+                            onChange={() =>
+                              handleCartItemChecked(item.cartItemId)
+                            }
+                          />
+                        }
+                      />
+                    </td>
                     <td className="max-w-[120px] p-3 border border-border-color">
                       <div className="max-w-[120px] border border-border-color">
                         <Image

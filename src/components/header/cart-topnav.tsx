@@ -56,27 +56,21 @@ const CartTopNav = ({
   const { cartItems, setCartItems } = useContext(CartContext);
 
   const cookies = getCookies();
-  const userInfo = info;
 
   useEffect(() => {
     async function fetchUserCart() {
       if (hasCookie("accessToken")) {
         const res = await getUserCart(getCookie("accessToken")!);
         if (res.success) {
-          cart.setItem("cart", JSON.stringify(res.result.cartItems));
-          setCartItems(JSON.parse(cart.getItem("cart")));
+          setCartItems(res.result.cartItems);
         }
       } else {
-        cart.removeItem("cart");
         setCartItems([]);
       }
     }
     fetchUserCart();
 
-    if (token && token.accessToken == "" && token.refreshToken == "") {
-      deleteCookie("accessToken");
-      deleteCookie("refreshToken");
-    } else if (token && token.accessToken !== "" && token.refreshToken !== "") {
+    if (token) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
@@ -91,8 +85,8 @@ const CartTopNav = ({
       });
     }
     setUser(
-      userInfo
-        ? userInfo
+      info
+        ? info
         : {
             fullname: null,
             email: "",
@@ -106,7 +100,7 @@ const CartTopNav = ({
           }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userInfo]);
+  }, [info]);
 
   const handleLogout = async () => {
     try {
@@ -178,7 +172,7 @@ const CartTopNav = ({
           className={`flex justify-end items-center col-span-8 sm:col-span-8 md:col-span-9`}
         >
           <li>
-            {!userInfo && (
+            {!info && (
               <Menu
                 dropdownContent={
                   <Paper
@@ -223,7 +217,7 @@ const CartTopNav = ({
                 }
               ></Menu>
             )}
-            {userInfo && user.email !== "" && (
+            {info && user.email !== "" && (
               <Menu
                 arrowPos="70px"
                 dropdownContent={
@@ -275,7 +269,7 @@ const CartTopNav = ({
                 }
               ></Menu>
             )}
-            {userInfo && user.email === "" && (
+            {info && user.email === "" && (
               <Menu
                 arrowPos="70px"
                 dropdownContent={
@@ -320,10 +314,10 @@ const CartTopNav = ({
                     <Avatar
                       sizes="50vw"
                       alt="avatar"
-                      src={userInfo.avatar ? userInfo.avatar : user_img2.src}
+                      src={info.avatar ? info.avatar : user_img2.src}
                     ></Avatar>
                     <span className="lowercase text-white text-sm max-md:hidden">
-                      {userInfo.fullname}
+                      {info.fullname}
                     </span>
                   </Link>
                 }
@@ -388,7 +382,7 @@ const CartTopNav = ({
                 <Link href="/cart">
                   <div
                     onClick={() => {
-                      if (!userInfo) requireLogin();
+                      if (!info) requireLogin();
                     }}
                     className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
                   >

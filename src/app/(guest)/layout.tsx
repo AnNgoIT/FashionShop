@@ -5,8 +5,8 @@ import { fetchUserCredentials } from "../page";
 import { cookies } from "next/headers";
 import { Product, UserInfo } from "@/features/types";
 import { ReactNode } from "react";
-import { prefetchAllProducts } from "./product/(detail)/[id]/page";
 import { userCart } from "../(user)/cart/page";
+import { prefetchAllProducts } from "./product/page";
 
 const UserLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(

@@ -26,9 +26,7 @@ export const fetchAllStyles = async () => {
     }
 
     return res.json();
-  } catch (error: any) {
-    console.log(error);
-  }
+  } catch (error: any) {}
 };
 const AdminCategoryPage = async () => {
   const res = await fetchAllCategories();

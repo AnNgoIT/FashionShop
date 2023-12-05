@@ -1,15 +1,13 @@
 import React, { ReactNode } from "react";
 
 import Footer from "@/components/footer/footer";
-import { VerifyEmailProvider } from "@/store";
 import { fetchUserCredentials, refreshLogin } from "../page";
 import { cookies } from "next/headers";
 import { getCookie, hasCookie } from "cookies-next";
-import { Product, UserInfo } from "@/features/types";
+import { UserInfo } from "@/features/types";
 import { isTokenExpired } from "@/features/jwt-decode";
 import { redirect } from "next/navigation";
 
-import { prefetchAllProducts } from "../(guest)/product/(detail)/[id]/page";
 import CartHeader from "@/components/header/cart-header";
 import { userCart } from "./cart/page";
 

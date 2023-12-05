@@ -50,6 +50,9 @@
     border-b-[1px] border-primary-color;
   }
 }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   /* height: 100vh; */

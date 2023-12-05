@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useTransition } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -20,6 +20,8 @@ import { CartContext, UserContext } from "@/store";
 import { UserInfo } from "@/features/types";
 import useLocal from "@/hooks/useLocalStorage";
 import { addProductItemToCart } from "@/hooks/useProducts";
+import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 type Login = {
   email: string;
@@ -28,13 +30,12 @@ type Login = {
 
 const LoginForm = () => {
   const router = useRouter();
+
   const { setUser } = useContext(UserContext);
-  const cart = useLocal();
   const [account, setAccount] = useState<Login>({ email: "", password: "" });
-  const [errors, setErrors] = useState<Login>({ email: "", password: "" });
+  const [errors] = useState<Login>({ email: "", password: "" });
   const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
-  const { cartItems, setCartItems } = useContext(CartContext);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (
@@ -54,7 +55,9 @@ const LoginForm = () => {
     setError("");
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
     const loginAccount: Login = {
       email: account.email,
       password: account.password,
@@ -64,11 +67,9 @@ const LoginForm = () => {
     if (response.success) {
       setCookie("accessToken", response.result.accessToken, {
         expires: decodeToken(response.result.accessToken)!,
-        maxAge: ACCESS_MAX_AGE,
       });
       setCookie("refreshToken", response.result.refreshToken, {
         expires: decodeToken(response.result.refreshToken)!,
-        maxAge: REFRESH_MAX_AGE,
       });
       toast.update(id, {
         render: `Đăng nhập thành công`,
@@ -76,46 +77,24 @@ const LoginForm = () => {
         autoClose: 1500,
         isLoading: false,
       });
+
       const isAdmin = await getUserRole(response.result.accessToken);
       if (isAdmin.success) {
         if (isAdmin.result === "ADMIN") {
-          router.refresh();
           router.push("/admin");
+          router.refresh();
         } else if (isAdmin.result === "SHIPPER") {
           router.refresh();
           router.push("/shipper");
         } else {
-          const newProfile: UserInfo = {
-            fullname: response.result.fulname,
-            email: response.result.email,
-            phone: response.result.phone,
-            dob: response.result.dob,
-            gender: response.result.gender,
-            address: response.result.address,
-            avatar: response.result.avatar,
-            ewallet: response.result.ewallet,
-            role: response.result.role,
-          };
-
-          const res = await getUserCart(response.result.accessToken);
-          if (res.success) {
-            cart.setItem("cart", JSON.stringify(res.result.cartItems));
-            setCartItems(res.result.cartItems);
+          if (window?.history?.state?.idx > 0) {
+            router.push("/");
+            router.refresh();
+          } else {
+            router.back();
+            router.refresh();
           }
-
-          setUser(newProfile);
-          router.refresh();
-          router.back();
         }
-      } else {
-        toast.update(id, {
-          render: ``,
-          type: "success",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        // router.refresh();
-        router.back();
       }
     } else {
       toast.dismiss();

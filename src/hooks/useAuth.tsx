@@ -354,3 +354,23 @@ export const makeAnOrder = async (accessToken: string, payload: any) => {
     return error.response.data;
   }
 };
+
+export const getUserOrder = async (orderId: number, accessToken: string) => {
+  const config = {
+    headers: {
+      "Cache-Control": "force-cache",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.get(
+      `${HTTP_PORT}/api/v1/users/customers/orders/${orderId}`,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};

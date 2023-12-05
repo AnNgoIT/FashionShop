@@ -17,7 +17,9 @@ export const useAllProducts = () => {
     (url: string) => getData(url),
     {
       // revalidateIfStale: false,
-      // revalidateOnFocus: false,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 2000,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
         // Never retry on 404.
         if (error.status === 404) return;
@@ -106,7 +108,7 @@ export const addProductItemToCart = async (
 ) => {
   const config: any = {
     headers: {
-      "Cache-Control": "force-cache",
+      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
   };

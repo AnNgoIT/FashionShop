@@ -49,10 +49,24 @@ const CartDropdown = (props: CartProps) => {
           itemId
         );
         if (res.success) {
+          setCartItems((prevItems) =>
+            prevItems.map((item) =>
+              item.cartItemId === itemId
+                ? { ...item, quantity: newQuantity }
+                : item
+            )
+          );
           router.refresh();
         } else if (res.statusCode === 400) {
           maxQuanity(res.result);
-          setCartItems(userCart);
+          // setCartItems((prevItems) =>
+          //   prevItems.map((item) =>
+          //     item.cartItemId === itemId
+          //       ? { ...item, quantity: res.result }
+          //       : item
+          //   )
+          // );
+          router.refresh();
         } else if (res.statusCode === 401) {
           requireLogin();
           router.push("/login");
@@ -60,7 +74,7 @@ const CartDropdown = (props: CartProps) => {
       } catch (error: any) {
         console.log(error);
       }
-    }, 500),
+    }, 1000),
     []
   );
 
@@ -80,11 +94,8 @@ const CartDropdown = (props: CartProps) => {
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
       deleteSuccess();
-      const newCart = await getUserCart(getCookie("accessToken")!);
-      if (newCart.success) {
-        setCartItems(newCart.result.cartItems);
-        router.refresh();
-      }
+      setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
+      router.refresh();
     }
   };
 
@@ -194,22 +205,14 @@ const CartDropdown = (props: CartProps) => {
               )} VNĐ`}
             </strong>
           </div>
-          <div className="mt-3 flex justify-between items-center font-bold">
+          <div className="mt-3 flex justify-end items-center font-bold">
             <Link
               href="/cart"
               onClick={() => {
                 if (user.email == "") requireLogin();
               }}
             >
-              <NavigateButton>Giỏ hàng</NavigateButton>
-            </Link>
-            <Link
-              href="/cart/checkout"
-              onClick={() => {
-                if (user.email == "") requireLogin();
-              }}
-            >
-              <NavigateButton>Thanh toán</NavigateButton>
+              <NavigateButton>Xem Giỏ hàng</NavigateButton>
             </Link>
           </div>
         </>

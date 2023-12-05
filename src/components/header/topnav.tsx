@@ -48,6 +48,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { requireLogin } from "@/features/toasting";
+import { userInfo } from "os";
 const Input = styled("input")(({ theme }) => ({
   width: 200,
   backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
@@ -86,11 +87,12 @@ type NavProps = {
 
 const TopNav = (props: NavProps) => {
   const { info, userCart, token, products } = props;
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [onSearch, setOnSearch] = useState(false);
-
+  const [isReloading, setReloading] = useState<boolean>(false);
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams);
@@ -103,20 +105,39 @@ const TopNav = (props: NavProps) => {
 
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
-  // const cart = useLocal();
   const { cartItems, setCartItems } = useContext(CartContext);
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   const cookies = getCookies();
-  const userInfo = info;
 
   useEffect(() => {
     if (userCart) {
+      setReloading(true);
       setCartItems(userCart);
     }
-    if (token && token.accessToken == "" && token.refreshToken == "") {
-      deleteCookie("accessToken");
-      deleteCookie("refreshToken");
-    } else if (token && token.accessToken !== "" && token.refreshToken !== "") {
+    setUser(
+      info
+        ? info
+        : {
+            fullname: null,
+            email: "",
+            phone: "",
+            dob: null,
+            gender: null,
+            address: null,
+            avatar: "",
+            ewallet: 0,
+            role: "GUEST",
+          }
+    );
+
+    if (token) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
@@ -130,23 +151,8 @@ const TopNav = (props: NavProps) => {
         maxAge: REFRESH_MAX_AGE,
       });
     }
-    setUser(
-      userInfo
-        ? userInfo
-        : {
-            fullname: null,
-            email: "",
-            phone: "",
-            dob: null,
-            gender: null,
-            address: null,
-            avatar: "",
-            ewallet: 0,
-            role: "GUEST",
-          }
-    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userInfo]);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -161,29 +167,28 @@ const TopNav = (props: NavProps) => {
           autoClose: 1000,
           isLoading: false,
         });
+        setUser({
+          fullname: null,
+          email: "",
+          phone: "",
+          dob: null,
+          gender: null,
+          address: null,
+          avatar: "",
+          ewallet: 0,
+          role: "GUEST",
+        });
+        scrollToTop();
+        router.refresh();
+        router.push("/login");
         // Refresh the current route and fetch new data from the server without
         // losing client-side browser or React state.
-        router.refresh();
-        router.push("/");
-      } else {
-        deleteCookie("accessToken");
-        deleteCookie("refreshToken");
-        router.push("/login");
       }
     } catch (error) {
-    } finally {
-      setUser({
-        fullname: null,
-        email: "",
-        phone: "",
-        dob: null,
-        gender: null,
-        address: null,
-        avatar: "",
-        ewallet: 0,
-        role: "GUEST",
-      });
+      requireLogin();
+      scrollToTop();
       router.push("/login");
+      router.refresh();
     }
   };
 
@@ -302,7 +307,7 @@ const TopNav = (props: NavProps) => {
           className={`justify-end items-center md:col-span-5 xl:col-span-4 max-md:hidden flex`}
         >
           <li>
-            {!userInfo && (
+            {!info && (
               <Menu
                 dropdownContent={
                   <Paper
@@ -310,11 +315,7 @@ const TopNav = (props: NavProps) => {
                       zIndex: "3",
                     }}
                   >
-                    <Link
-                      href="/register"
-                      prefetch={false}
-                      className="w-full h-full"
-                    >
+                    <Link href="/register" className="w-full h-full">
                       <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                         <LockOpenIcon />
                         <span className="truncate px-2">Đăng ký</span>
@@ -322,8 +323,13 @@ const TopNav = (props: NavProps) => {
                     </Link>
                     <Link
                       href="/login"
-                      prefetch={false}
                       className="w-full h-full"
+                      as={"/login"}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToTop();
+                        router.push("/login");
+                      }}
                     >
                       <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                         <LoginIcon />
@@ -333,7 +339,15 @@ const TopNav = (props: NavProps) => {
                   </Paper>
                 }
                 buttonChildren={
-                  <Link href="/login" prefetch={false}>
+                  <Link
+                    href="/login"
+                    as={"/login"}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToTop();
+                      router.push("/login");
+                    }}
+                  >
                     <div className="relative flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
                       <FontAwesomeIcon
                         className="text-white"
@@ -347,7 +361,7 @@ const TopNav = (props: NavProps) => {
                 }
               ></Menu>
             )}
-            {userInfo && user.email !== "" && (
+            {info && user.email !== "" && (
               <Menu
                 arrowPos="70px"
                 dropdownContent={
@@ -370,12 +384,12 @@ const TopNav = (props: NavProps) => {
                       className="w-full h-full"
                       href="profile/order-tracking"
                     >
-                      <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                      <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                         <HistoryIcon />
                         <span className="truncate px-2">Đơn mua</span>
                       </div>
                     </Link>
-                    <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                    <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                       <button onClick={handleLogout}>
                         <LogoutIcon />
                         <span className="truncate px-2">Đăng xuất</span>
@@ -399,7 +413,7 @@ const TopNav = (props: NavProps) => {
                 }
               ></Menu>
             )}
-            {userInfo && user.email === "" && (
+            {info && user.email === "" && (
               <Menu
                 arrowPos="70px"
                 dropdownContent={
@@ -444,10 +458,10 @@ const TopNav = (props: NavProps) => {
                     <Avatar
                       sizes="50vw"
                       alt="avatar"
-                      src={userInfo.avatar ? userInfo.avatar : user_img2.src}
+                      src={info.avatar ? info.avatar : user_img2.src}
                     ></Avatar>
                     <span className="lowercase text-white text-sm max-md:hidden">
-                      {userInfo.fullname}
+                      {info.fullname}
                     </span>
                   </Link>
                 }
@@ -482,9 +496,9 @@ const TopNav = (props: NavProps) => {
                     Thông báo
                   </span>
                   <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems && cartItems.length == 0
-                      ? userCart && userCart.length
-                      : cartItems.length}
+                    {info && cartItems && isReloading
+                      ? cartItems.length
+                      : userCart && userCart!.length}
                   </div>
                 </div>
               }
@@ -512,7 +526,7 @@ const TopNav = (props: NavProps) => {
                 <Link href="/cart">
                   <div
                     onClick={() => {
-                      if (!userInfo) requireLogin();
+                      if (!info) requireLogin();
                     }}
                     className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
                   >
@@ -525,9 +539,9 @@ const TopNav = (props: NavProps) => {
                     </span>
                   </div>
                   <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems && cartItems.length == 0
-                      ? userCart && userCart.length
-                      : cartItems.length}
+                    {info && cartItems && isReloading
+                      ? cartItems.length
+                      : userCart && userCart!.length}
                   </div>
                 </Link>
               }

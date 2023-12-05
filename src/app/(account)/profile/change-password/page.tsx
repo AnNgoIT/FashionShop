@@ -11,6 +11,7 @@ import { changePassword } from "@/hooks/useAuth";
 import { validateChangePasswordForm } from "@/features/validation";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { requireLogin } from "@/features/toasting";
 const ChangePasswordPage = () => {
   const router = useRouter();
   const [userPassword, setUserPassword] = useState({
@@ -59,11 +60,11 @@ const ChangePasswordPage = () => {
 
     if (isError(formErrors)) {
       // Xử lý logic reset mật khẩu ở đây
-      const id = toast.loading("Please wait...");
+      const id = toast.loading("Đang đổi...");
       const response = await changePassword(getCookie("accessToken")!, reset);
       if (response.success) {
         toast.update(id, {
-          render: "Change password success",
+          render: "Đổi mật khẩu thành công",
           type: "success",
           autoClose: 1500,
           isLoading: false,
@@ -74,24 +75,19 @@ const ChangePasswordPage = () => {
         router.refresh();
       }
       if (response.statusCode == 401) {
-        toast.update(id, {
-          render: "Please Login",
-          type: "warning",
-          autoClose: 3000,
-          isLoading: false,
-        });
+        requireLogin();
         router.push("/login");
         router.refresh();
       } else if (response.statusCode == 400) {
         toast.update(id, {
-          render: "Wrong Password",
+          render: "Sai mật khẩu",
           type: "error",
           autoClose: 1500,
           isLoading: false,
         });
         setErrors({
           ...formErrors,
-          currentPassword: "Wrong Password",
+          currentPassword: "Sai mật khẩu",
         });
       }
     } else setErrors(formErrors);
@@ -104,7 +100,7 @@ const ChangePasswordPage = () => {
     >
       <div className="col-span-full grid grid-flow-col max-md:grid-flow-row gap-4 place-content-center md:items-center md:place-content-between pb-4 border-b-[0] lg:border-b border-border-color">
         <h2 className="text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center">
-          Change Password
+          Đổi mật khẩu
         </h2>
       </div>
       <form
@@ -114,7 +110,7 @@ const ChangePasswordPage = () => {
         <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
           <FormControl className="w-full" error={errors.currentPassword != ""}>
             <InputLabel className="mb-2" htmlFor="currentPassword">
-              Current Password
+              Mật khẩu hiện tại
             </InputLabel>
             <OutlinedInput
               fullWidth
@@ -125,7 +121,7 @@ const ChangePasswordPage = () => {
               onChange={handleChange}
               id="currentPassword"
               name="currentPassword"
-              label="Current Password"
+              label="Mật khẩu hiện tại"
             />
             <FormHelperText id="currentPassword-error">
               {errors.currentPassword}
@@ -135,7 +131,7 @@ const ChangePasswordPage = () => {
         <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
           <FormControl className="w-full" error={errors.newPassword != ""}>
             <InputLabel className="mb-2" htmlFor="newPassword">
-              New Password
+              Mật khẩu mới
             </InputLabel>
             <OutlinedInput
               fullWidth
@@ -147,7 +143,7 @@ const ChangePasswordPage = () => {
               id="newPassword"
               name="newPassword"
               // placeholder="Type your newPassword"
-              label="New Password"
+              label="Mật khẩu mới"
             />
             <FormHelperText id="password-error">
               {errors.newPassword}
@@ -157,7 +153,7 @@ const ChangePasswordPage = () => {
         <div className="col-span-full lg:col-span-6 lg:col-start-4 text-sm text-[#999] font-medium mb-4">
           <FormControl className="w-full" error={errors.confirmPassword != ""}>
             <InputLabel htmlFor="confirmPassword">
-              Confirm New Password
+              Xác nhận mật khẩu mới
             </InputLabel>
             <OutlinedInput
               fullWidth
@@ -167,7 +163,7 @@ const ChangePasswordPage = () => {
               id="confirmPassword"
               onChange={handleChange}
               // placeholder="Type your confirmPassword"
-              label="Confirm New Password"
+              label="Xác nhận mật khẩu mới"
               name="confirmPassword"
             />
             <FormHelperText id="confirmPassword-error">
@@ -181,7 +177,7 @@ const ChangePasswordPage = () => {
                            float-right px-[15px] text-white rounded-[5px]"
             type="submit"
           >
-            Change
+            Đổi
           </button>
         </div>
       </form>

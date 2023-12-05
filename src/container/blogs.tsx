@@ -20,7 +20,7 @@ const Blogs = () => {
                 placeholder="blur"
                 className="w-full"
                 width={300}
-                // height={0}s
+                height={300}
                 alt="latestBlog"
                 src={blog_img1}
               ></Image>

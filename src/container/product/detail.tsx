@@ -65,6 +65,13 @@ const ProductDetail = (props: ProductDetailProps) => {
   });
   const { cartItems, setCartItems } = useContext(CartContext);
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   function resetProductItem() {
     setProductItem({
       productItemId: 0,
@@ -391,7 +398,11 @@ const ProductDetail = (props: ProductDetailProps) => {
     );
   };
 
-  const handleAddToCart = async (productItemId: number) => {
+  const handleAddToCart = async (
+    event: { preventDefault: () => void },
+    productItemId: number
+  ) => {
+    event.preventDefault();
     if (
       (detail.styleNames.length == 1 &&
         (isSizeActive.length > 0 || isColorActive.length > 0)) ||
@@ -409,7 +420,6 @@ const ProductDetail = (props: ProductDetailProps) => {
           getCookie("accessToken")!,
           payload
         );
-
         if (res.success) {
           toast.update(id, {
             render: `Thêm vào giỏ hàng thành công`,
@@ -418,21 +428,18 @@ const ProductDetail = (props: ProductDetailProps) => {
             isLoading: false,
           });
           setSelected(false);
-          const cartRes = await getUserCart(getCookie("accessToken")!);
-          if (cartRes.success) {
-            // Lưu giỏ hàng đã cập nhật vào localStorage
-            // cart.setItem("cart", JSON.stringify(res.result.cartItems), "local");
-            setCartItems(cartRes.result.cartItems);
-            resetProductItem();
-            router.refresh();
-          }
-        } else if (res.statusCode == 401) {
+          resetProductItem();
+          setCartItems([...cartItems, res.result]);
+          router.refresh();
+        } else if (res.response.data.statusCode === 401) {
           toast.update(id, {
             render: `Bạn phải đăng nhập để sử dụng chức năng này`,
             type: "warning",
             autoClose: 500,
             isLoading: false,
           });
+          router.push("/login");
+          return;
         } else {
           toast.update(id, {
             render: "Lỗi hệ thống",
@@ -440,10 +447,11 @@ const ProductDetail = (props: ProductDetailProps) => {
             autoClose: 500,
             isLoading: false,
           });
+          router.refresh();
         }
       } else {
-        router.push("/login");
         requireLogin();
+        router.push("/login");
       }
     } else setSelected(true);
   };
@@ -658,8 +666,8 @@ const ProductDetail = (props: ProductDetailProps) => {
             )}
             <div className="pt-5 flex">
               <button
-                onClick={() => {
-                  handleAddToCart(productItem.productItemId);
+                onClick={(e) => {
+                  handleAddToCart(e, productItem.productItemId);
                 }}
                 className="rounded-[4px] bg-primary-color text-white px-4 py-3 
                                   font-medium flex justify-center items-center hover:bg-text-color

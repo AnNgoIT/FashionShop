@@ -10,6 +10,7 @@ import List from "@mui/material/List";
 import ListSubheader from "@mui/material/ListSubheader";
 import Avatar from "@mui/material/Avatar";
 import ListItemButton from "@mui/material/ListItemButton";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import { useContext, useEffect, useState } from "react";
@@ -87,7 +88,12 @@ const ProfileNav = () => {
                 )}
 
                 {userInfo.fullname === "" ? (
-                  <Skeleton variant="rectangular" width={100} height={20} />
+                  <Skeleton
+                    sx={{ display: { xs: "none", lg: "block" } }}
+                    variant="rectangular"
+                    width={100}
+                    height={20}
+                  />
                 ) : (
                   <span className="lowercase text-text-color text-sm max-lg:hidden">
                     {userInfo.fullname}
@@ -122,7 +128,7 @@ const ProfileNav = () => {
                     lg: "block",
                   },
                 }}
-                primary="Address"
+                primary="Địa chỉ"
               />
             </ListItemButton>
           </Link>
@@ -156,7 +162,7 @@ const ProfileNav = () => {
                   },
                   minWidth: "max-content",
                 }}
-                primary="Change Password"
+                primary="Đổi mật khẩu"
               />
             </ListItemButton>
           </Link>
@@ -188,7 +194,7 @@ const ProfileNav = () => {
                     lg: "block",
                   },
                 }}
-                primary="Order Tracking"
+                primary="Đơn Mua"
               />
             </ListItemButton>
           </Link>
@@ -220,7 +226,39 @@ const ProfileNav = () => {
                     lg: "block",
                   },
                 }}
-                primary="Order History"
+                primary="Lịch sử giao dịch"
+              />
+            </ListItemButton>
+          </Link>
+          <Link
+            className="col-span-1 lg:col-span-full"
+            href="/profile/notification"
+          >
+            <ListItemButton
+              sx={{
+                color: "black",
+                padding: "16px 6px!important",
+                "&:hover": {
+                  color: "#639df1",
+                },
+                display: {
+                  xs: "flex",
+                },
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ListItemIcon>
+                <NotificationsIcon sx={{ minWidth: "3rem" }} />
+              </ListItemIcon>
+              <ListItemText
+                sx={{
+                  display: {
+                    xs: "none",
+                    lg: "block",
+                  },
+                }}
+                primary="Thông báo"
               />
             </ListItemButton>
           </Link>
