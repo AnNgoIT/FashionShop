@@ -357,6 +357,7 @@ const ProductDetail = (props: ProductDetailProps) => {
   const handleClick = (event: any) => {
     event.target.select(); // Bôi đen toàn bộ giá trị khi click vào input
   };
+
   const handleChangeQuantity = (amount: number) => {
     if (amount === -1 && qty === 1 && !isNaN(amount)) {
       return;

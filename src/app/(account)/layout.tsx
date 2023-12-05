@@ -70,7 +70,7 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
           fullToken={fullToken}
           products={products}
         />
-        <main className="font-montserrat min-h-[40rem] py-12 bg-white  relative z-0">
+        <main className="font-montserrat py-12 bg-white relative z-0 overflow-hidden">
           <section className="container grid grid-cols-12 max-md:p-4 gap-x-2">
             {children}
           </section>

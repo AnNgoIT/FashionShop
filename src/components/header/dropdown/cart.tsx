@@ -39,6 +39,10 @@ const CartDropdown = (props: CartProps) => {
     };
   };
 
+  const handleClick = (event: any) => {
+    event.target.select(); // Bôi đen toàn bộ giá trị khi click vào input
+  };
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuantityChangeDebounced = useCallback(
     debounce(async (itemId: number, newQuantity: number) => {
@@ -59,13 +63,6 @@ const CartDropdown = (props: CartProps) => {
           router.refresh();
         } else if (res.statusCode === 400) {
           maxQuanity(res.result);
-          // setCartItems((prevItems) =>
-          //   prevItems.map((item) =>
-          //     item.cartItemId === itemId
-          //       ? { ...item, quantity: res.result }
-          //       : item
-          //   )
-          // );
           router.refresh();
         } else if (res.statusCode === 401) {
           requireLogin();
@@ -124,11 +121,13 @@ const CartDropdown = (props: CartProps) => {
                       <div className="border border-b-border-color h-full">
                         <Image
                           loader={imageLoader}
+                          placeholder="blur"
+                          blurDataURL={item.image}
                           className="h-full"
                           alt="productImage"
                           src={item.image}
                           width={200}
-                          height={300}
+                          height={200}
                         ></Image>
                       </div>
                       <div className="grid">
@@ -172,14 +171,14 @@ const CartDropdown = (props: CartProps) => {
                               }`}
                               className="border-[1px] border-border-color rounded-md py-0.5 px-3 max-w-[2.5rem]
                             outline-1 outline-primary-color mx-1 text-center"
-                              onKeyDown={(e) => onlyNumbers(e)}
+                              onFocus={handleClick}
                               onChange={(e) =>
                                 handleQuantityChange(
                                   item.cartItemId,
                                   +e.target.value
                                 )
                               }
-                              type="text"
+                              type="number"
                               value={item.quantity}
                               required
                             ></input>

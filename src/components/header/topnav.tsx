@@ -118,8 +118,10 @@ const TopNav = (props: NavProps) => {
 
   useEffect(() => {
     if (userCart) {
-      setReloading(true);
-      setCartItems(userCart);
+      startTransition(() => {
+        setReloading(true);
+        setCartItems(userCart);
+      });
     }
     setUser(
       info
@@ -178,9 +180,10 @@ const TopNav = (props: NavProps) => {
           ewallet: 0,
           role: "GUEST",
         });
+        setCartItems([]);
         scrollToTop();
-        router.refresh();
         router.push("/login");
+        router.refresh();
         // Refresh the current route and fetch new data from the server without
         // losing client-side browser or React state.
       }
@@ -321,16 +324,7 @@ const TopNav = (props: NavProps) => {
                         <span className="truncate px-2">Đăng ký</span>
                       </div>
                     </Link>
-                    <Link
-                      href="/login"
-                      className="w-full h-full"
-                      as={"/login"}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        scrollToTop();
-                        router.push("/login");
-                      }}
-                    >
+                    <Link href="/login" className="w-full h-full" as={"/login"}>
                       <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                         <LoginIcon />
                         <span className="truncate px-2">Đăng nhập</span>
@@ -339,15 +333,7 @@ const TopNav = (props: NavProps) => {
                   </Paper>
                 }
                 buttonChildren={
-                  <Link
-                    href="/login"
-                    as={"/login"}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToTop();
-                      router.push("/login");
-                    }}
-                  >
+                  <Link href="/login" as={"/login"}>
                     <div className="relative flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
                       <FontAwesomeIcon
                         className="text-white"

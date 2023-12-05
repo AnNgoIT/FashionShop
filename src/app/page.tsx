@@ -39,7 +39,7 @@ export const refreshLogin = async (refreshToken: string) => {
 };
 
 export const fetchUserCredentials = async (accessToken: string) => {
-  const res = await fetch(`${HTTP_PORT}/api/v1/users/customers/profile`, {
+  const res = await fetch(`${HTTP_PORT}/api/v1/users/profile`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     cache: "no-cache",
     mode: "same-origin", // no-cors, *cors, same-origin
@@ -94,6 +94,7 @@ const Home = async () => {
     fullToken = undefined;
   if (res.statusCode == 401) {
     if (hasCookie("refreshToken", { cookies })) {
+      console.log("Hello");
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
@@ -145,8 +146,8 @@ const Home = async () => {
         fullToken={fullToken}
         products={products}
       ></Header>
-      <main className="font-sans min-h-[50rem] bg-white mt-[4.75rem]">
-        <Container categories={categories}></Container>
+      <main className="font-sans bg-white mt-[4.75rem]">
+        <Container products={products} categories={categories}></Container>
       </main>
       <Footer></Footer>
     </>

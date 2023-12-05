@@ -23,36 +23,35 @@ const authPaths = ["/cart", "/cart/checkout", "/wishlist"];
 const userPaths = ["/login", "/register", "/forgot-password"];
 
 export async function middleware(request: NextRequest) {
-  const accessToken = request.cookies.get("accessToken");
+  // const accessToken = request.cookies.get("accessToken");
 
-  if (!accessToken) {
-    if (request.nextUrl.pathname.startsWith("/admin"))
-      return NextResponse.redirect(new URL("/", request.url));
-    else if (
-      request.nextUrl.pathname.startsWith("/profile") ||
-      authPaths.includes(request.nextUrl.pathname)
-    )
-      return NextResponse.redirect(new URL("/login", request.url));
-  }
+  // if (!accessToken) {
+  //   // if (request.nextUrl.pathname.startsWith("/admin"))
+  //   //   return NextResponse.redirect(new URL("/", request.url));
+  //   // else if (
+  //   //   request.nextUrl.pathname.startsWith("/profile") ||
+  //   //   authPaths.includes(request.nextUrl.pathname)
+  //   // )
+  //   return NextResponse.redirect(new URL("/login", request.url));
+  // }
 
-  const authenticatedUser = await getRole(accessToken?.value);
-  if (authenticatedUser && authenticatedUser.success) {
-    const userRole = authenticatedUser.result;
-    if (userRole === "ADMIN") {
-      if (!request.nextUrl.pathname.startsWith("/admin"))
-        return NextResponse.redirect(new URL("/admin", request.url));
-    } else if (
-      userRole === "CUSTOMER" &&
-      (userPaths.includes(request.nextUrl.pathname) ||
-        request.nextUrl.pathname.startsWith("/admin"))
-    ) {
-      return NextResponse.redirect(new URL("/profile", request.url));
-    }
-  }
+  // const authenticatedUser = await getRole(accessToken?.value);
+  // if (authenticatedUser && authenticatedUser.success) {
+  //   const userRole = authenticatedUser.result;
+  //   if (userRole === "ADMIN") {
+  //     if (!request.nextUrl.pathname.startsWith("/admin"))
+  //       return NextResponse.redirect(new URL("/admin", request.url));
+  //   } else if (
+  //     userRole === "CUSTOMER" &&
+  //     (userPaths.includes(request.nextUrl.pathname) ||
+  //       request.nextUrl.pathname.startsWith("/admin"))
+  //   ) {
+  //     return NextResponse.redirect(new URL("/profile", request.url));
+  //   }
+  // }
 }
 
 export const config = {
-  runtime: "experimental-edge",
   matcher: [
     "/",
     "/admin/:path*",

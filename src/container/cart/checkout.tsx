@@ -2,7 +2,7 @@
 import { Total } from "@/features/cart/TotalPrice";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import Link from "next/link";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import Image from "next/image";
 import { CartContext } from "@/store";
 import usePath from "@/hooks/usePath";
@@ -15,8 +15,8 @@ import Button from "@mui/material/Button";
 import { deleteAllCartItem, makeAnOrder } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { toast } from "react-toastify";
-import { requireLogin } from "@/features/toasting";
-import { useRouter } from "next/navigation";
+import { noAddressAdded, requireLogin } from "@/features/toasting";
+import { redirect, useRouter } from "next/navigation";
 import useLocal from "@/hooks/useLocalStorage";
 
 type CheckOutProps = {
@@ -36,14 +36,17 @@ const Checkout = (props: CheckOutProps) => {
   const router = useRouter();
   const { userInfo, userCart } = props;
   const { cartItems, setCartItems } = useContext(CartContext);
-  const cart = useLocal();
   const [orderInfo, setOrderInfo] = useState<OrderInfo>({
-    cartItemIds: userCart?.map((cart) => cart.cartItemId) || [],
+    cartItemIds: cartItems?.map((cart) => cart.cartItemId) || [],
     fullName: userInfo?.fullname || "",
     phone: userInfo?.phone || "",
-    address: "",
+    address: userInfo?.address?.split(",")[0] || "",
     transactionType: "COD",
   });
+
+  // if (cartItems.length == 0) {
+  //   redirect("/cart");
+  // }
 
   const thisPaths = usePath();
   const urlLink = thisPaths;
@@ -59,6 +62,10 @@ const Checkout = (props: CheckOutProps) => {
   const handleSubmitOrder = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     const newOrder: OrderInfo = orderInfo;
+    if (newOrder.address.length == 0) {
+      noAddressAdded();
+      return;
+    }
     try {
       const id = toast.loading("Vui lòng chờ...");
       const res = await makeAnOrder(getCookie("accessToken")!, newOrder);
@@ -69,8 +76,8 @@ const Checkout = (props: CheckOutProps) => {
           autoClose: 1500,
           isLoading: false,
         });
-        cart.removeItem("cart");
         setCartItems([]);
+        router.push("/profile/order-tracking");
         router.refresh();
       } else if (res.statusCode == 500) {
         toast.update(id, {
@@ -82,6 +89,7 @@ const Checkout = (props: CheckOutProps) => {
       } else if (res.statusCode == 401) {
         requireLogin();
         router.push("/login");
+        router.refresh();
       } else {
         toast.update(id, {
           render: `${res.message}`,
@@ -185,12 +193,12 @@ const Checkout = (props: CheckOutProps) => {
               Đơn hàng
             </h1>
             <ul className="flex flex-col">
-              {userCart &&
-                userCart.map((cartItem: cartItem) => {
+              {cartItems &&
+                cartItems.map((cartItem: cartItem) => {
                   return (
                     <li
                       className={`p-4 ${
-                        cartItem === userCart[userCart.length - 1]
+                        cartItem === cartItems[cartItems.length - 1]
                           ? ""
                           : "border-b border-[#e5e5e5]"
                       }`}

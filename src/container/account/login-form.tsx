@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState, useTransition } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -8,20 +8,15 @@ import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import { getUserCart, login } from "@/hooks/useAuth";
+import { login } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { getCookie, setCookie } from "cookies-next";
+import { setCookie } from "cookies-next";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE, getUserRole } from "@/hooks/useData";
+import { getUserRole } from "@/hooks/useData";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
-import { CartContext, UserContext } from "@/store";
-import { UserInfo } from "@/features/types";
-import useLocal from "@/hooks/useLocalStorage";
-import { addProductItemToCart } from "@/hooks/useProducts";
-import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { loginSuccess } from "@/features/toasting";
 
 type Login = {
   email: string;
@@ -30,14 +25,11 @@ type Login = {
 
 const LoginForm = () => {
   const router = useRouter();
-
-  const { setUser } = useContext(UserContext);
   const [account, setAccount] = useState<Login>({ email: "", password: "" });
   const [errors] = useState<Login>({ email: "", password: "" });
   const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-
   const handleMouseDownPassword = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -55,14 +47,12 @@ const LoginForm = () => {
     setError("");
   };
 
-  const handleLogin = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-
+  const handleLogin = async () => {
     const loginAccount: Login = {
       email: account.email,
       password: account.password,
     };
-    const id = toast.loading("Vui lòng đợi...");
+    // const id = toast.loading("Vui lòng đợi...");
     const response = await login(loginAccount);
     if (response.success) {
       setCookie("accessToken", response.result.accessToken, {
@@ -71,12 +61,7 @@ const LoginForm = () => {
       setCookie("refreshToken", response.result.refreshToken, {
         expires: decodeToken(response.result.refreshToken)!,
       });
-      toast.update(id, {
-        render: `Đăng nhập thành công`,
-        type: "success",
-        autoClose: 1500,
-        isLoading: false,
-      });
+      // loginSuccess();
 
       const isAdmin = await getUserRole(response.result.accessToken);
       if (isAdmin.success) {
@@ -87,13 +72,11 @@ const LoginForm = () => {
           router.refresh();
           router.push("/shipper");
         } else {
-          if (window?.history?.state?.idx > 0) {
-            router.push("/");
+          loginSuccess();
+          router.back();
+          setTimeout(() => {
             router.refresh();
-          } else {
-            router.back();
-            router.refresh();
-          }
+          }, 100);
         }
       }
     } else {

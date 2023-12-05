@@ -33,37 +33,43 @@ import MuiPhoneNumber from "mui-phone-number";
 dayjs.extend(isLeapYear); // use plugin
 dayjs.locale("en"); // use locale
 
-const ProfileForm = () => {
+const ProfileForm = ({ info }: { info?: UserInfo }) => {
   const router = useRouter();
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const [avatar, setAvatar] = useState<any>("");
   const [isUpdating, setIsUpdating] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    fullname: "",
-    email: "",
-    phone: "",
-    dob: dayjs().toISOString(),
-    gender: "",
-    address: "",
-    avatar: "",
-    ewallet: 0,
-    role: "GUEST",
-  });
+  const [userInfo, setUserInfo] = useState<UserInfo>(
+    info || {
+      fullname: "",
+      email: "",
+      phone: "",
+      dob: dayjs().toISOString(),
+      gender: "",
+      address: "",
+      avatar: "",
+      ewallet: 0,
+      role: "GUEST",
+    }
+  );
 
   useEffect(() => {
-    setUserInfo({
-      ...user,
-      fullname: user.fullname ? user.fullname : "",
-      email: user.email ? user.email : "",
-      phone: user.phone ? user.phone : "",
-      dob: user.dob ? user.dob : dayjs().toISOString(),
-      gender: user.gender ? user.gender : "",
-      address: user.address ? user.address : "",
-      avatar: user.avatar ? user.avatar : "no avatar",
-      ewallet: 0,
-    });
-    setAvatar(user.avatar || "");
-  }, [user]);
+    if (info) {
+      setUser(info);
+      setUserInfo({
+        ...info,
+        fullname: info.fullname ? info.fullname : "",
+        email: info.email ? info.email : "",
+        phone: info.phone ? info.phone : "",
+        dob: info.dob ? info.dob : dayjs().toISOString(),
+        gender: info.gender ? info.gender : "",
+        address: info.address ? info.address : "",
+        avatar: info.avatar ? info.avatar : "no avatar",
+        ewallet: 0,
+      });
+      setAvatar(info.avatar || "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info]);
 
   const handleUserInfo = (e: any) => {
     const value = e.target.value;

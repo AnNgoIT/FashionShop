@@ -6,14 +6,15 @@ import FormHelperText from "@mui/material/FormHelperText";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import { redirect, usePathname, useRouter } from "next/navigation";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 const OTPForm = () => {
   const router = useRouter();
   const [otp, setOTP] = useState("");
   const [error, setError] = useState("");
   const { verifyEmail, setVerifyEmail } = useContext(VerifyEmailContext);
-
+  const mounted = useRef(false);
+  
   useEffect(() => {
     const timeout = setTimeout(() => {
       setVerifyEmail({ email: "" });

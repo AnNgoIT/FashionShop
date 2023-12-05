@@ -178,7 +178,7 @@ const OrderInfo = (props: OrderInfoProps) => {
                     }
                     value={provinces}
                     onChange={(_event, newProvinces) => {
-                      setProvinces(newProvinces!);
+                      setProvinces(newProvinces || "");
                     }}
                     options={provinceList}
                     renderInput={(params) => (
@@ -209,7 +209,7 @@ const OrderInfo = (props: OrderInfoProps) => {
                     }}
                     value={districts}
                     onChange={(_event, newDistricts) => {
-                      setDistricts(newDistricts!);
+                      setDistricts(newDistricts || "");
                     }}
                     isOptionEqualToValue={(option, value) =>
                       value === undefined || value === "" || option === value
@@ -245,7 +245,7 @@ const OrderInfo = (props: OrderInfoProps) => {
                     disabled={provinces == "" || districts == ""}
                     value={wards}
                     onChange={(_event, newWards) => {
-                      setWards(newWards!);
+                      setWards(newWards || "");
                     }}
                     isOptionEqualToValue={(option, value) =>
                       value === undefined || value === "" || option === value

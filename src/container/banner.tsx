@@ -92,6 +92,7 @@ const Banner = () => {
             <article className="grid grid-flow-col gap-x-4">
               <Image
                 loader={imageLoader}
+                blurDataURL={main_banner1.src}
                 placeholder="blur"
                 className="rounded-lg max-h-[245px]"
                 alt="banner1"
@@ -99,6 +100,7 @@ const Banner = () => {
               />
               <Image
                 loader={imageLoader}
+                blurDataURL={main_banner2.src}
                 placeholder="blur"
                 className="rounded-lg max-h-[245px]"
                 alt="banner2"
@@ -108,6 +110,7 @@ const Banner = () => {
             <article className="grid grid-flow-col gap-x-4">
               <Image
                 loader={imageLoader}
+                blurDataURL={main_banner1.src}
                 placeholder="blur"
                 className="rounded-lg max-h-[245px]"
                 alt="banner1"
@@ -115,6 +118,7 @@ const Banner = () => {
               />
               <Image
                 loader={imageLoader}
+                blurDataURL={main_banner2.src}
                 placeholder="blur"
                 className="rounded-lg max-h-[245px]"
                 alt="banner2"

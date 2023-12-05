@@ -1,5 +1,12 @@
 "use client";
-import { useCallback, useContext, useEffect, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,19 +17,21 @@ import {
   faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import { MaxAmounts, onlyNumbers } from "@/features/product/index";
 import { Total } from "@/features/cart/TotalPrice";
 import { CartContext } from "@/store";
-import { empty_cart, product_1 } from "@/assests/images";
+import { empty_cart } from "@/assests/images";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { imageLoader } from "@/features/img-loading";
 import NavigateButton, { QuantityButton } from "@/components/button";
 import { cartItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
-import useLocal from "@/hooks/useLocalStorage";
-import { toast } from "react-toastify";
-import { deleteSuccess, maxQuanity, requireLogin } from "@/features/toasting";
-import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
+import {
+  deleteSuccess,
+  maxQuanity,
+  noCartItemSelected,
+  requireLogin,
+} from "@/features/toasting";
+import { deleteCartItem, updateCartItem } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import LoadingComponent from "@/components/loading";
@@ -35,12 +44,20 @@ export type CartProps = {
 
 const Cart = (props: CartProps) => {
   const { userCart } = props;
-  const [isCartItemChecked, setCartItemChecked] = useState<number[]>([]);
   const router = useRouter();
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
   const { cartItems, setCartItems } = useContext(CartContext);
+  const [isCartItemChecked, setCartItemChecked] = useState<cartItem[]>([]);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (userCart) {
+      setCartItems(userCart);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userCart]);
 
   let timeoutId: NodeJS.Timeout | null = null;
 
@@ -56,21 +73,22 @@ const Cart = (props: CartProps) => {
     };
   };
 
-  const handleCartItemChecked = (cartItemId: number) => {
-    const updatedCartItemChecked = [...isCartItemChecked];
+  const handleClick = (event: any) => {
+    event.target.select(); // Bôi đen toàn bộ giá trị khi click vào input
+  };
 
-    // Kiểm tra xem sản phẩm đã chọn có trong danh sách hay không
-    const index = updatedCartItemChecked.indexOf(cartItemId);
+  const handleCartItemChecked = (cartItem: cartItem) => {
+    const existingIndex = isCartItemChecked.findIndex(
+      (item) => item.cartItemId === cartItem.cartItemId
+    );
 
-    // Nếu sản phẩm đã được chọn thì loại bỏ khỏi danh sách, ngược lại thêm vào
-    if (index === -1) {
-      updatedCartItemChecked.push(cartItemId);
+    if (existingIndex !== -1) {
+      const updatedCartItemChecked = [...isCartItemChecked];
+      updatedCartItemChecked.splice(existingIndex, 1);
+      setCartItemChecked(updatedCartItemChecked);
     } else {
-      updatedCartItemChecked.splice(index, 1);
+      setCartItemChecked([...isCartItemChecked, cartItem]);
     }
-
-    // Cập nhật state với danh sách sản phẩm đã cập nhật
-    setCartItemChecked(updatedCartItemChecked);
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,6 +108,13 @@ const Cart = (props: CartProps) => {
                 : item
             )
           );
+          setCartItemChecked((prevItems: cartItem[]) =>
+            prevItems.map((item: cartItem) =>
+              item.cartItemId === itemId
+                ? { ...item, quantity: newQuantity }
+                : item
+            )
+          );
           router.refresh();
         } else if (res.statusCode === 400) {
           maxQuanity(res.result);
@@ -98,9 +123,7 @@ const Cart = (props: CartProps) => {
           requireLogin();
           router.push("/login");
         }
-      } catch (error: any) {
-        console.log(error);
-      }
+      } catch (error: any) {}
     }, 1000),
     []
   );
@@ -114,6 +137,11 @@ const Cart = (props: CartProps) => {
         item.cartItemId === itemId ? { ...item, quantity: newQuantity } : item
       )
     );
+    setCartItemChecked((prevItems: cartItem[]) =>
+      prevItems.map((item: cartItem) =>
+        item.cartItemId === itemId ? { ...item, quantity: newQuantity } : item
+      )
+    );
     handleQuantityChangeDebounced(itemId, newQuantity); // Gọi hàm debounce trong hàm này
   };
 
@@ -123,6 +151,17 @@ const Cart = (props: CartProps) => {
       deleteSuccess();
       setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
       router.refresh();
+    }
+  };
+  const handleCheckout = () => {
+    if (isCartItemChecked.length == 0) {
+      noCartItemSelected();
+    } else {
+      startTransition(() => {
+        router.push("/cart/checkout");
+        setCartItems(isCartItemChecked);
+        router.refresh();
+      });
     }
   };
 
@@ -229,98 +268,99 @@ const Cart = (props: CartProps) => {
                 </tr>
               </thead>
               <tbody className="text-center">
-                {cartItems.map((item: cartItem) => (
-                  <tr key={item.cartItemId}>
-                    <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
-                      <FormControlLabel
-                        sx={{ marginLeft: "0" }}
-                        label=""
-                        control={
-                          <Checkbox
-                            checked={isCartItemChecked.includes(
-                              item.cartItemId
-                            )}
-                            onChange={() =>
-                              handleCartItemChecked(item.cartItemId)
-                            }
-                          />
-                        }
-                      />
-                    </td>
-                    <td className="max-w-[120px] p-3 border border-border-color">
-                      <div className="max-w-[120px] border border-border-color">
-                        <Image
-                          loader={imageLoader}
-                          placeholder="blur"
-                          blurDataURL={item.image}
-                          width={120}
-                          height={120}
-                          src={item.image}
-                          alt="cartImg"
-                        ></Image>
-                      </div>
-                    </td>
-                    <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
-                      {item.productName}
-                    </td>
-                    <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
-                      {item.styleValues.join(" - ")}
-                    </td>
-                    <td className="min-w-[150px] p-3 border border-border-color  text-primary-color font-bold">{`${FormatPrice(
-                      item.productPromotionalPrice
-                    )} VNĐ`}</td>
-                    <td className=" min-w-[180px] p-3 border border-border-color">
-                      <div className="w-full flex items-center justify-center">
-                        <QuantityButton
-                          onClick={() =>
-                            handleQuantityChange(
-                              item.cartItemId,
-                              item.quantity - 1 < 0 ? 0 : item.quantity - 1
-                            )
+                {cartItems &&
+                  cartItems.map((item: cartItem) => (
+                    <tr key={item.cartItemId}>
+                      <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
+                        <FormControlLabel
+                          sx={{ marginX: "0" }}
+                          label=""
+                          control={
+                            <Checkbox
+                              checked={isCartItemChecked.some(
+                                (cartItem) =>
+                                  cartItem.cartItemId == item.cartItemId
+                              )}
+                              onChange={() => handleCartItemChecked(item)}
+                            />
                           }
-                        >
-                          <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
-                        </QuantityButton>
-                        <input
-                          type="number"
-                          onKeyDown={(e) => onlyNumbers(e)}
-                          onChange={(e) =>
-                            handleQuantityChange(
-                              item.cartItemId,
-                              +e.target.value
-                            )
-                          }
-                          className="border-y border-border-color w-10 py-1.5 text-center text-text-color outline-none
-                      focus:border focus:border-primary-color"
-                          value={item.quantity}
-                          required
                         />
-                        <QuantityButton
-                          onClick={() =>
-                            handleQuantityChange(
-                              item.cartItemId,
-                              item.quantity + 1
-                            )
-                          }
+                      </td>
+                      <td className="max-w-[120px] p-3 border border-border-color">
+                        <div className="max-w-[120px] border border-border-color">
+                          <Image
+                            className="w-full h-full"
+                            loader={imageLoader}
+                            placeholder="blur"
+                            blurDataURL={item.image}
+                            width={120}
+                            height={120}
+                            src={item.image}
+                            alt="cartImg"
+                          ></Image>
+                        </div>
+                      </td>
+                      <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
+                        {item.productName}
+                      </td>
+                      <td className=" max-w-[120px] p-3 border border-border-color text-[16px] leading-[30px] text-[#999] text-center">
+                        {item.styleValues.join(" - ")}
+                      </td>
+                      <td className="min-w-[150px] p-3 border border-border-color  text-primary-color font-bold">{`${FormatPrice(
+                        item.productPromotionalPrice
+                      )} VNĐ`}</td>
+                      <td className=" min-w-[180px] p-3 border border-border-color">
+                        <div className="w-full flex items-center justify-center">
+                          <QuantityButton
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.cartItemId,
+                                item.quantity - 1 < 0 ? 0 : item.quantity - 1
+                              )
+                            }
+                          >
+                            <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
+                          </QuantityButton>
+                          <input
+                            type="number"
+                            onFocus={handleClick}
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                item.cartItemId,
+                                +e.target.value
+                              )
+                            }
+                            className="border-y border-border-color w-10 py-1.5 text-center text-text-color outline-none
+                      focus:border focus:border-primary-color"
+                            value={item.quantity}
+                            required
+                          />
+                          <QuantityButton
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.cartItemId,
+                                item.quantity + 1
+                              )
+                            }
+                          >
+                            <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
+                          </QuantityButton>
+                        </div>
+                      </td>
+                      <td className="min-w-[150px] p-3 border border-border-color text-primary-color font-bold">{`${FormatPrice(
+                        item.productPromotionalPrice * item.quantity
+                      )} VNĐ`}</td>
+                      <td className="max-w-[120px] p-3 border border-border-color">
+                        <button
+                          title="Remove Cart Item"
+                          className="bg-primary-color text-white py-[8px] px-[15px] rounded-md transition-all duration-200 hover:bg-text-color"
+                          onClick={() => handleRemoveItem(item.cartItemId)}
                         >
-                          <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
-                        </QuantityButton>
-                      </div>
-                    </td>
-                    <td className="min-w-[150px] p-3 border border-border-color text-primary-color font-bold">{`${FormatPrice(
-                      item.productPromotionalPrice * item.quantity
-                    )} VNĐ`}</td>
-                    <td className="max-w-[120px] p-3 border border-border-color">
-                      <button
-                        title="Remove Cart Item"
-                        className="bg-primary-color text-white py-[8px] px-[15px] rounded-md transition-all duration-200 hover:bg-text-color"
-                        onClick={() => handleRemoveItem(item.cartItemId)}
-                      >
-                        <FontAwesomeIcon icon={faTrashCan} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                          <FontAwesomeIcon icon={faTrashCan} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -350,7 +390,7 @@ const Cart = (props: CartProps) => {
                     <article className="flex justify-between items-center">
                       <h1 className="text-text-color">Tổng tiền giỏ hàng </h1>
                       <span className="text-primary-color font-semibold">{`${FormatPrice(
-                        Total(cartItems)
+                        Total(isCartItemChecked)
                       )} VNĐ`}</span>
                     </article>
                   </td>
@@ -360,7 +400,7 @@ const Cart = (props: CartProps) => {
                     <article className="flex justify-between items-center">
                       <h1 className="text-text-color">Phí vận chuyển </h1>
                       <span className="text-primary-color font-semibold">{`${FormatPrice(
-                        cartItems.length !== 0 ? 45000 : 0
+                        isCartItemChecked.length !== 0 ? 45000 : 0
                       )} VNĐ`}</span>
                     </article>
                   </td>
@@ -370,7 +410,8 @@ const Cart = (props: CartProps) => {
                     <article className="flex justify-between items-center">
                       <h1 className="text-text-color font-bold">Thành tiền</h1>
                       <span className="text-primary-color font-bold text-[20px]">{`${FormatPrice(
-                        Total(cartItems) + (cartItems.length !== 0 ? 45000 : 0)
+                        Total(isCartItemChecked) +
+                          (isCartItemChecked.length !== 0 ? 45000 : 0)
                       )} VNĐ`}</span>
                     </article>
                   </td>
@@ -378,15 +419,13 @@ const Cart = (props: CartProps) => {
               </tbody>
             </table>
             <div className="col-span-full mt-6">
-              <Link href="/cart/checkout">
-                <NavigateButton>
-                  Thanh toán
-                  <FontAwesomeIcon
-                    className="text-[12px] ml-1"
-                    icon={faChevronRight}
-                  ></FontAwesomeIcon>
-                </NavigateButton>
-              </Link>
+              <NavigateButton onClick={handleCheckout}>
+                Thanh toán
+                <FontAwesomeIcon
+                  className="text-[12px] ml-1"
+                  icon={faChevronRight}
+                ></FontAwesomeIcon>
+              </NavigateButton>
             </div>
           </div>
         </section>

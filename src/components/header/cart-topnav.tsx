@@ -58,17 +58,17 @@ const CartTopNav = ({
   const cookies = getCookies();
 
   useEffect(() => {
-    async function fetchUserCart() {
-      if (hasCookie("accessToken")) {
-        const res = await getUserCart(getCookie("accessToken")!);
-        if (res.success) {
-          setCartItems(res.result.cartItems);
-        }
-      } else {
-        setCartItems([]);
-      }
-    }
-    fetchUserCart();
+    // async function fetchUserCart() {
+    //   if (hasCookie("accessToken")) {
+    //     const res = await getUserCart(getCookie("accessToken")!);
+    //     if (res.success) {
+    //       setCartItems(res.result.cartItems);
+    //     }
+    //   } else {
+    //     setCartItems([]);
+    //   }
+    // }
+    // fetchUserCart();
 
     if (token) {
       setCookie("accessToken", token.accessToken, {
@@ -158,7 +158,6 @@ const CartTopNav = ({
           as={"/"}
         >
           <Image
-            // loader={imageLoader}
             className={`w-auto min-w-[5rem] h-[3.25rem] transition-all`}
             alt="Logo of the shop"
             src={logo}
@@ -360,7 +359,7 @@ const CartTopNav = ({
               }
             ></Menu>
           </li>
-          <li>
+          {/* <li>
             <Menu
               dropdownContent={
                 <Paper
@@ -378,31 +377,9 @@ const CartTopNav = ({
                   </div>
                 </Paper>
               }
-              buttonChildren={
-                <Link href="/cart">
-                  <div
-                    onClick={() => {
-                      if (!info) requireLogin();
-                    }}
-                    className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
-                  >
-                    <FontAwesomeIcon
-                      className="relative text-white"
-                      icon={faCartShopping}
-                    ></FontAwesomeIcon>
-                    <span className="text-white text-sm whitespace-nowrap">
-                      Giỏ hàng
-                    </span>
-                  </div>
-                  <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems && cartItems.length == 0
-                      ? userCart && userCart.length
-                      : cartItems.length}
-                  </div>
-                </Link>
-              }
+              buttonChildren={undefined}
             ></Menu>
-          </li>
+          </li> */}
         </ul>
       </div>
     </nav>

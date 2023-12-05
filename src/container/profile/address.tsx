@@ -243,11 +243,11 @@ const Address = () => {
                   readOnly={isUpdate}
                   disabled={isUpdate}
                   isOptionEqualToValue={(option, value) =>
-                    value === undefined || value === "" || option === value
+                    value == undefined || value == "" || option === value
                   }
-                  value={provinces}
+                  value={provinces || ""}
                   onChange={(_event, newProvinces) => {
-                    setProvinces(newProvinces!);
+                    setProvinces(newProvinces || "");
                   }}
                   options={provinceList}
                   renderInput={(params) => (
@@ -279,7 +279,7 @@ const Address = () => {
                   readOnly={isUpdate}
                   value={districts}
                   onChange={(_event, newDistricts) => {
-                    setDistricts(newDistricts!);
+                    setDistricts(newDistricts || "");
                   }}
                   isOptionEqualToValue={(option, value) =>
                     value === undefined || value === "" || option === value
@@ -316,7 +316,7 @@ const Address = () => {
                   disabled={provinces == "" || districts == "" || isUpdate}
                   value={wards}
                   onChange={(_event, newWards) => {
-                    setWards(newWards!);
+                    setWards(newWards || "");
                   }}
                   isOptionEqualToValue={(option, value) =>
                     value === undefined || value === "" || option === value
