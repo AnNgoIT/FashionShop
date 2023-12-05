@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -8,18 +8,15 @@ import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import { getUserCart, login } from "@/hooks/useAuth";
+import { login } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { getCookie, setCookie } from "cookies-next";
+import { setCookie } from "cookies-next";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE, getUserRole } from "@/hooks/useData";
+import { getUserRole } from "@/hooks/useData";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
-import { CartContext, UserContext } from "@/store";
-import { UserInfo } from "@/features/types";
-import useLocal from "@/hooks/useLocalStorage";
-import { addProductItemToCart } from "@/hooks/useProducts";
+import { loginSuccess } from "@/features/toasting";
 
 type Login = {
   email: string;
@@ -28,15 +25,11 @@ type Login = {
 
 const LoginForm = () => {
   const router = useRouter();
-  const { setUser } = useContext(UserContext);
-  const cart = useLocal();
   const [account, setAccount] = useState<Login>({ email: "", password: "" });
-  const [errors, setErrors] = useState<Login>({ email: "", password: "" });
+  const [errors] = useState<Login>({ email: "", password: "" });
   const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
-  const { cartItems, setCartItems } = useContext(CartContext);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-
   const handleMouseDownPassword = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -59,63 +52,32 @@ const LoginForm = () => {
       email: account.email,
       password: account.password,
     };
-    const id = toast.loading("Vui lòng đợi...");
+    // const id = toast.loading("Vui lòng đợi...");
     const response = await login(loginAccount);
     if (response.success) {
       setCookie("accessToken", response.result.accessToken, {
         expires: decodeToken(response.result.accessToken)!,
-        maxAge: ACCESS_MAX_AGE,
       });
       setCookie("refreshToken", response.result.refreshToken, {
         expires: decodeToken(response.result.refreshToken)!,
-        maxAge: REFRESH_MAX_AGE,
       });
-      toast.update(id, {
-        render: `Đăng nhập thành công`,
-        type: "success",
-        autoClose: 1500,
-        isLoading: false,
-      });
+      // loginSuccess();
+
       const isAdmin = await getUserRole(response.result.accessToken);
       if (isAdmin.success) {
         if (isAdmin.result === "ADMIN") {
-          router.refresh();
           router.push("/admin");
+          router.refresh();
         } else if (isAdmin.result === "SHIPPER") {
           router.refresh();
           router.push("/shipper");
         } else {
-          const newProfile: UserInfo = {
-            fullname: response.result.fulname,
-            email: response.result.email,
-            phone: response.result.phone,
-            dob: response.result.dob,
-            gender: response.result.gender,
-            address: response.result.address,
-            avatar: response.result.avatar,
-            ewallet: response.result.ewallet,
-            role: response.result.role,
-          };
-
-          const res = await getUserCart(response.result.accessToken);
-          if (res.success) {
-            cart.setItem("cart", JSON.stringify(res.result.cartItems));
-            setCartItems(res.result.cartItems);
-          }
-
-          setUser(newProfile);
-          router.refresh();
+          loginSuccess();
           router.back();
+          setTimeout(() => {
+            router.refresh();
+          }, 100);
         }
-      } else {
-        toast.update(id, {
-          render: ``,
-          type: "success",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        // router.refresh();
-        router.back();
       }
     } else {
       toast.dismiss();

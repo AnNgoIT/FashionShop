@@ -1,5 +1,4 @@
 import axios from "axios";
-import { HTTP_PORT } from "./useData";
 
 export const createData = async (
   url: string,
@@ -14,7 +13,11 @@ export const createData = async (
     },
   };
   try {
-    const res = await axios.post(`${HTTP_PORT}` + url, payload, config);
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_DEVELOPMENT_API}` + url,
+      payload,
+      config
+    );
     const data = res && res.data ? res.data : {};
 
     return data;

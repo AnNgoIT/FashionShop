@@ -45,7 +45,7 @@ export const login = async (payload: any) => {
 
 export const useUserCredentials = (accessToken: string) => {
   const { data, error, isLoading } = useSWR(
-    accessToken ? `${HTTP_PORT}/api/v1/users/customers/profile` : null,
+    accessToken ? `${HTTP_PORT}/api/v1/users/profile` : null,
     (url: string) => getAuthenticated(url, accessToken),
     {
       revalidateIfStale: false,
@@ -182,7 +182,7 @@ export const updateProfile = async (accessToken: string, payload: any) => {
   };
   try {
     const res = await axios.put(
-      `${HTTP_PORT}/api/v1/users/customers/profile`,
+      `${HTTP_PORT}/api/v1/users/profile`,
       payload,
       config
     );
@@ -240,7 +240,7 @@ export const changePassword = async (accessToken: string, payload: any) => {
   };
   try {
     const res = await axios.patch(
-      `${HTTP_PORT}/api/v1/users/customers/change-password`,
+      `${HTTP_PORT}/api/v1/users/change-password`,
       payload,
       config
     );
@@ -269,6 +269,26 @@ export const getUserCart = async (accessToken: string) => {
     return error.response.data;
   }
 };
+
+export const getUserInfo = async (accessToken: string) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.get(
+      `${HTTP_PORT}/api/v1/users/profile`,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
 
 export const updateCartItem = async (
   accessToken: string,
@@ -346,6 +366,26 @@ export const makeAnOrder = async (accessToken: string, payload: any) => {
     const res = await axios.post(
       `${HTTP_PORT}/api/v1/users/customers/orders`,
       payload,
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};
+
+export const getUserOrder = async (orderId: number, accessToken: string) => {
+  const config = {
+    headers: {
+      "Cache-Control": "force-cache",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.get(
+      `${HTTP_PORT}/api/v1/users/customers/orders/${orderId}`,
       config
     );
     const data = res && res.data ? res.data : {};

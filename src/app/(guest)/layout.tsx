@@ -5,13 +5,17 @@ import { fetchUserCredentials } from "../page";
 import { cookies } from "next/headers";
 import { Product, UserInfo } from "@/features/types";
 import { ReactNode } from "react";
-import { prefetchAllProducts } from "./product/(detail)/[id]/page";
+import { userCart } from "../(user)/cart/page";
+import { prefetchAllProducts } from "./product/page";
 
 const UserLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
   const productRes = await prefetchAllProducts();
+
+  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+
   let info: UserInfo = {
     fullname: null,
     email: "",
@@ -40,9 +44,11 @@ const UserLayout = async ({ children }: { children: ReactNode }) => {
 
   const products: Product[] =
     productRes && productRes.success && productRes.result.content;
+
+  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
   return (
     <>
-      <Header userInfo={userInfo} products={products}></Header>
+      <Header userInfo={userInfo} products={products} userCart={cart} />
       {children}
       <Footer />
     </>

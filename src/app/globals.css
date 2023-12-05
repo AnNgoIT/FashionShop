@@ -28,7 +28,7 @@
     @apply relative overflow-hidden;
   }
   .subbanner-shadow:before {
-    @apply absolute cursor-pointer top-0 -left-[85%] z-[0] block content-[""] w-[50%] h-full bg-gradient-to-r 
+    @apply absolute cursor-pointer top-0 -left-[85%] z-[1] block content-[""] w-[50%] h-full bg-gradient-to-r 
     from-transparent to-[rgba(255,255,255,0.3)] transform skew-x-[-25deg] opacity-0;
   }
   .subbanner-shadow:hover:before {
@@ -52,7 +52,6 @@
 }
 
 body {
-  /* height: 100vh; */
   /* width: 100vw; */
   background: #f3f3f3;
 }

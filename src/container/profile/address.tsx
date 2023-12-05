@@ -185,11 +185,11 @@ const Address = () => {
     >
       <div className="col-span-full grid grid-flow-col max-md:grid-flow-row gap-4 place-content-center md:items-center md:place-content-between pb-4 border-b-[0] lg:border-b border-border-color">
         <h2 className="text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center">
-          Address
+          Địa chỉ
         </h2>
         <NavigateButton onClick={handleOpen}>
           <AddIcon sx={{ marginRight: "0.25rem" }} />
-          New Address
+          Tạo địa chỉ mới
         </NavigateButton>
       </div>
       <Modal
@@ -220,7 +220,7 @@ const Address = () => {
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Address">
-                  Address
+                  Địa chỉ
                 </InputLabel>
                 <OutlinedInput
                   autoComplete="true"
@@ -230,7 +230,7 @@ const Address = () => {
                   value={address}
                   onChange={(event) => setAddress(event.target.value)}
                   // placeholder="Type your Address"
-                  label="Address"
+                  label="Địa chỉ"
                 />
               </FormControl>
             </div>
@@ -243,11 +243,11 @@ const Address = () => {
                   readOnly={isUpdate}
                   disabled={isUpdate}
                   isOptionEqualToValue={(option, value) =>
-                    value === undefined || value === "" || option === value
+                    value == undefined || value == "" || option === value
                   }
-                  value={provinces}
+                  value={provinces || ""}
                   onChange={(_event, newProvinces) => {
-                    setProvinces(newProvinces!);
+                    setProvinces(newProvinces || "");
                   }}
                   options={provinceList}
                   renderInput={(params) => (
@@ -279,7 +279,7 @@ const Address = () => {
                   readOnly={isUpdate}
                   value={districts}
                   onChange={(_event, newDistricts) => {
-                    setDistricts(newDistricts!);
+                    setDistricts(newDistricts || "");
                   }}
                   isOptionEqualToValue={(option, value) =>
                     value === undefined || value === "" || option === value
@@ -316,7 +316,7 @@ const Address = () => {
                   disabled={provinces == "" || districts == "" || isUpdate}
                   value={wards}
                   onChange={(_event, newWards) => {
-                    setWards(newWards!);
+                    setWards(newWards || "");
                   }}
                   isOptionEqualToValue={(option, value) =>
                     value === undefined || value === "" || option === value
@@ -363,15 +363,15 @@ const Address = () => {
         aria-describedby="delete-address-description"
       >
         <DialogTitle id="delete-address-title">
-          {"Confirm to delete this address?"}
+          {"Xác nhận xóa địa chỉ này?"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-address-description"></DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>Hủy</Button>
           <Button onClick={() => handleDeleteAddress(deleteId)} autoFocus>
-            Confirm
+            Xác nhận
           </Button>
         </DialogActions>
       </Dialog>
@@ -425,7 +425,7 @@ const Address = () => {
       ) : (
         <div className="col-span-full min-h-[14rem] grid place-content-center">
           <Image alt="emptyAddress" src={empty_address}></Image>
-          <span className="text-center">Empty Address</span>
+          <span className="text-center">Không có địa chỉ nào</span>
         </div>
       )}
     </div>

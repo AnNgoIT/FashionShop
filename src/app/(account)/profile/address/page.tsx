@@ -1,5 +1,4 @@
-import Address from "@/container/account/account-profile/address";
-
+import Address from "@/container/profile/address";
 
 const AddressPage = async () => {
   return <Address />;

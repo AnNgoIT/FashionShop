@@ -13,14 +13,17 @@ import NavigateButton from "@/components/button";
 import { imageLoader } from "@/features/img-loading";
 import { deleteSuccess, maxQuanity, requireLogin } from "@/features/toasting";
 import useLocal from "@/hooks/useLocalStorage";
-import { updateCartItem, deleteCartItem } from "@/hooks/useAuth";
+import { updateCartItem, deleteCartItem, getUserCart } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import router from "next/router";
+import { CartProps } from "@/container/cart/cart";
+import { useRouter } from "next/navigation";
 
-const CartDropdown = () => {
+const CartDropdown = (props: CartProps) => {
+  const router = useRouter();
+  const { userCart } = props;
   const { cartItems, setCartItems } = useContext(CartContext);
   const { user, setUser } = useContext(UserContext);
-  const cart = useLocal();
 
   let timeoutId: NodeJS.Timeout | null = null;
 
@@ -36,15 +39,9 @@ const CartDropdown = () => {
     };
   };
 
-  useEffect(() => {
-    const storedCart = cart.getItem("cart");
-
-    const itemInCarts = storedCart && JSON.parse(storedCart);
-    if (storedCart) {
-      setCartItems(itemInCarts);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleClick = (event: any) => {
+    event.target.select(); // Bôi đen toàn bộ giá trị khi click vào input
+  };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuantityChangeDebounced = useCallback(
@@ -56,32 +53,17 @@ const CartDropdown = () => {
           itemId
         );
         if (res.success) {
-          const storedCart = cart.getItem("cart", "local");
-          let updatedCart = [];
-
-          if (storedCart) {
-            updatedCart = JSON.parse(storedCart);
-            // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
-            const existingProductIndex = updatedCart.findIndex(
-              (item: any) => item.productItemId === res.result.productItemId
-            );
-
-            if (existingProductIndex !== -1) {
-              // Nếu sản phẩm đã tồn tại, tăng số lượng
-              updatedCart[existingProductIndex].quantity = res.result.quantity;
-            } else {
-              // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới vào giỏ hàng
-              updatedCart.push(res.result);
-            }
-          } else {
-            // Nếu giỏ hàng rỗng, thêm sản phẩm mới vào giỏ hàng
-            updatedCart.push(res.result);
-          }
-          cart.setItem("cart", JSON.stringify(updatedCart));
-          setCartItems(JSON.parse(cart.getItem("cart")));
+          setCartItems((prevItems) =>
+            prevItems.map((item) =>
+              item.cartItemId === itemId
+                ? { ...item, quantity: newQuantity }
+                : item
+            )
+          );
+          router.refresh();
         } else if (res.statusCode === 400) {
           maxQuanity(res.result);
-          setCartItems(JSON.parse(cart.getItem("cart")));
+          router.refresh();
         } else if (res.statusCode === 401) {
           requireLogin();
           router.push("/login");
@@ -89,7 +71,7 @@ const CartDropdown = () => {
       } catch (error: any) {
         console.log(error);
       }
-    }, 500),
+    }, 1000),
     []
   );
 
@@ -109,16 +91,8 @@ const CartDropdown = () => {
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
       deleteSuccess();
-      const storedCart = cart.getItem("cart");
-      const deletedCart = storedCart && JSON.parse(storedCart);
-      cart.setItem(
-        "cart",
-        JSON.stringify(
-          deletedCart.filter((cartItem: any) => cartItem.cartItemId !== itemId)
-        )
-      );
-      setCartItems(JSON.parse(cart.getItem("cart")));
-    } else if (res.statusCode == 400) {
+      setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
+      router.refresh();
     }
   };
 
@@ -147,11 +121,13 @@ const CartDropdown = () => {
                       <div className="border border-b-border-color h-full">
                         <Image
                           loader={imageLoader}
+                          placeholder="blur"
+                          blurDataURL={item.image}
                           className="h-full"
                           alt="productImage"
                           src={item.image}
                           width={200}
-                          height={300}
+                          height={200}
                         ></Image>
                       </div>
                       <div className="grid">
@@ -195,14 +171,14 @@ const CartDropdown = () => {
                               }`}
                               className="border-[1px] border-border-color rounded-md py-0.5 px-3 max-w-[2.5rem]
                             outline-1 outline-primary-color mx-1 text-center"
-                              onKeyDown={(e) => onlyNumbers(e)}
+                              onFocus={handleClick}
                               onChange={(e) =>
                                 handleQuantityChange(
                                   item.cartItemId,
                                   +e.target.value
                                 )
                               }
-                              type="text"
+                              type="number"
                               value={item.quantity}
                               required
                             ></input>
@@ -228,22 +204,14 @@ const CartDropdown = () => {
               )} VNĐ`}
             </strong>
           </div>
-          <div className="mt-3 flex justify-between items-center font-bold">
+          <div className="mt-3 flex justify-end items-center font-bold">
             <Link
               href="/cart"
               onClick={() => {
                 if (user.email == "") requireLogin();
               }}
             >
-              <NavigateButton>Giỏ hàng</NavigateButton>
-            </Link>
-            <Link
-              href="/cart/checkout"
-              onClick={() => {
-                if (user.email == "") requireLogin();
-              }}
-            >
-              <NavigateButton>Thanh toán</NavigateButton>
+              <NavigateButton>Xem Giỏ hàng</NavigateButton>
             </Link>
           </div>
         </>

@@ -121,15 +121,21 @@ export type cartItem = {
   quantity: number;
   productPrice: number;
   productPromotionalPrice: number;
-  maxQuantityCanAdd: number;
   amount: number;
 };
 
 export type orderItem = {
-  id: number;
-  orderDate: Date;
+  orderId: number;
+  totalAmount: number;
+  checkout: boolean;
+  fullName: string;
+  phone: string;
+  address: string;
   status: string;
-  orderItemList: cartItem[];
+  transactionType: string;
+  createdAt?: Date;
+  updateAt?: Date;
+  customerId?: UUID;
 };
 
 export type productItem = {
@@ -145,6 +151,18 @@ export type productItem = {
   sku: string;
   createdAt?: Date;
   updatedAt?: Date;
+};
+
+export type productItemInOrder = {
+  orderItemId: number;
+  productItemId: number;
+  productName: string;
+  image: string;
+  styleValues: string[];
+  quantity: number;
+  productPrice: number; //product order price
+  productPromotionalPrice: number;
+  amount: number;
 };
 
 export type Order = {

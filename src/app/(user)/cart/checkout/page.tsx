@@ -19,38 +19,22 @@ const CheckoutPage = async () => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
-  let result = null,
-    fullToken;
+  let result = undefined;
   if (res.statusCode == 401) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
-      if (isTokenExpired(refreshToken)) {
-        redirect("/login");
-      }
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
-        fullToken = refresh.result;
         const res2 = await fetchUserCredentials(refresh.result.accessToken);
         result = res2;
-      } else redirect("/login");
+      }
     }
   }
   const cartRes = await userCart(getCookie("accessToken", { cookies })!);
-  let info: UserInfo = {
-    fullname: null,
-    email: "",
-    phone: "",
-    dob: null,
-    gender: null,
-    address: null,
-    avatar: null,
-    ewallet: null,
-    role: "",
-  };
+
   const userInfo: UserInfo | undefined =
     res && res.success
       ? {
-          ...info,
           fullname: res.result.fullname,
           email: res.result.email,
           phone: res.result.phone,
@@ -63,7 +47,6 @@ const CheckoutPage = async () => {
         }
       : result && result.success
       ? {
-          ...info,
           fullname: result.result.fullname,
           email: result.result.email,
           phone: result.result.phone,

@@ -25,7 +25,7 @@ import {
 } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { Product, UserInfo } from "@/features/types";
+import { Product, UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { useSearchParams } from "next/navigation";
@@ -42,9 +42,11 @@ import { requireLogin } from "@/features/toasting";
 const CartTopNav = ({
   info,
   token,
+  userCart,
 }: {
   info?: UserInfo;
   token?: { accessToken?: string; refreshToken?: string };
+  userCart?: cartItem[];
 }) => {
   const router = useRouter();
 
@@ -54,27 +56,21 @@ const CartTopNav = ({
   const { cartItems, setCartItems } = useContext(CartContext);
 
   const cookies = getCookies();
-  const userInfo = info;
 
   useEffect(() => {
-    async function fetchUserCart() {
-      if (hasCookie("accessToken")) {
-        const res = await getUserCart(getCookie("accessToken")!);
-        if (res.success) {
-          cart.setItem("cart", JSON.stringify(res.result.cartItems));
-          setCartItems(JSON.parse(cart.getItem("cart")));
-        }
-      } else {
-        cart.removeItem("cart");
-        setCartItems([]);
-      }
-    }
-    fetchUserCart();
+    // async function fetchUserCart() {
+    //   if (hasCookie("accessToken")) {
+    //     const res = await getUserCart(getCookie("accessToken")!);
+    //     if (res.success) {
+    //       setCartItems(res.result.cartItems);
+    //     }
+    //   } else {
+    //     setCartItems([]);
+    //   }
+    // }
+    // fetchUserCart();
 
-    if (token && token.accessToken == "" && token.refreshToken == "") {
-      deleteCookie("accessToken");
-      deleteCookie("refreshToken");
-    } else if (token && token.accessToken !== "" && token.refreshToken !== "") {
+    if (token) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
@@ -89,8 +85,8 @@ const CartTopNav = ({
       });
     }
     setUser(
-      userInfo
-        ? userInfo
+      info
+        ? info
         : {
             fullname: null,
             email: "",
@@ -104,7 +100,7 @@ const CartTopNav = ({
           }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userInfo]);
+  }, [info]);
 
   const handleLogout = async () => {
     try {
@@ -162,7 +158,6 @@ const CartTopNav = ({
           as={"/"}
         >
           <Image
-            // loader={imageLoader}
             className={`w-auto min-w-[5rem] h-[3.25rem] transition-all`}
             alt="Logo of the shop"
             src={logo}
@@ -176,7 +171,7 @@ const CartTopNav = ({
           className={`flex justify-end items-center col-span-8 sm:col-span-8 md:col-span-9`}
         >
           <li>
-            {!userInfo && (
+            {!info && (
               <Menu
                 dropdownContent={
                   <Paper
@@ -221,7 +216,7 @@ const CartTopNav = ({
                 }
               ></Menu>
             )}
-            {userInfo && user.email !== "" && (
+            {info && user.email !== "" && (
               <Menu
                 arrowPos="70px"
                 dropdownContent={
@@ -273,7 +268,7 @@ const CartTopNav = ({
                 }
               ></Menu>
             )}
-            {userInfo && user.email === "" && (
+            {info && user.email === "" && (
               <Menu
                 arrowPos="70px"
                 dropdownContent={
@@ -318,10 +313,10 @@ const CartTopNav = ({
                     <Avatar
                       sizes="50vw"
                       alt="avatar"
-                      src={userInfo.avatar ? userInfo.avatar : user_img2.src}
+                      src={info.avatar ? info.avatar : user_img2.src}
                     ></Avatar>
                     <span className="lowercase text-white text-sm max-md:hidden">
-                      {userInfo.fullname}
+                      {info.fullname}
                     </span>
                   </Link>
                 }
@@ -356,13 +351,15 @@ const CartTopNav = ({
                     Thông báo
                   </span>
                   <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems.length}
+                    {cartItems && cartItems.length == 0
+                      ? userCart && userCart.length
+                      : cartItems.length}
                   </div>
                 </div>
               }
             ></Menu>
           </li>
-          <li>
+          {/* <li>
             <Menu
               dropdownContent={
                 <Paper
@@ -376,33 +373,13 @@ const CartTopNav = ({
                     className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
                                 max-h-[420px] overflow-y-auto"
                   >
-                    <CartDropdown></CartDropdown>
+                    <CartDropdown userCart={userCart!}></CartDropdown>
                   </div>
                 </Paper>
               }
-              buttonChildren={
-                <Link href="/cart">
-                  <div
-                    onClick={() => {
-                      if (!userInfo) requireLogin();
-                    }}
-                    className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
-                  >
-                    <FontAwesomeIcon
-                      className="relative text-white"
-                      icon={faCartShopping}
-                    ></FontAwesomeIcon>
-                    <span className="text-white text-sm whitespace-nowrap">
-                      Giỏ hàng
-                    </span>
-                  </div>
-                  <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems.length}
-                  </div>
-                </Link>
-              }
+              buttonChildren={undefined}
             ></Menu>
-          </li>
+          </li> */}
         </ul>
       </div>
     </nav>

@@ -1,22 +1,22 @@
 import React, { ReactNode } from "react";
 
 import Footer from "@/components/footer/footer";
-import { VerifyEmailProvider } from "@/store";
 import { fetchUserCredentials, refreshLogin } from "../page";
 import { cookies } from "next/headers";
 import { getCookie, hasCookie } from "cookies-next";
-import { Product, UserInfo } from "@/features/types";
+import { UserInfo } from "@/features/types";
 import { isTokenExpired } from "@/features/jwt-decode";
 import { redirect } from "next/navigation";
 
-import { prefetchAllProducts } from "../(guest)/product/(detail)/[id]/page";
 import CartHeader from "@/components/header/cart-header";
+import { userCart } from "./cart/page";
 
 const CartLayout = async ({ children }: { children: ReactNode }) => {
   const res = await fetchUserCredentials(
     getCookie("accessToken", { cookies })!
   );
-  const productRes = await prefetchAllProducts();
+  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+
   let result = null,
     fullToken;
   if (res.statusCode == 401) {
@@ -72,10 +72,11 @@ const CartLayout = async ({ children }: { children: ReactNode }) => {
           role: res.result.role,
         }
       : undefined;
+  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
 
   return (
     <>
-      <CartHeader userInfo={userInfo} fullToken={fullToken} />
+      <CartHeader userInfo={userInfo} fullToken={fullToken} userCart={cart} />
       {children}
       <Footer />
     </>

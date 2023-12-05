@@ -1,68 +1,61 @@
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
 import Container from "@/container/container";
-import { isTokenExpired } from "@/features/jwt-decode";
 import { Category, Product, UserInfo } from "@/features/types";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { fetchAllCategories } from "./(guest)/product/page";
-import { prefetchAllProducts } from "./(guest)/product/(detail)/[id]/page";
+import {
+  fetchAllCategories,
+  prefetchAllProducts,
+} from "./(guest)/product/page";
+import { userCart } from "./(user)/cart/page";
 
-export const HTTP_PORT = "http://localhost:8080";
+export const HTTP_PORT = process.env.NEXT_PUBLIC_API_URL;
 
 export const refreshLogin = async (refreshToken: string) => {
-  try {
-    const res = await fetch(`${HTTP_PORT}/api/v1/auth/refresh-access-token`, {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
-      mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "include", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify({ refreshToken: refreshToken }), // body data type must match "Content-Type" header
-    });
-    if (!res.ok) {
-      // console.log(res);
-      // This will activate the closest `error.js` Error Boundary
-      // throw new Error("Failed to refreshToken");
-    }
-
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
-
-    return res.json(); // parses JSON response into native JavaScript objects
-  } catch (error: any) {
-    console.log(error);
+  const res = await fetch(`${HTTP_PORT}/api/v1/auth/refresh-access-token`, {
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    mode: "same-origin", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "include", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    body: JSON.stringify({ refreshToken: refreshToken }), // body data type must match "Content-Type" header
+  });
+  if (!res.ok) {
+    // console.log(res);
+    // This will activate the closest `error.js` Error Boundary
+    // throw new Error("Failed to refreshToken");
   }
+
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+
+  return res.json(); // parses JSON response into native JavaScript objects
 };
 
 export const fetchUserCredentials = async (accessToken: string) => {
-  try {
-    const res = await fetch(`${HTTP_PORT}/api/v1/users/customers/profile`, {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      cache: "no-cache",
-      mode: "same-origin", // no-cors, *cors, same-origin
-      credentials: "include", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    });
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
+  const res = await fetch(`${HTTP_PORT}/api/v1/users/profile`, {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    cache: "no-cache",
+    mode: "same-origin", // no-cors, *cors, same-origin
+    credentials: "include", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+  });
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
 
-    return res.json(); // parses JSON response into native JavaScript objects
-  } catch (error: any) {
-    console.log(error);
-  }
+  return res.json(); // parses JSON response into native JavaScript objects
 };
 
 export const logout = async (accessToken: string, refreshToken: string) => {
@@ -79,7 +72,6 @@ export const logout = async (accessToken: string, refreshToken: string) => {
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
     if (!res.ok) {
-      console.log(res.status);
       return undefined;
     }
 
@@ -87,9 +79,7 @@ export const logout = async (accessToken: string, refreshToken: string) => {
     // You can return Date, Map, Set, etc.
 
     return res.json(); // parses JSON response into native JavaScript objects
-  } catch (error: any) {
-    console.log(error);
-  }
+  } catch (error: any) {}
 };
 
 const Home = async () => {
@@ -98,39 +88,26 @@ const Home = async () => {
   );
   const cateRes = await fetchAllCategories();
   const productRes = await prefetchAllProducts();
-  let result = null,
-    fullToken;
+  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+
+  let result = undefined,
+    fullToken = undefined;
   if (res.statusCode == 401) {
     if (hasCookie("refreshToken", { cookies })) {
+      console.log("Hello");
       const refreshToken = getCookie("refreshToken", { cookies })!;
-      if (isTokenExpired(refreshToken)) {
-        redirect("/login");
-      }
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
         fullToken = refresh.result;
-        const res2 = await fetchUserCredentials(refresh.result.accessToken);
-        result = res2;
-      } else {
-        fullToken = { accessToken: "", refreshToken: "" };
+        const res = await fetchUserCredentials(refresh.result.accessToken);
+        result = res;
       }
     }
   }
-  let info: UserInfo = {
-    fullname: null,
-    email: "",
-    phone: "",
-    dob: null,
-    gender: null,
-    address: null,
-    avatar: null,
-    ewallet: null,
-    role: "GUEST",
-  };
+
   const userInfo: UserInfo | undefined =
     res && res.success
       ? {
-          ...info,
           fullname: res.result.fullname,
           email: res.result.email,
           phone: res.result.phone,
@@ -143,7 +120,6 @@ const Home = async () => {
         }
       : result && result.success
       ? {
-          ...info,
           fullname: result.result.fullname,
           email: result.result.email,
           phone: result.result.phone,
@@ -160,15 +136,18 @@ const Home = async () => {
     cateRes && cateRes.success && cateRes.result.content;
   const products: Product[] =
     productRes && productRes.success && productRes.result.content;
+
+  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
   return (
     <>
       <Header
         userInfo={userInfo}
+        userCart={cart}
         fullToken={fullToken}
         products={products}
       ></Header>
-      <main className="font-sans min-h-[50rem] bg-white mt-[4.75rem]">
-        <Container categories={categories}></Container>
+      <main className="font-sans bg-white mt-[4.75rem]">
+        <Container products={products} categories={categories}></Container>
       </main>
       <Footer></Footer>
     </>

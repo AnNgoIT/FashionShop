@@ -301,7 +301,7 @@ const MainProduct = (props: MainProductProps) => {
               />
             </Box>
           </div>
-          <div className="col-span-full md:col-span-12 lg:col-span-3 grid gap-y-[30px] mb-5">
+          <div className="col-span-full lg:col-span-3 grid gap-y-[30px] mb-5">
             <div className="bg-[#f5f5f5] p-3 shadow-md">
               <div className="flex gap-x-1 items-center border-b-2 border-text-light-color py-2">
                 <FilterAltIcon sx={{ fontSize: "2rem" }} />
@@ -453,7 +453,7 @@ const MainProduct = (props: MainProductProps) => {
                   })}
             </div>
           </div>
-          <ul className="col-span-full md:col-span-12 lg:col-span-9 grid grid-cols-2 md:grid-cols-3 gap-[30px] h-fit">
+          <ul className="col-span-full lg:col-span-9 grid grid-cols-2 md:grid-cols-3 gap-[30px] h-fit">
             <div
               className="col-span-full bg-[#f5f5f5] text-base text-text-color py-4 rounded-sm flex items-center px-4
                 shadow-md"
