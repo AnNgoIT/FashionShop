@@ -15,7 +15,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@mui/icons-material": "^5.14.15",
+    "@mui/icons-material": "^5.14.19",
     "@mui/material": "^5.14.13",
     "@mui/x-date-pickers": "^6.17.0",
     "@tailwindcss/container-queries": "^0.1.1",
