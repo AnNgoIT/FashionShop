@@ -10,7 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import YouTubeIcon from "@mui/icons-material/YouTube";
+import GoogleIcon from "@mui/icons-material/Google";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import Divider from "@mui/material/Divider";
@@ -115,7 +115,7 @@ const Footer = () => {
               href={"/"}
               className="group-hover:bg-white transition-colors   bg-[#E0E0E0] group-hover:text-black e text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
             >
-              <YouTubeIcon />
+              <GoogleIcon />
             </Link>
           </article>
         </div>
