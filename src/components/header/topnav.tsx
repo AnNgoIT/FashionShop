@@ -48,7 +48,6 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { requireLogin } from "@/features/toasting";
-import { userInfo } from "os";
 const Input = styled("input")(({ theme }) => ({
   width: 200,
   backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
@@ -392,7 +391,7 @@ const TopNav = (props: NavProps) => {
                       alt="avatar"
                       src={user.avatar ? user.avatar : user_img2.src}
                     ></Avatar>
-                    <span className="cap text-white text-sm max-md:hidden truncate">
+                    <span className="capitalize text-white text-sm max-md:hidden truncate">
                       {user.fullname}
                     </span>
                   </Link>

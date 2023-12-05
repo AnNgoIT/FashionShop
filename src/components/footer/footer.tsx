@@ -10,8 +10,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import YouTubeIcon from "@mui/icons-material/YouTube";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import YoutubeIcon from "@mui/icons-material/Youtube";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import Divider from "@mui/material/Divider";
 const Footer = () => {
@@ -23,7 +23,6 @@ const Footer = () => {
             <div className="">
               <Link href="/" as="/">
                 <Image
-                  // loader={imageLoader}
                   className="w-auto min-w-[80px] min-h-[80px]"
                   alt="Logo of the shop"
                   src={logo.src}
@@ -116,7 +115,7 @@ const Footer = () => {
               href={"/"}
               className="group-hover:bg-white transition-colors   bg-[#E0E0E0] group-hover:text-black e text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
             >
-              <YoutubeIcon />
+              <YouTubeIcon />
             </Link>
           </article>
         </div>
