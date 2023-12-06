@@ -11,7 +11,7 @@ import { changePassword } from "@/hooks/useAuth";
 import { validateChangePasswordForm } from "@/features/validation";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { requireLogin } from "@/features/toasting";
+import { warningMessage } from "@/features/toasting";
 const ChangePasswordPage = () => {
   const router = useRouter();
   const [userPassword, setUserPassword] = useState({
@@ -75,7 +75,7 @@ const ChangePasswordPage = () => {
         router.refresh();
       }
       if (response.statusCode == 401) {
-        requireLogin();
+        warningMessage("Vui lòng đăng nhập");
         router.push("/login");
         router.refresh();
       } else if (response.statusCode == 400) {
