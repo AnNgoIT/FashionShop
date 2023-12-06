@@ -4,7 +4,7 @@ const getRole = async (accessToken: string | undefined) => {
   try {
     if (!accessToken) return null;
 
-    const res = await fetch(`http://localhost:8080/api/v1/users/role`, {
+    const res = await fetch(`https://dmve375ddqozi.cloudfront.net/api/v1/users/role`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
