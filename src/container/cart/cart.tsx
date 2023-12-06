@@ -23,11 +23,11 @@ import { empty_cart } from "@/assests/images";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { imageLoader } from "@/features/img-loading";
 import NavigateButton, { QuantityButton } from "@/components/button";
-import { cartItem } from "@/features/types";
+import { UserInfo, cartItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
-import { getCookie, hasCookie } from "cookies-next";
-import { redirect, useRouter } from "next/navigation";
+import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
 import LoadingComponent from "@/components/loading";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
@@ -35,6 +35,7 @@ import { successMessage, warningMessage } from "@/features/toasting";
 
 export type CartProps = {
   userCart: cartItem[];
+  userInfo?: UserInfo;
 };
 
 const Cart = (props: CartProps) => {
@@ -47,13 +48,13 @@ const Cart = (props: CartProps) => {
   const [isCartItemChecked, setCartItemChecked] = useState<cartItem[]>([]);
   const [isPending, startTransition] = useTransition();
 
-  // useEffect(() => {
-  //   if (userCart) {
-  //     setCartItems(userCart);
-  //     // setCartItemChecked(cartItems);
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [userCart]);
+  useEffect(() => {
+    if (userCart) {
+      setCartItems(userCart);
+      // setCartItemChecked(cartItems);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   let timeoutId: NodeJS.Timeout | null = null;
 
@@ -85,6 +86,12 @@ const Cart = (props: CartProps) => {
     } else {
       setCartItemChecked([...isCartItemChecked, cartItem]);
     }
+  };
+
+  const handleCheckAllItems = () => {
+    if (isCartItemChecked.length == cartItems.length) {
+      setCartItemChecked([]);
+    } else setCartItemChecked(cartItems);
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,8 +126,8 @@ const Cart = (props: CartProps) => {
             setCartItems(currCart.result.cartItems);
             setCartItemChecked((prevItems: cartItem[]) =>
               prevItems.map((item: cartItem) => {
-                const cartItem = cartItems.find(
-                  (item) => item.cartItemId == itemId
+                const cartItem = currCart.result.cartItems.find(
+                  (item:any) => item.cartItemId == itemId
                 );
                 return item.cartItemId === itemId
                   ? { ...item, quantity: cartItem?.quantity! }
@@ -380,6 +387,18 @@ const Cart = (props: CartProps) => {
                   ))}
               </tbody>
             </table>
+          </div>
+          <div className="col-span-full mt-6">
+            <FormControlLabel
+              sx={{ marginX: "0" }}
+              label="Chọn tất cả"
+              control={
+                <Checkbox
+                  checked={isCartItemChecked.length === cartItems.length}
+                  onChange={handleCheckAllItems}
+                />
+              }
+            />
           </div>
           <div className="col-span-full mt-6">
             <Link href="/product">

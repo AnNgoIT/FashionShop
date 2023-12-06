@@ -19,8 +19,7 @@ const CartLayout = async ({ children }: { children: ReactNode }) => {
     fullToken = undefined;
 
   if (
-    userCredentialsRes.statusCode === 401 ||
-    userCredentialsRes.status === 500
+    userCredentialsRes.statusCode === 401
   ) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;

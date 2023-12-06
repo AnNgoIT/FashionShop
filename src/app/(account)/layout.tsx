@@ -5,7 +5,6 @@ import { VerifyEmailProvider } from "@/store";
 import { fetchUserCredentials, refreshLogin } from "../page";
 import { cookies } from "next/headers";
 import { getCookie, hasCookie } from "cookies-next";
-import { Product, UserInfo } from "@/features/types";
 
 import AccountHeader from "@/components/header/account-header";
 import { userCart } from "../(user)/cart/page";
@@ -22,10 +21,7 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
     cart = undefined,
     fullToken = undefined;
 
-  if (
-    userCredentialsRes.statusCode === 401 ||
-    userCredentialsRes.status === 500
-  ) {
+  if (userCredentialsRes.statusCode === 401) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);

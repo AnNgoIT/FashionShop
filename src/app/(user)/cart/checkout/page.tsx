@@ -25,10 +25,7 @@ const CheckoutPage = async () => {
     cart = undefined,
     fullToken = undefined;
 
-  if (
-    userCredentialsRes.statusCode === 401 ||
-    userCredentialsRes.status === 500
-  ) {
+  if (userCredentialsRes.statusCode === 401) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);

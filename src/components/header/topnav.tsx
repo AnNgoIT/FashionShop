@@ -1,18 +1,11 @@
 "use client";
 import Link from "next/link";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
+import React, { useContext, useEffect, useState, useTransition } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
 import {
   faSearch,
   faCartShopping,
   faUser,
-  faHeart,
   faBell,
 } from "@fortawesome/free-solid-svg-icons"; // import the icons you need
 import Image from "next/image";
@@ -23,7 +16,7 @@ import { user_img2 } from "@/assests/users";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
 import Menu from "./dropdown/menu";
-import { logout } from "@/hooks/useAuth";
+import { getUserCart, logout } from "@/hooks/useAuth";
 import {
   deleteCookie,
   getCookie,
@@ -38,7 +31,7 @@ import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { styled } from "@mui/material/styles";
 import { CldImage } from "next-cloudinary";
 import { imageLoader } from "@/features/img-loading";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import SwipeableTemporaryDrawer from "../drawer";
 import NotifyDropdown from "./dropdown/notifications";
 import LoginIcon from "@mui/icons-material/Login";
@@ -89,7 +82,6 @@ type NavProps = {
 
 const TopNav = (props: NavProps) => {
   const { info, userCart, token, products } = props;
-  const [isPending, startTransition] = useTransition();
   const { replace } = useRouter();
   const router = useRouter();
 
@@ -112,8 +104,18 @@ const TopNav = (props: NavProps) => {
   const cookies = getCookies();
 
   useEffect(() => {
+    async function fetchUserCart() {
+      if (hasCookie("accessToken")) {
+        const res = await getUserCart(getCookie("accessToken")!);
+        if (res.success) {
+          setCartItems(res.result.cartItems);
+        }
+      } else {
+        setCartItems([]);
+      }
+    }
+    fetchUserCart();
     setReloading(true);
-    setCartItems(userCart!);
     setUser(
       info
         ? info
@@ -145,7 +147,7 @@ const TopNav = (props: NavProps) => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userCart]);
 
   const handleLogout = async () => {
     try {
@@ -503,7 +505,10 @@ const TopNav = (props: NavProps) => {
                     className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
                                 max-h-[420px] overflow-y-auto"
                   >
-                    <CartDropdown userCart={userCart!}></CartDropdown>
+                    <CartDropdown
+                      userInfo={info!}
+                      userCart={userCart!}
+                    ></CartDropdown>
                   </div>
                 </Paper>
               }

@@ -29,7 +29,7 @@ const CartPage = async () => {
 
   let refreshUserCart = undefined,
     fullToken = undefined;
-  if (res.statusCode == 401 || res.status == 500) {
+  if (res.statusCode == 401) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);

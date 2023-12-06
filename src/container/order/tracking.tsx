@@ -1,31 +1,65 @@
 "use client";
 import Image from "next/image";
 import { empty_order, product_1 } from "@/assests/images";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import InfoIcon from "@mui/icons-material/Info";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
+import {
+  imageLoader,
+  modalOrderDetailStyle,
+  modalStyle,
+} from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { Total } from "@/features/cart/TotalPrice";
 import { orderItem, productItemInOrder } from "@/features/types";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { getUserOrder } from "@/hooks/useAuth";
+import { cancelOrder, getUserOrder } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import dayjs from "dayjs";
+import FormControl from "@mui/material/FormControl";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from "@mui/material/Radio";
+import {
+  errorMessage,
+  successMessage,
+  warningMessage,
+} from "@/features/toasting";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContentText from "@mui/material/DialogContentText";
+import { useRouter } from "next/navigation";
 
 const OrderTracking = ({ orders }: { orders: orderItem[] }) => {
+  const router = useRouter();
   const [orderDetail, setOrderDetail] = useState<productItemInOrder[] | null>(
     null
   );
   const [orderList, setOrderList] = useState<orderItem[]>(orders);
   const [open, setOpen] = useState<boolean>(false);
+  const [openCancelOrder, setOpenCancelOrder] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [cancelOrderItem, setCancelOrderItem] = useState<orderItem | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (orders) {
+      setOrderList(orders);
+    }
+  }, [orders]);
 
   const handleOpenDetail = async (item: orderItem) => {
     const res = await getUserOrder(item.orderId, getCookie("accessToken")!);
     if (res.success) {
       setOrderDetail(res.result.orderItems);
+    } else if (res.statusCode == 401) {
+      warningMessage("Đang tải lại trang");
+      router.refresh();
     }
     setOpen(true);
   };
@@ -35,10 +69,58 @@ const OrderTracking = ({ orders }: { orders: orderItem[] }) => {
     setOpen(false);
   };
 
-  const handleCancelOrder = (id: number) => {
-    const newOrderList = orderList.filter((item) => item.orderId != id);
-    setOrderList(newOrderList);
+  const handleOpenCancelOrder = (item: orderItem) => {
+    if (item.status !== "PROCESSING") {
+      warningMessage("Không được phép hủy đơn hàng này");
+    } else {
+      setCancelOrderItem(item);
+      setOpenCancelOrder(true);
+    }
   };
+  const handleCloseCancelOrder = () => {
+    setCancelOrderItem(null);
+    setOpenCancelOrder(false);
+  };
+
+  const handleCancelOrder = async (orderItem: orderItem) => {
+    if (orderItem.status === "NOT_PROCESSED") {
+      const res = await cancelOrder(
+        orderItem.orderId,
+        getCookie("accessToken")!
+      );
+      if (res.success) {
+        successMessage("Hủy đơn hàng thành công");
+        handleCloseDialog();
+        setOrderList((prevItems: orderItem[]) =>
+          prevItems.map((item: orderItem) =>
+            item.orderId === res.result.orderId
+              ? { ...item, status: res.result.status }
+              : item
+          )
+        );
+        router.refresh();
+      } else if (res.statusCode == 401) {
+        warningMessage("Đang tải lại trang");
+        handleCloseDialog();
+        router.refresh();
+      } else if (res.statusCode == 500) {
+        handleCloseDialog();
+        errorMessage("Lỗi hệ thống");
+      }
+    } else if (orderItem.status === "PROCESSING") {
+    }
+  };
+
+  const handleOpenDialog = (orderItem: orderItem) => {
+    setOpenDialog(true);
+    setCancelOrderItem(orderItem);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setCancelOrderItem(null);
+  };
+
   return (
     <div
       className={`col-span-full sm:col-span-10 sm:col-start-2 lg:col-span-9 xl:col-span-8 grid grid-cols-12 shadow-hd
@@ -50,8 +132,8 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
       <Modal
         open={open}
         onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+        aria-labelledby="order-tracking-title"
+        aria-describedby="order-tracking-description"
       >
         <Box className="relative" sx={modalOrderDetailStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
@@ -107,9 +189,96 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
           </div>
         </Box>
       </Modal>
+
+      <Modal
+        open={openCancelOrder}
+        onClose={handleCloseCancelOrder}
+        aria-labelledby="order-ifo-title"
+        aria-describedby="order-info-description"
+      >
+        <Box sx={modalStyle}>
+          <h2 className="w-full text-2xl tracking-[0] text-secondary-color uppercase font-semibold text-center pb-4">
+            Lý do hủy
+          </h2>
+          <FormControl sx={{ minHeight: "50vh" }} fullWidth>
+            <RadioGroup name="address">
+              {[
+                "Tôi muốn cập nhật sđt/địa chỉ nhận hàng",
+                "Thủ tục thanh toán rắc rối",
+                "Tôi không có nhu cầu mua nữa",
+              ].map((reason, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={`${
+                      index < 2 ? "border-b border-text-color " : ""
+                    }py-2`}
+                  >
+                    <FormControlLabel
+                      value={reason}
+                      control={
+                        <Radio
+                          sx={{
+                            "&, &.Mui-checked": {
+                              color: "#f22a59",
+                            },
+                          }}
+                        />
+                      }
+                      label={reason}
+                    />
+                  </div>
+                );
+              })}
+            </RadioGroup>
+          </FormControl>
+          <div className="w-full pt-4 flex justify-end gap-x-4 border-t border-border-color">
+            <button
+              onClick={handleCloseCancelOrder}
+              className="bg-secondary-color transition-all duration-200 hover:opacity-60 py-2 
+                           float-right px-4 text-white rounded-md w-[6rem]"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={() => handleCancelOrder(cancelOrderItem!)}
+              className="bg-secondary-color transition-all duration-200 hover:opacity-60 py-2 
+                           float-right px-4 text-white rounded-md"
+            >
+              Xác nhận
+            </button>
+          </div>
+        </Box>
+      </Modal>
+
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="cancel-order-title"
+        aria-describedby="cancel-order-description"
+      >
+        <DialogTitle id="cancel-order-title">
+          {"Xác nhận hủy đơn hàng này?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="cancel-order-description"></DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Hủy</Button>
+          <Button onClick={() => handleCancelOrder(cancelOrderItem!)} autoFocus>
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
       {orderList && orderList.length != 0 ? (
         <ul className="col-span-full h-[16rem] overflow-auto px-2">
           {orderList
+            .filter(
+              (order) =>
+                order.status == "NOT_PROCESSED" ||
+                order.status == "SHIPPING" ||
+                order.status == "PROCESSING"
+            )
             .sort((a, b) => b.orderId - a.orderId)
             .map((item: orderItem, index) => {
               if (
@@ -139,14 +308,14 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
                           ? "bg-yellow-500"
                           : item.status == "NOT_PROCESSED"
                           ? "bg-text-light-color"
-                          : "bg-green-500"
+                          : item.status == "SHIPPING" && "bg-purple-600"
                       }  grid place-content-center text-white rounded-lg`}
                     >
                       {item.status == "PROCESSING"
                         ? "Đang xử lý"
                         : item.status == "NOT_PROCESSED"
                         ? "Chưa xử lý"
-                        : "Đang giao hàng"}
+                        : item.status == "SHIPPING" && "Đang giao hàng"}
                     </div>
                     <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
                       <Button
@@ -164,7 +333,11 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
                         <span className="text-lg pl-1">Chi tiết</span>
                       </Button>
                       <Button
-                        onClick={() => handleCancelOrder(item.orderId)}
+                        onClick={() =>
+                          item.status === "NOT_PROCESSED"
+                            ? handleOpenDialog(item)
+                            : handleOpenCancelOrder(item)
+                        }
                         sx={{
                           textTransform: "capitalize",
                           fontSize: "1rem",
@@ -205,14 +378,14 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
                         ? "bg-yellow-500"
                         : item.status == "NOT_PROCESSED"
                         ? "bg-text-light-color"
-                        : "bg-green-500"
+                        : item.status == "SHIPPING" && "bg-purple-600"
                     }  grid place-content-center text-white rounded-lg`}
                   >
                     {item.status == "PROCESSING"
                       ? "Đang xử lý"
                       : item.status == "NOT_PROCESSED"
                       ? "Chưa xử lý"
-                      : "Đang giao hàng"}
+                      : item.status == "SHIPPING" && "Đang giao hàng"}
                   </div>
                   <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
                     <Button
@@ -230,7 +403,11 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
                       <span className="text-lg pl-1">Chi tiết</span>
                     </Button>
                     <Button
-                      onClick={() => handleCancelOrder(item.orderId)}
+                      onClick={() =>
+                        item.status === "NOT_PROCESSED"
+                          ? handleOpenDialog(item)
+                          : handleOpenCancelOrder(item)
+                      }
                       sx={{
                         textTransform: "capitalize",
                         fontSize: "1rem",

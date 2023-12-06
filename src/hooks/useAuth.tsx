@@ -389,3 +389,22 @@ export const getUserOrder = async (orderId: number, accessToken: string) => {
     return error.response.data;
   }
 };
+
+export const cancelOrder = async (orderId: number, accessToken: string) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.patch(
+      `${HTTP_PORT}/api/v1/users/customers/orders/cancel/${orderId}`,
+      {},
+      config
+    );
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};

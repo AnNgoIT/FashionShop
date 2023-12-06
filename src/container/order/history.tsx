@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { empty_order, product_1 } from "@/assests/images";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import InfoIcon from "@mui/icons-material/Info";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
@@ -20,8 +20,15 @@ const OrderHistory = ({ orders }: { orders: orderItem[] }) => {
   const [orderDetail, setOrderDetail] = useState<productItemInOrder[] | null>(
     null
   );
+
   const [orderList, setOrderList] = useState<orderItem[]>(orders);
   const [open, setOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (orders) {
+      setOrderList(orders);
+    }
+  }, [orders]);
 
   const handleOpenDetail = async (item: orderItem) => {
     const res = await getUserOrder(item.orderId, getCookie("accessToken")!);
@@ -107,66 +114,72 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
       </Modal>
       {orderList && orderList.length != 0 ? (
         <ul className="col-span-full h-[16rem] overflow-auto px-2">
-          {orderList.map((item: orderItem) => {
-            return (
-              <li
-                key={`order-${item.orderId}`}
-                className="grid grid-cols-12 py-3 border-b border-text-light-color gap-y-2"
-              >
-                <div className="col-span-8 md:col-span-5">
-                  <h1 className="text-lg text-secondary-color">
-                    ID Đơn mua: {item.orderId}
-                  </h1>
-                  <h2>
-                    Ngày đặt hàng:
-                    {` ${dayjs(new Date(item.createdAt!)).format(
-                      "DD/MM/YYYY"
-                    )}`}
-                  </h2>
-                </div>
-                <div
-                  className={`col-span-4 md:col-span-2 text-center ${
-                    item.status == "CANCELLED" ? "bg-red-500" : "bg-green-500"
-                  }  grid place-content-center text-white rounded-lg`}
+          {orderList
+            .filter(
+              (order) =>
+                order.status == "DELIVERED" || order.status == "CANCELLED"
+            )
+            .sort((a, b) => b.orderId - a.orderId)
+            .map((item: orderItem) => {
+              return (
+                <li
+                  key={`order-${item.orderId}`}
+                  className="grid grid-cols-12 py-3 border-b border-text-light-color gap-y-2"
                 >
-                  {item.status == "CANCELLED"
-                    ? "Đơn hàng bị hủy"
-                    : "Giao hàng thành công"}
-                </div>
-                <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
-                  <Button
-                    onClick={() => handleOpenDetail(item)}
-                    sx={{
-                      textTransform: "capitalize",
-                      fontSize: "1rem",
-                      "&:hover": {
-                        background: "#639df1",
-                        color: "white",
-                      },
-                    }}
+                  <div className="col-span-8 md:col-span-5">
+                    <h1 className="text-lg text-secondary-color">
+                      ID Đơn mua: {item.orderId}
+                    </h1>
+                    <h2>
+                      Ngày đặt hàng:
+                      {` ${dayjs(new Date(item.createdAt!)).format(
+                        "DD/MM/YYYY"
+                      )}`}
+                    </h2>
+                  </div>
+                  <div
+                    className={`col-span-4 md:col-span-2 text-center ${
+                      item.status == "CANCELLED" ? "bg-red-500" : "bg-green-500"
+                    }  grid place-content-center text-white rounded-lg`}
                   >
-                    <InfoIcon />
-                    <span className="text-lg pl-1">Chi tiết</span>
-                  </Button>
-                  <Button
-                    onClick={() => handleFeedBackOrder(item.orderId)}
-                    sx={{
-                      textTransform: "capitalize",
-                      fontSize: "1rem",
-                      "&:hover": {
-                        background: "#f22a59",
-                        color: "white",
-                      },
-                      color: "#f22a59",
-                    }}
-                  >
-                    <FeedbackIcon />
-                    <span className="text-lg pl-1">Đánh giá</span>
-                  </Button>
-                </div>
-              </li>
-            );
-          })}
+                    {item.status == "CANCELLED"
+                      ? "Đơn hàng bị hủy"
+                      : "Giao hàng thành công"}
+                  </div>
+                  <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
+                    <Button
+                      onClick={() => handleOpenDetail(item)}
+                      sx={{
+                        textTransform: "capitalize",
+                        fontSize: "1rem",
+                        "&:hover": {
+                          background: "#639df1",
+                          color: "white",
+                        },
+                      }}
+                    >
+                      <InfoIcon />
+                      <span className="text-lg pl-1">Chi tiết</span>
+                    </Button>
+                    <Button
+                      onClick={() => handleFeedBackOrder(item.orderId)}
+                      sx={{
+                        textTransform: "capitalize",
+                        fontSize: "1rem",
+                        "&:hover": {
+                          background: "#f22a59",
+                          color: "white",
+                        },
+                        color: "#f22a59",
+                      }}
+                    >
+                      <FeedbackIcon />
+                      <span className="text-lg pl-1">Đánh giá</span>
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
         </ul>
       ) : (
         <div className="col-span-full min-h-[14rem] grid place-content-center">

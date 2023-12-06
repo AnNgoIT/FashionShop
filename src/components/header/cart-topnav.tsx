@@ -24,7 +24,7 @@ import {
   setCookie,
 } from "cookies-next";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Product, UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
@@ -48,7 +48,7 @@ const CartTopNav = ({
   userCart?: cartItem[];
 }) => {
   const router = useRouter();
-
+  const pathName = usePathname();
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
   const cart = useLocal();
@@ -67,8 +67,9 @@ const CartTopNav = ({
         setCartItems([]);
       }
     }
-    fetchUserCart();
-
+    if (pathName !== "/cart/checkout") {
+      fetchUserCart();
+    }
     if (token) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
@@ -99,7 +100,7 @@ const CartTopNav = ({
           }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [info]);
+  }, []);
 
   const handleLogout = async () => {
     try {

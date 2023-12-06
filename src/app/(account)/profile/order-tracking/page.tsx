@@ -1,8 +1,9 @@
-import { HTTP_PORT } from "@/app/page";
+import { HTTP_PORT, fetchUserCredentials, refreshLogin } from "@/app/page";
 import OrderTracking from "@/container/order/tracking";
 import { orderItem } from "@/features/types";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
+import result from "postcss/lib/result";
 
 export async function getAllOrders(accessToken: string) {
   const res = await fetch(`${HTTP_PORT}/api/v1/users/customers/orders`, {
@@ -28,6 +29,22 @@ export default async function OrderTrackingPage() {
   const accessToken = getCookie("accessToken", { cookies }) || "";
 
   const res = await getAllOrders(accessToken);
-  const order = res && res.success && (res.result.content as orderItem[]);
+
+  let result = undefined;
+  if (res.statusCode == 401) {
+    if (hasCookie("refreshToken", { cookies })) {
+      const refreshToken = getCookie("refreshToken", { cookies })!;
+      const refresh = await refreshLogin(refreshToken);
+      if (refresh.success) {
+        const res = await getAllOrders(refresh.result.accessToken);
+        result = res.result;
+      }
+    }
+  }
+  const order = res?.success
+    ? (res.result.content as orderItem[])
+    : result
+    ? result.content
+    : undefined;
   return <OrderTracking orders={order} />;
 }

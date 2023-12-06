@@ -21,7 +21,12 @@ import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CartContext } from "@/store";
-import { warningMessage } from "@/features/toasting";
+import {
+  errorMessage,
+  successMessage,
+  warningMessage,
+} from "@/features/toasting";
+import { getUserCart } from "@/hooks/useAuth";
 
 type ProductDetailProps = {
   productId: string;
@@ -191,38 +196,25 @@ const ProductDetail = (props: ProductDetailProps) => {
         quantity: qty,
       };
       if (hasCookie("accessToken")) {
-        const id = toast.loading("Vui lòng đợi...");
         const res = await addProductItemToCart(
           getCookie("accessToken")!,
           payload
         );
         if (res.success) {
-          toast.update(id, {
-            render: `Thêm vào giỏ hàng thành công`,
-            type: "success",
-            autoClose: 500,
-            isLoading: false,
-          });
+          successMessage("Thêm vào giỏ hàng thành công");
           setSelected(false);
           resetProductItem();
-          setCartItems([...cartItems, res.result]);
-          router.refresh();
+          const currCart = await getUserCart(getCookie("accessToken")!);
+          if (currCart.success) {
+            setCartItems(currCart.result.cartItems);
+          }
+          // router.refresh();
         } else if (res.response.data.statusCode === 401) {
-          toast.update(id, {
-            render: `Bạn phải đăng nhập để sử dụng chức năng này`,
-            type: "warning",
-            autoClose: 500,
-            isLoading: false,
-          });
+          warningMessage("Cần đăng nhập để sử dụng chức năng này");
           router.push("/login");
           return;
         } else {
-          toast.update(id, {
-            render: "Lỗi hệ thống",
-            type: "error",
-            autoClose: 500,
-            isLoading: false,
-          });
+          errorMessage("Lỗi hệ thống");
           router.refresh();
         }
       } else {

@@ -21,9 +21,8 @@ import { successMessage, warningMessage } from "@/features/toasting";
 
 const CartDropdown = (props: CartProps) => {
   const router = useRouter();
-  const { userCart } = props;
+  const { userCart, userInfo } = props;
   const { cartItems, setCartItems } = useContext(CartContext);
-  const { user, setUser } = useContext(UserContext);
 
   let timeoutId: NodeJS.Timeout | null = null;
 
@@ -38,6 +37,13 @@ const CartDropdown = (props: CartProps) => {
       }, delay);
     };
   };
+
+  // useEffect(() => {
+  //   if (userCart) {
+  //     setCartItems(userCart);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const handleClick = (event: any) => {
     event.target.select(); // Bôi đen toàn bộ giá trị khi click vào input
@@ -63,13 +69,10 @@ const CartDropdown = (props: CartProps) => {
           router.refresh();
         } else if (res.statusCode === 400) {
           warningMessage("Chỉ được phép tối đa " + res.result + " sản phẩm");
-          setCartItems((prevItems) =>
-            prevItems.map((item) =>
-              item.cartItemId === itemId
-                ? { ...item, quantity: res.result }
-                : item
-            )
-          );
+          const currCart = await getUserCart(getCookie("accessToken")!);
+          if (currCart.success) {
+            setCartItems(currCart.result.cartItems);
+          }
         } else if (res.statusCode === 401) {
           warningMessage("Vui lòng đăng nhập");
           router.push("/login");
@@ -142,20 +145,12 @@ const CartDropdown = (props: CartProps) => {
                             </span>
                           </div>
                           <button
-                            disabled={user.email == ""}
-                            title={`${
-                              user.email == ""
-                                ? "Vui lòng đăng nhập"
-                                : "Xóa sản phẩm"
-                            }`}
+                            title={`${"Xóa sản phẩm"}`}
                             onClick={() => handleRemoveItem(item.cartItemId)}
                           >
                             <FontAwesomeIcon
-                              className={`relative top-1 ${
-                                user.email == ""
-                                  ? "opacity-30 "
-                                  : "hover:opacity-60 fill-text-color"
-                              }  transition-all -translate-y-4`}
+                              className={`relative top-1 hover:opacity-60 fill-text-color
+                              transition-all -translate-y-4`}
                               icon={faCircleXmark}
                             />
                           </button>
@@ -167,12 +162,7 @@ const CartDropdown = (props: CartProps) => {
                           <label>Qty:</label>
                           <div className="inline-flex">
                             <input
-                              disabled={user.email == ""}
-                              title={`${
-                                user.email == ""
-                                  ? "Vui lòng đăng nhập"
-                                  : "Thay đổi số lượng sản phẩm"
-                              }`}
+                              title={`${"Thay đổi số lượng sản phẩm"}`}
                               className="border-[1px] border-border-color rounded-md py-0.5 px-3 max-w-[2.5rem]
                             outline-1 outline-primary-color mx-1 text-center"
                               onFocus={handleClick}
@@ -212,7 +202,7 @@ const CartDropdown = (props: CartProps) => {
             <Link
               href="/cart"
               onClick={() => {
-                if (user.email == "") warningMessage("Vui lòng đăng nhập");
+                if (!userInfo) warningMessage("Vui lòng đăng nhập");
               }}
             >
               <NavigateButton>Xem Giỏ hàng</NavigateButton>

@@ -7,7 +7,7 @@ import { ReactNode } from "react";
 import { userCart } from "../(user)/cart/page";
 import { prefetchAllProducts } from "./product/page";
 
-const UserLayout = async ({ children }: { children: ReactNode }) => {
+const GuestLayout = async ({ children }: { children: ReactNode }) => {
   const [userCredentialsRes, userCartRes, productsRes] = await Promise.all([
     fetchUserCredentials(getCookie("accessToken", { cookies })!),
     userCart(getCookie("accessToken", { cookies })!),
@@ -18,10 +18,7 @@ const UserLayout = async ({ children }: { children: ReactNode }) => {
     cart = undefined,
     fullToken = undefined;
 
-  if (
-    userCredentialsRes.statusCode === 401 ||
-    userCredentialsRes.status === 500
-  ) {
+  if (userCredentialsRes.statusCode === 401) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);
@@ -67,11 +64,16 @@ const UserLayout = async ({ children }: { children: ReactNode }) => {
     productsRes && productsRes.success && productsRes.result.content;
   return (
     <>
-      <Header userInfo={userInfo} products={products} userCart={cart} />
+      <Header
+        userInfo={userInfo}
+        products={products}
+        userCart={cart}
+        fullToken={fullToken}
+      />
       {children}
       <Footer />
     </>
   );
 };
 
-export default UserLayout;
+export default GuestLayout;

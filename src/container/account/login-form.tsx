@@ -72,7 +72,9 @@ const LoginForm = () => {
         } else {
           successMessage("Đăng nhập thành công");
           router.back();
-          router.refresh();
+          setTimeout(() => {
+            router.refresh();
+          }, 100);
         }
       }
     } else {

@@ -16,6 +16,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "@/store";
 import Skeleton from "@mui/material/Skeleton";
+import { UserInfo } from "@/features/types";
 const theme = createTheme({
   breakpoints: {
     values: {
@@ -27,18 +28,23 @@ const theme = createTheme({
     },
   },
 });
-const ProfileNav = () => {
-  const { user, setUser } = useContext(UserContext);
+const ProfileNav = ({ info }: { info?: UserInfo }) => {
+  // const { user, setUser } = useContext(UserContext);
   const [userInfo, setUserInfo] = useState({
-    avatar: "",
-    fullname: "",
+    avatar: info?.avatar || "",
+    fullname: info?.fullname || "",
   });
+
   useEffect(() => {
-    setUserInfo({
-      avatar: user.avatar ? user.avatar : "",
-      fullname: user.fullname ? user.fullname : "",
-    });
-  }, [user]);
+    if (info) {
+      setUserInfo({
+        avatar: info?.avatar || "",
+        fullname: info?.fullname || "",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [info]);
+
   return (
     <div className="col-span-full sm:col-span-10 sm:col-start-2 xl:col-span-2 xl:col-start-2 lg:col-span-3">
       <ThemeProvider theme={theme}>

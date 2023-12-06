@@ -4,13 +4,16 @@ const getRole = async (accessToken: string | undefined) => {
   try {
     if (!accessToken) return null;
 
-    const res = await fetch(`http://localhost:8080/api/v1/users/role`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/role`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
     return res.json();
   } catch (error: any) {

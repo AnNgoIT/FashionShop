@@ -92,13 +92,13 @@ export default function Dashboard({
   const handleLogout = async () => {
     try {
       const cookies = getCookies();
-      const id = toast.loading("Wating...");
+      const id = toast.loading("Đăng xuất...");
       const res = await logout(cookies.accessToken!, cookies.refreshToken!);
       if (res.success) {
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
         toast.update(id, {
-          render: `Logout Success`,
+          render: `Đăng xuất thành công`,
           type: "success",
           autoClose: 1000,
           isLoading: false,
@@ -111,7 +111,7 @@ export default function Dashboard({
         deleteCookie("accessToken");
         deleteCookie("refreshToken");
         toast.update(id, {
-          render: `Please Login!`,
+          render: `Vui lòng đăng nhập`,
           type: "warning",
           autoClose: 1000,
           isLoading: false,

@@ -340,7 +340,7 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
               />
             </Button>
             <p className="text-[1rem] pt-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
-              Dung lượng tệp không quá 1MB
+              Dung lượng tệp không quá 20MB
             </p>
             <p className="text-[1rem] pb-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
               Định dạng tệp: JPG, PNG,...

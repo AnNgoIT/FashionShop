@@ -1,7 +1,6 @@
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
 import Container from "@/container/container";
-import { Category, Product, UserInfo } from "@/features/types";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import {
@@ -9,7 +8,6 @@ import {
   prefetchAllProducts,
 } from "./(guest)/product/page";
 import { userCart } from "./(user)/cart/page";
-import { redirect } from "next/dist/server/api-utils";
 
 export const HTTP_PORT = process.env.NEXT_PUBLIC_API_URL;
 
@@ -177,10 +175,7 @@ const Home = async () => {
     cart = undefined,
     fullToken = undefined;
 
-  if (
-    userCredentialsRes.statusCode === 401 ||
-    userCredentialsRes.status === 500
-  ) {
+  if (userCredentialsRes.statusCode === 401) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);
