@@ -37,7 +37,6 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import useLocal from "@/hooks/useLocalStorage";
-import { requireLogin } from "@/features/toasting";
 
 const CartTopNav = ({
   info,
@@ -58,17 +57,17 @@ const CartTopNav = ({
   const cookies = getCookies();
 
   useEffect(() => {
-    // async function fetchUserCart() {
-    //   if (hasCookie("accessToken")) {
-    //     const res = await getUserCart(getCookie("accessToken")!);
-    //     if (res.success) {
-    //       setCartItems(res.result.cartItems);
-    //     }
-    //   } else {
-    //     setCartItems([]);
-    //   }
-    // }
-    // fetchUserCart();
+    async function fetchUserCart() {
+      if (hasCookie("accessToken")) {
+        const res = await getUserCart(getCookie("accessToken")!);
+        if (res.success) {
+          setCartItems(res.result.cartItems);
+        }
+      } else {
+        setCartItems([]);
+      }
+    }
+    fetchUserCart();
 
     if (token) {
       setCookie("accessToken", token.accessToken, {

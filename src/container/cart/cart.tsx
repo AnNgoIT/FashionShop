@@ -25,18 +25,13 @@ import { imageLoader } from "@/features/img-loading";
 import NavigateButton, { QuantityButton } from "@/components/button";
 import { cartItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
-import {
-  deleteSuccess,
-  maxQuanity,
-  noCartItemSelected,
-  requireLogin,
-} from "@/features/toasting";
-import { deleteCartItem, updateCartItem } from "@/hooks/useAuth";
-import { getCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
+import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
+import { getCookie, hasCookie } from "cookies-next";
+import { redirect, useRouter } from "next/navigation";
 import LoadingComponent from "@/components/loading";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import { successMessage, warningMessage } from "@/features/toasting";
 
 export type CartProps = {
   userCart: cartItem[];
@@ -52,12 +47,13 @@ const Cart = (props: CartProps) => {
   const [isCartItemChecked, setCartItemChecked] = useState<cartItem[]>([]);
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (userCart) {
-      setCartItems(userCart);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userCart]);
+  // useEffect(() => {
+  //   if (userCart) {
+  //     setCartItems(userCart);
+  //     // setCartItemChecked(cartItems);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [userCart]);
 
   let timeoutId: NodeJS.Timeout | null = null;
 
@@ -117,10 +113,23 @@ const Cart = (props: CartProps) => {
           );
           router.refresh();
         } else if (res.statusCode === 400) {
-          maxQuanity(res.result);
-          router.refresh();
+          warningMessage("Chỉ được phép tối đa " + res.result + " sản phẩm");
+          const currCart = await getUserCart(getCookie("accessToken")!);
+          if (currCart.success) {
+            setCartItems(currCart.result.cartItems);
+            setCartItemChecked((prevItems: cartItem[]) =>
+              prevItems.map((item: cartItem) => {
+                const cartItem = cartItems.find(
+                  (item) => item.cartItemId == itemId
+                );
+                return item.cartItemId === itemId
+                  ? { ...item, quantity: cartItem?.quantity! }
+                  : item;
+              })
+            );
+          }
         } else if (res.statusCode === 401) {
-          requireLogin();
+          warningMessage("Vui lòng đăng nhập");
           router.push("/login");
         }
       } catch (error: any) {}
@@ -132,6 +141,7 @@ const Cart = (props: CartProps) => {
     if (newQuantity < 1) {
       newQuantity = 1;
     }
+
     setCartItems((prevItems: cartItem[]) =>
       prevItems.map((item: cartItem) =>
         item.cartItemId === itemId ? { ...item, quantity: newQuantity } : item
@@ -148,14 +158,17 @@ const Cart = (props: CartProps) => {
   const handleRemoveItem = async (itemId: number) => {
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
-      deleteSuccess();
+      successMessage("Xóa thành công");
       setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
+      setCartItemChecked(
+        isCartItemChecked.filter((item) => item.cartItemId != itemId)
+      );
       router.refresh();
     }
   };
   const handleCheckout = () => {
     if (isCartItemChecked.length == 0) {
-      noCartItemSelected();
+      warningMessage("Bạn chưa chọn sản phẩm nào");
     } else {
       startTransition(() => {
         router.push("/cart/checkout");
@@ -226,8 +239,12 @@ const Cart = (props: CartProps) => {
       {userCart && userCart.length == 0 && (
         <div className="grid place-content-center h-[25rem]">
           <Image
+            loader={imageLoader}
+            placeholder="blur"
             alt="Empty cart"
             className="w-full h-[18rem]"
+            width={300}
+            height={300}
             src={empty_cart}
           ></Image>
           <Link href="/product" className="flex items-center justify-center">
@@ -289,10 +306,10 @@ const Cart = (props: CartProps) => {
                       <td className="max-w-[120px] p-3 border border-border-color">
                         <div className="max-w-[120px] border border-border-color">
                           <Image
-                            className="w-full h-full"
-                            loader={imageLoader}
                             placeholder="blur"
                             blurDataURL={item.image}
+                            className="w-full h-full"
+                            loader={imageLoader}
                             width={120}
                             height={120}
                             src={item.image}
@@ -430,7 +447,7 @@ const Cart = (props: CartProps) => {
           </div>
         </section>
       ) : (
-        userCart.length > 0 && <LoadingComponent />
+        userCart && userCart.length > 0 && <LoadingComponent />
       )}
     </>
   );

@@ -132,7 +132,7 @@ export type orderItem = {
   phone: string;
   address: string;
   status: string;
-  transactionType: string;
+  paymentMethod: string;
   createdAt?: Date;
   updateAt?: Date;
   customerId?: UUID;

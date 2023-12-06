@@ -1,24 +1,7 @@
 import { toast } from "react-toastify";
 
-export function requireLogin() {
-  setTimeout(
-    () =>
-      toast("Vui lòng đăng nhập", {
-        position: "top-right",
-        type: "warning",
-        autoClose: 1000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      }),
-    500
-  );
-}
-export function maxQuanity(quantity: number) {
-  toast("Bạn chỉ được chọn tối đa " + quantity, {
+export function warningMessage(message: string) {
+  toast(message, {
     position: "top-right",
     type: "warning",
     autoClose: 1000,
@@ -31,36 +14,8 @@ export function maxQuanity(quantity: number) {
   });
 }
 
-export function noCartItemSelected() {
-  toast("Bạn chưa chọn sản phẩm nào", {
-    position: "top-right",
-    type: "warning",
-    autoClose: 1000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-  });
-}
-
-export function noAddressAdded() {
-  toast("Vui lòng chọn địa chỉ nhận hàng", {
-    position: "top-right",
-    type: "warning",
-    autoClose: 1000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-  });
-}
-
-export function deleteSuccess() {
-  toast("Xóa thành công", {
+export function errorMessage(message: string) {
+  toast(message, {
     position: "top-right",
     type: "success",
     autoClose: 1000,
@@ -73,8 +28,8 @@ export function deleteSuccess() {
   });
 }
 
-export function loginSuccess() {
-  toast("Đăng nhập thành công", {
+export function successMessage(message: string) {
+  toast(message, {
     position: "top-right",
     type: "success",
     autoClose: 500,

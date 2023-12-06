@@ -11,13 +11,13 @@ import { FormatPrice } from "@/features/product/FilterAmount";
 import { cartItem } from "@/features/types";
 import NavigateButton from "@/components/button";
 import { imageLoader } from "@/features/img-loading";
-import { deleteSuccess, maxQuanity, requireLogin } from "@/features/toasting";
 import useLocal from "@/hooks/useLocalStorage";
 import { updateCartItem, deleteCartItem, getUserCart } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import router from "next/router";
 import { CartProps } from "@/container/cart/cart";
 import { useRouter } from "next/navigation";
+import { successMessage, warningMessage } from "@/features/toasting";
 
 const CartDropdown = (props: CartProps) => {
   const router = useRouter();
@@ -62,15 +62,19 @@ const CartDropdown = (props: CartProps) => {
           );
           router.refresh();
         } else if (res.statusCode === 400) {
-          maxQuanity(res.result);
-          router.refresh();
+          warningMessage("Chỉ được phép tối đa " + res.result + " sản phẩm");
+          setCartItems((prevItems) =>
+            prevItems.map((item) =>
+              item.cartItemId === itemId
+                ? { ...item, quantity: res.result }
+                : item
+            )
+          );
         } else if (res.statusCode === 401) {
-          requireLogin();
+          warningMessage("Vui lòng đăng nhập");
           router.push("/login");
         }
-      } catch (error: any) {
-        console.log(error);
-      }
+      } catch (error: any) {}
     }, 1000),
     []
   );
@@ -90,7 +94,7 @@ const CartDropdown = (props: CartProps) => {
   const handleRemoveItem = async (itemId: number) => {
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
-      deleteSuccess();
+      successMessage("Xóa thành công");
       setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
       router.refresh();
     }
@@ -208,7 +212,7 @@ const CartDropdown = (props: CartProps) => {
             <Link
               href="/cart"
               onClick={() => {
-                if (user.email == "") requireLogin();
+                if (user.email == "") warningMessage("Vui lòng đăng nhập");
               }}
             >
               <NavigateButton>Xem Giỏ hàng</NavigateButton>

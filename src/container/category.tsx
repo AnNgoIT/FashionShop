@@ -34,7 +34,7 @@ const CategorySection = ({ categories }: { categories: Category[] }) => {
                         src={category.image}
                       ></CldImage>
                     </div>
-                    <p className="p-4 grid place-content-center truncate max-md:hidden">
+                    <p className="p-4 grid place-content-center truncate max-lg:hidden">
                       {category.name}
                     </p>
                   </li>

@@ -23,32 +23,35 @@ const authPaths = ["/cart", "/cart/checkout", "/wishlist"];
 const userPaths = ["/login", "/register", "/forgot-password"];
 
 export async function middleware(request: NextRequest) {
-  // const accessToken = request.cookies.get("accessToken");
+  const authenticatedUser = request.cookies.get("accessToken");
+  const url = request.nextUrl.pathname;
+  if (!authenticatedUser) {
+    const refreshUser = request.cookies.get("refreshToken");
+    if (!refreshUser) {
+      if (
+        authPaths.includes(url) ||
+        url.startsWith("/profile") ||
+        url.startsWith("/admin")
+      ) {
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
+    }
+  }
+  const userRole = await getRole(authenticatedUser?.value);
 
-  // if (!accessToken) {
-  //   // if (request.nextUrl.pathname.startsWith("/admin"))
-  //   //   return NextResponse.redirect(new URL("/", request.url));
-  //   // else if (
-  //   //   request.nextUrl.pathname.startsWith("/profile") ||
-  //   //   authPaths.includes(request.nextUrl.pathname)
-  //   // )
-  //   return NextResponse.redirect(new URL("/login", request.url));
-  // }
+  if (userRole && userRole.result == "CUSTOMER") {
+    if (userPaths.includes(url) || url.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
 
-  // const authenticatedUser = await getRole(accessToken?.value);
-  // if (authenticatedUser && authenticatedUser.success) {
-  //   const userRole = authenticatedUser.result;
-  //   if (userRole === "ADMIN") {
-  //     if (!request.nextUrl.pathname.startsWith("/admin"))
-  //       return NextResponse.redirect(new URL("/admin", request.url));
-  //   } else if (
-  //     userRole === "CUSTOMER" &&
-  //     (userPaths.includes(request.nextUrl.pathname) ||
-  //       request.nextUrl.pathname.startsWith("/admin"))
-  //   ) {
-  //     return NextResponse.redirect(new URL("/profile", request.url));
-  //   }
-  // }
+  if (
+    userRole &&
+    userRole.result == "ADMIN" &&
+    url.includes("admin") == false
+  ) {
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
 }
 
 export const config = {

@@ -77,11 +77,10 @@ export const deleteUnverifyEmail = async (email: string) => {
   const config = {
     headers: {
       "Content-Type": "application/json",
-      // 'Authorization': key,
     },
   };
   try {
-    const res = await axios.post(
+    const res = await axios.delete(
       `${HTTP_PORT}/api/v1/auth/accounts/unverified/${email}`,
       config
     );
@@ -278,17 +277,13 @@ export const getUserInfo = async (accessToken: string) => {
     },
   };
   try {
-    const res = await axios.get(
-      `${HTTP_PORT}/api/v1/users/profile`,
-      config
-    );
+    const res = await axios.get(`${HTTP_PORT}/api/v1/users/profile`, config);
     const data = res && res.data ? res.data : {};
     return data;
   } catch (error: any) {
     return error.response.data;
   }
 };
-
 
 export const updateCartItem = async (
   accessToken: string,

@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
 import Carousel from "react-multi-carousel";
 import { FormatPrice } from "@/features/product/FilterAmount";
-import { ProductDetail } from "@/features/product";
 
 import {
   MyLeftArrow,
@@ -56,17 +55,19 @@ const RelatedProduct = (props: RelateProductProps) => {
                     {diffInHours(new Date(product.createdAt!), new Date()) <=
                       72 && (
                       <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                        New
+                        Mới
                       </label>
                     )}
                     {product.priceMin != product.promotionalPriceMin && (
                       <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                        Sale
+                        Giảm giá
                       </label>
                     )}
                     <Link href={`/product/${product.productId}`}>
                       <Image
                         loader={imageLoader}
+                        blurDataURL={product.image}
+                        placeholder="blur"
                         className="group-hover:shadow-lg"
                         alt="productImage"
                         src={product.image}

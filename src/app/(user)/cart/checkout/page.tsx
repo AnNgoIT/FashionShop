@@ -16,50 +16,60 @@ export type OrderItem = {
 };
 
 const CheckoutPage = async () => {
-  const res = await fetchUserCredentials(
-    getCookie("accessToken", { cookies })!
-  );
-  let result = undefined;
-  if (res.statusCode == 401) {
+  const [userCredentialsRes, userCartRes] = await Promise.all([
+    fetchUserCredentials(getCookie("accessToken", { cookies })!),
+    userCart(getCookie("accessToken", { cookies })!),
+  ]);
+
+  let userInfo = undefined,
+    cart = undefined,
+    fullToken = undefined;
+
+  if (
+    userCredentialsRes.statusCode === 401 ||
+    userCredentialsRes.status === 500
+  ) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
-        const res2 = await fetchUserCredentials(refresh.result.accessToken);
-        result = res2;
+        fullToken = refresh.result;
+        const [res, res2] = await Promise.all([
+          fetchUserCredentials(refresh.result.accessToken),
+          userCart(refresh.result.accessToken),
+        ]);
+        userInfo = res.success
+          ? {
+              fullname: res.result.fullname,
+              email: res.result.email,
+              phone: res.result.phone,
+              dob: res.result.dob,
+              gender: res.result.gender,
+              address: res.result.address,
+              avatar: res.result.avatar,
+              ewallet: res.result.ewallet,
+              role: res.result.role,
+            }
+          : undefined;
+        cart = res2.success ? res2.result.cartItems : undefined;
       }
     }
-  }
-  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
-
-  const userInfo: UserInfo | undefined =
-    res && res.success
+  } else {
+    userInfo = userCredentialsRes.success
       ? {
-          fullname: res.result.fullname,
-          email: res.result.email,
-          phone: res.result.phone,
-          dob: res.result.dob,
-          gender: res.result.gender,
-          address: res.result.address,
-          avatar: res.result.avatar,
-          ewallet: res.result.ewallet,
-          role: res.result.role,
-        }
-      : result && result.success
-      ? {
-          fullname: result.result.fullname,
-          email: result.result.email,
-          phone: result.result.phone,
-          dob: result.result.dob,
-          gender: result.result.gender,
-          address: result.result.address,
-          avatar: result.result.avatar,
-          ewallet: result.result.ewallet,
-          role: res.result.role,
+          fullname: userCredentialsRes.result.fullname,
+          email: userCredentialsRes.result.email,
+          phone: userCredentialsRes.result.phone,
+          dob: userCredentialsRes.result.dob,
+          gender: userCredentialsRes.result.gender,
+          address: userCredentialsRes.result.address,
+          avatar: userCredentialsRes.result.avatar,
+          ewallet: userCredentialsRes.result.ewallet,
+          role: userCredentialsRes.result.role,
         }
       : undefined;
-
-  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
+    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
+  }
   return <Checkout userInfo={userInfo} userCart={cart} />;
 };
 

@@ -14,36 +14,32 @@ import { QuantityButton } from "@/components/button";
 import RelatedProduct from "@/container/product/related-product";
 import ContentSwitcher from "@/container/product/content-switcher";
 import ImageMagnifier from "@/components/image-magnifier";
-import { addProductItemToCart, useProductDetail } from "@/hooks/useProducts";
-import { Product, StyleValue, cartItem, productItem } from "@/features/types";
+import { addProductItemToCart } from "@/hooks/useProducts";
+import { Product, StyleValue, productItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
-import Skeleton from "@mui/material/Skeleton";
-import CircularProgress from "@mui/material/CircularProgress";
 import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import useLocal from "@/hooks/useLocalStorage";
 import { CartContext } from "@/store";
-import { getUserCart } from "@/hooks/useAuth";
-import { requireLogin } from "@/features/toasting";
+import { warningMessage } from "@/features/toasting";
 
 type ProductDetailProps = {
   productId: string;
   color: StyleValue[];
   size: StyleValue[];
+  productDetail: Product;
   relatedProduct: Product[];
   productItems: productItem[];
 };
 
 const ProductDetail = (props: ProductDetailProps) => {
-  const { productId, color, size, relatedProduct, productItems } = props;
+  const { color, size, relatedProduct, productItems, productDetail } = props;
   const router = useRouter();
 
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
 
-  const cart = useLocal();
   const [qty, setQty] = useState<number>(1);
 
   const [isSizeActive, setSizeActive] = useState<string[]>([]);
@@ -64,13 +60,6 @@ const ProductDetail = (props: ProductDetailProps) => {
     sku: "",
   });
   const { cartItems, setCartItems } = useContext(CartContext);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
 
   function resetProductItem() {
     setProductItem({
@@ -114,223 +103,6 @@ const ProductDetail = (props: ProductDetailProps) => {
     }
   }, [isColorActive, isSizeActive, productItems]);
 
-  const { productDetail, isProductDetailError, isProductDetailLoading } =
-    useProductDetail(productId);
-  if (isProductDetailLoading)
-    return (
-      <>
-        <main className="font-montserrat bg-white mt-[76px] relative z-0">
-          <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
-            <div className={`grid grid-cols-1`}>
-              <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
-                <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
-                  {title}
-                </span>
-                <ul className="flex">
-                  {urlLink &&
-                    urlLink?.map((value: string, index: number) => {
-                      const nextLink = urlLink![index + 1];
-                      let thisLink = null;
-                      if (nextLink !== undefined && value !== "home") {
-                        thisLink = (
-                          <>
-                            <Link
-                              className="group-hover:cursor-pointer group-hover:text-secondary-color
-            transition-all duration-200 capitalize text-[18px]"
-                              href={`/${value}`}
-                            >
-                              {value}
-                            </Link>
-                            <span className="px-[10px]">/</span>
-                          </>
-                        );
-                      } else if (value === "home") {
-                        thisLink = (
-                          <>
-                            <Link
-                              className="group-hover:cursor-pointer group-hover:text-secondary-color
-            transition-all duration-200 capitalize text-[18px]"
-                              href={`/`}
-                            >
-                              {value}
-                            </Link>
-                            <span className="px-[10px]">/</span>
-                          </>
-                        );
-                      } else
-                        thisLink = (
-                          <span className="capitalize text-[18px]">
-                            {value}
-                          </span>
-                        );
-                      return (
-                        <li
-                          key={index}
-                          className={`font-medium ${nextLink ? `group` : ``}`}
-                        >
-                          {thisLink}
-                        </li>
-                      );
-                    })}
-                </ul>
-              </div>
-            </div>
-          </section>
-        </main>
-        <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4 overflow-hidden">
-          <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
-            <div className="col-span-full md:col-span-6 lg:col-span-5 lg:col-start-2 xl:col-span-4 xl:col-start-2 outline outline-1 outline-border-color h-fit">
-              <Skeleton
-                variant="rectangular"
-                sx={{ width: "100%", height: "100%" }}
-                height={485}
-              ></Skeleton>
-            </div>
-            <div
-              className={`col-span-full md:col-span-6 lg:col-span-5 xl:col-span-5`}
-            >
-              <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
-                <Skeleton
-                  variant="rounded"
-                  sx={{ margin: "0.25rem 0", width: "100%", height: "100%" }}
-                ></Skeleton>
-              </h3>
-              <h1 className="text-primary-color font-bold">
-                <Skeleton
-                  variant="rounded"
-                  sx={{ margin: "0.25rem 0" }}
-                  height={20}
-                  width={532}
-                ></Skeleton>
-              </h1>
-              <ul className=" border-b-[1px] border-border-color text-base py-4">
-                <li className="flex items-center text-sm">
-                  <Skeleton
-                    variant="rounded"
-                    sx={{ margin: "0.25rem 0" }}
-                    height={20}
-                    width={532}
-                  ></Skeleton>
-                </li>
-                <li className="flex items-center text-sm">
-                  <Skeleton
-                    variant="rounded"
-                    sx={{ margin: "0.25rem 0" }}
-                    height={20}
-                    width={532}
-                  ></Skeleton>
-                </li>
-                <li className="flex items-center text-sm">
-                  <Skeleton
-                    variant="rounded"
-                    sx={{ margin: "0.25rem 0" }}
-                    height={20}
-                    width={532}
-                  ></Skeleton>
-                </li>
-              </ul>
-              <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
-                <span className="text-md mr-2 min-w-[5rem]">Sizes:</span>
-                {[1, 2, 3].map((item) => {
-                  return (
-                    <li key={item} className={``}>
-                      <Skeleton
-                        variant="rounded"
-                        sx={{ margin: "0.25rem 0" }}
-                        height={40}
-                        width={65}
-                      ></Skeleton>
-                    </li>
-                  );
-                })}
-              </ul>
-              <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
-                <span className="text-md mr-2 min-w-[5rem]">Colors:</span>
-                <Skeleton
-                  variant="rounded"
-                  sx={{ margin: "0.25rem 0" }}
-                  height={40}
-                  width={65}
-                ></Skeleton>
-                <Skeleton
-                  variant="rounded"
-                  sx={{ margin: "0.25rem 0" }}
-                  height={40}
-                  width={65}
-                ></Skeleton>
-              </ul>
-              <div
-                className={`flex items-center gap-2 py-4 border-b-[1px] border-border-color`}
-              >
-                <span className="text-md mr-2 min-w-[5rem]">Quantity:</span>
-                <QuantityButton onClick={() => handleChangeQuantity(-1)}>
-                  <FontAwesomeIcon icon={faMinus}></FontAwesomeIcon>
-                </QuantityButton>
-                <input
-                  className="outline outline-1 outline-border-color w-10 py-1.5 text-center text-text-color focus:outline-primary-color"
-                  value={qty}
-                  min={1}
-                  max={20}
-                  required
-                  type="text"
-                  onChange={(e) =>
-                    handleChangeQuantityByKeyBoard(+e.target.value)
-                  }
-                />
-                <QuantityButton onClick={() => handleChangeQuantity(1)}>
-                  <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
-                </QuantityButton>
-                <span className="pl-6">
-                  <Skeleton
-                    variant="rounded"
-                    sx={{ margin: "0.25rem 0" }}
-                    height={30}
-                    width={180}
-                  ></Skeleton>
-                </span>
-              </div>
-
-              <div className="pt-5 flex">
-                <button
-                  className="rounded-[4px] bg-primary-color text-white px-4 py-3 
-                            font-medium flex justify-center items-center hover:bg-text-color
-                            transition-all duration-200  text-ellipsis whitespace-nowrap"
-                >
-                  <FontAwesomeIcon
-                    className="pr-2 text-[20px]"
-                    icon={faBagShopping}
-                  ></FontAwesomeIcon>
-                  Thêm vào giỏ hàng
-                </button>
-                <button
-                  className="rounded-[4px] bg-primary-color text-white px-[15px] py-[11px] 
-                            font-medium flex justify-center items-center hover:bg-text-color
-                            transition-all duration-200 ml-6  text-ellipsis whitespace-nowrap"
-                >
-                  <FontAwesomeIcon
-                    className="pr-2 text-[20px]"
-                    icon={faHeart}
-                  ></FontAwesomeIcon>
-                  Theo dõi sản phẩm
-                </button>
-              </div>
-            </div>
-          </div>
-          <div
-            className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px] py-16`}
-          >
-            <ContentSwitcher description={""}></ContentSwitcher>
-          </div>
-          <div className="col-span-full grid place-items-center py-4">
-            <CircularProgress />
-          </div>
-        </section>
-      </>
-    );
-  if (isProductDetailError) {
-    return <div>Lỗi hiển thị</div>;
-  }
-  const detail: Product = productDetail.result;
   const sizeList = size;
   const colorList = color;
 
@@ -373,9 +145,12 @@ const ProductDetail = (props: ProductDetailProps) => {
     }
     setQty((qty: number) => {
       const newQty = qty + amount;
-      return MaxAmounts(newQty, detail.totalQuantity - detail.totalSold)
+      return MaxAmounts(
+        newQty,
+        productDetail.totalQuantity - productDetail.totalSold
+      )
         ? newQty
-        : detail.totalQuantity - detail.totalSold;
+        : productDetail.totalQuantity - productDetail.totalSold;
     });
   };
   const handleChangeQuantityByKeyBoard = (qty: number) => {
@@ -393,9 +168,9 @@ const ProductDetail = (props: ProductDetailProps) => {
       return;
     }
     setQty(
-      MaxAmounts(qty, detail.totalQuantity - detail.totalSold)
+      MaxAmounts(qty, productDetail.totalQuantity - productDetail.totalSold)
         ? qty
-        : detail.totalQuantity - detail.totalSold
+        : productDetail.totalQuantity - productDetail.totalSold
     );
   };
 
@@ -405,9 +180,9 @@ const ProductDetail = (props: ProductDetailProps) => {
   ) => {
     event.preventDefault();
     if (
-      (detail.styleNames.length == 1 &&
+      (productDetail.styleNames.length == 1 &&
         (isSizeActive.length > 0 || isColorActive.length > 0)) ||
-      (detail.styleNames.length > 1 &&
+      (productDetail.styleNames.length > 1 &&
         isSizeActive.length > 0 &&
         isColorActive.length > 0)
     ) {
@@ -451,7 +226,7 @@ const ProductDetail = (props: ProductDetailProps) => {
           router.refresh();
         }
       } else {
-        requireLogin();
+        warningMessage("Vui lòng đăng nhập");
         router.push("/login");
       }
     } else setSelected(true);
@@ -527,8 +302,8 @@ const ProductDetail = (props: ProductDetailProps) => {
               ></ImageMagnifier>
             ) : (
               <ImageMagnifier
-                src={detail.image}
-                bgImg={detail.image}
+                src={productDetail.image}
+                bgImg={productDetail.image}
                 height={480}
                 zoomLevel={2.5}
               ></ImageMagnifier>
@@ -538,7 +313,7 @@ const ProductDetail = (props: ProductDetailProps) => {
             className={`col-span-full md:col-span-6 lg:col-span-5 xl:col-span-5`}
           >
             <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
-              {detail && detail.name}
+              {productDetail && productDetail.name}
             </h3>
             {showProductItem ? (
               <h1 className="text-primary-color font-bold">
@@ -552,12 +327,16 @@ const ProductDetail = (props: ProductDetailProps) => {
               </h1>
             ) : (
               <h1 className="text-primary-color font-bold">
-                {detail && FormatPrice(detail.promotionalPriceMin)} VNĐ
-                {detail && detail.priceMin != detail.promotionalPriceMin && (
-                  <span className="line-through text-text-light-color ml-2 text-sm">
-                    {FormatPrice(detail.priceMin)} VNĐ
-                  </span>
-                )}
+                {productDetail &&
+                  FormatPrice(productDetail.promotionalPriceMin)}{" "}
+                VNĐ
+                {productDetail &&
+                  productDetail.priceMin !=
+                    productDetail.promotionalPriceMin && (
+                    <span className="line-through text-text-light-color ml-2 text-sm">
+                      {FormatPrice(productDetail.priceMin)} VNĐ
+                    </span>
+                  )}
               </h1>
             )}
             <ul className=" border-b-[1px] border-border-color text-base py-4">
@@ -656,7 +435,8 @@ const ProductDetail = (props: ProductDetailProps) => {
                 </span>
               ) : (
                 <span className="pl-6">
-                  {detail.totalQuantity - detail.totalSold} sản phẩm có sẵn
+                  {productDetail.totalQuantity - productDetail.totalSold} sản
+                  phẩm có sẵn
                 </span>
               )}
             </div>
@@ -699,7 +479,9 @@ const ProductDetail = (props: ProductDetailProps) => {
         <div
           className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px] py-16`}
         >
-          <ContentSwitcher description={detail.description}></ContentSwitcher>
+          <ContentSwitcher
+            description={productDetail.description}
+          ></ContentSwitcher>
         </div>
         {relatedProduct && relatedProduct.length > 0 && (
           <div

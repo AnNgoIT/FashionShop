@@ -1,11 +1,11 @@
 "use client";
-import { verifyOTP } from "@/hooks/useAuth";
+import { deleteUnverifyEmail, verifyOTP } from "@/hooks/useAuth";
 import { VerifyEmailContext } from "@/store";
 import FormControl from "@mui/material/FormControl";
 import FormHelperText from "@mui/material/FormHelperText";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 const OTPForm = () => {
@@ -13,16 +13,21 @@ const OTPForm = () => {
   const [otp, setOTP] = useState("");
   const [error, setError] = useState("");
   const { verifyEmail, setVerifyEmail } = useContext(VerifyEmailContext);
-  const mounted = useRef(false);
-  
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setVerifyEmail({ email: "" });
-    }, 120000); // Thời gian tính bằng miligiây, 120000 miligiây = 2 phút
+    }, 120000);
 
-    // Xóa timeout khi component unmount để tránh memory leak
-    return () => clearTimeout(timeout);
-  });
+    return () => {
+      clearTimeout(timeout); // Clear timeout trước khi gọi API
+      // Gọi API để xóa dữ liệu không còn cần thiết khi component unmount
+      deleteUnverifyEmail(verifyEmail.email)
+        .then((res) => res.json())
+        .catch((error) => console.log(error));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Đảm bảo sử dụng dependency để clean-up được gọi khi verifyEmail.email thay đổi
 
   // Kiểm tra điều kiện trước khi render
   if (verifyEmail.email === "") {

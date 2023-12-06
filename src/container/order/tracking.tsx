@@ -109,72 +109,145 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
       </Modal>
       {orderList && orderList.length != 0 ? (
         <ul className="col-span-full h-[16rem] overflow-auto px-2">
-          {orderList.map((item: orderItem) => {
-            return (
-              <li
-                key={`order-${item.orderId}`}
-                className="grid grid-cols-12 py-3 border-b border-text-light-color gap-y-2"
-              >
-                <div className="col-span-8 md:col-span-5">
-                  <h1 className="text-lg text-secondary-color">
-                    ID Đơn mua: {item.orderId}
-                  </h1>
-                  <h2>
-                    Ngày đặt hàng:
-                    {` ${dayjs(new Date(item.createdAt!)).format(
-                      "DD/MM/YYYY"
-                    )}`}
-                  </h2>
-                </div>
-                <div
-                  className={`col-span-4 md:col-span-2 text-center ${
-                    item.status == "PROCESSING"
-                      ? "bg-yellow-500"
-                      : item.status == "NOT_PROCESSED"
-                      ? "bg-text-light-color"
-                      : "bg-green-500"
-                  }  grid place-content-center text-white rounded-lg`}
+          {orderList
+            .sort((a, b) => b.orderId - a.orderId)
+            .map((item: orderItem, index) => {
+              if (
+                index == 0 &&
+                dayjs(new Date(item.createdAt!)).diff(dayjs(), "day") <= 1
+              ) {
+                return (
+                  <li
+                    key={`order-${item.orderId}`}
+                    className="grid grid-cols-12 py-3 border-b border-text-light-color gap-y-2 bg-yellow-200 px-2"
+                  >
+                    <div className="col-span-8 md:col-span-5">
+                      <h1 className="text-lg text-secondary-color">
+                        ID Đơn mua: {item.orderId}{" "}
+                        <span className="font-bold text-red">{`(Mới đặt)`}</span>
+                      </h1>
+                      <h2>
+                        Ngày đặt hàng:
+                        {` ${dayjs(new Date(item.createdAt!)).format(
+                          "DD/MM/YYYY"
+                        )}`}
+                      </h2>
+                    </div>
+                    <div
+                      className={`col-span-4 md:col-span-2 text-center ${
+                        item.status == "PROCESSING"
+                          ? "bg-yellow-500"
+                          : item.status == "NOT_PROCESSED"
+                          ? "bg-text-light-color"
+                          : "bg-green-500"
+                      }  grid place-content-center text-white rounded-lg`}
+                    >
+                      {item.status == "PROCESSING"
+                        ? "Đang xử lý"
+                        : item.status == "NOT_PROCESSED"
+                        ? "Chưa xử lý"
+                        : "Đang giao hàng"}
+                    </div>
+                    <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
+                      <Button
+                        onClick={() => handleOpenDetail(item)}
+                        sx={{
+                          textTransform: "capitalize",
+                          fontSize: "1rem",
+                          "&:hover": {
+                            background: "#639df1",
+                            color: "white",
+                          },
+                        }}
+                      >
+                        <InfoIcon />
+                        <span className="text-lg pl-1">Chi tiết</span>
+                      </Button>
+                      <Button
+                        onClick={() => handleCancelOrder(item.orderId)}
+                        sx={{
+                          textTransform: "capitalize",
+                          fontSize: "1rem",
+                          "&:hover": {
+                            background: "#f22a59",
+                            color: "white",
+                          },
+                          color: "#f22a59",
+                        }}
+                      >
+                        <CancelIcon />
+                        <span className="text-lg pl-1">Hủy</span>
+                      </Button>
+                    </div>
+                  </li>
+                );
+              }
+
+              return (
+                <li
+                  key={`order-${item.orderId}`}
+                  className="grid grid-cols-12 py-3 border-b border-text-light-color gap-y-2 px-2"
                 >
-                  {item.status == "PROCESSING"
-                    ? "Đang xử lý"
-                    : item.status == "NOT_PROCESSED"
-                    ? "Chưa xử lý"
-                    : "Đang giao hàng"}
-                </div>
-                <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
-                  <Button
-                    onClick={() => handleOpenDetail(item)}
-                    sx={{
-                      textTransform: "capitalize",
-                      fontSize: "1rem",
-                      "&:hover": {
-                        background: "#639df1",
-                        color: "white",
-                      },
-                    }}
+                  <div className="col-span-8 md:col-span-5">
+                    <h1 className="text-lg text-secondary-color">
+                      ID Đơn mua: {item.orderId}
+                    </h1>
+                    <h2>
+                      Ngày đặt hàng:
+                      {` ${dayjs(new Date(item.createdAt!)).format(
+                        "DD/MM/YYYY"
+                      )}`}
+                    </h2>
+                  </div>
+                  <div
+                    className={`col-span-4 md:col-span-2 text-center ${
+                      item.status == "PROCESSING"
+                        ? "bg-yellow-500"
+                        : item.status == "NOT_PROCESSED"
+                        ? "bg-text-light-color"
+                        : "bg-green-500"
+                    }  grid place-content-center text-white rounded-lg`}
                   >
-                    <InfoIcon />
-                    <span className="text-lg pl-1">Chi tiết</span>
-                  </Button>
-                  <Button
-                    onClick={() => handleCancelOrder(item.orderId)}
-                    sx={{
-                      textTransform: "capitalize",
-                      fontSize: "1rem",
-                      "&:hover": {
-                        background: "#f22a59",
-                        color: "white",
-                      },
-                      color: "#f22a59",
-                    }}
-                  >
-                    <CancelIcon />
-                    <span className="text-lg pl-1">Hủy</span>
-                  </Button>
-                </div>
-              </li>
-            );
-          })}
+                    {item.status == "PROCESSING"
+                      ? "Đang xử lý"
+                      : item.status == "NOT_PROCESSED"
+                      ? "Chưa xử lý"
+                      : "Đang giao hàng"}
+                  </div>
+                  <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
+                    <Button
+                      onClick={() => handleOpenDetail(item)}
+                      sx={{
+                        textTransform: "capitalize",
+                        fontSize: "1rem",
+                        "&:hover": {
+                          background: "#639df1",
+                          color: "white",
+                        },
+                      }}
+                    >
+                      <InfoIcon />
+                      <span className="text-lg pl-1">Chi tiết</span>
+                    </Button>
+                    <Button
+                      onClick={() => handleCancelOrder(item.orderId)}
+                      sx={{
+                        textTransform: "capitalize",
+                        fontSize: "1rem",
+                        "&:hover": {
+                          background: "#f22a59",
+                          color: "white",
+                        },
+                        color: "#f22a59",
+                      }}
+                    >
+                      <CancelIcon />
+                      <span className="text-lg pl-1">Hủy</span>
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
         </ul>
       ) : (
         <div className="col-span-full min-h-[14rem] grid place-content-center">

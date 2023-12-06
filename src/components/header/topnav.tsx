@@ -23,7 +23,7 @@ import { user_img2 } from "@/assests/users";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
 import Menu from "./dropdown/menu";
-import { getUserCart, logout } from "@/hooks/useAuth";
+import { logout } from "@/hooks/useAuth";
 import {
   deleteCookie,
   getCookie,
@@ -32,14 +32,13 @@ import {
   setCookie,
 } from "cookies-next";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
 import { Product, UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { styled } from "@mui/material/styles";
 import { CldImage } from "next-cloudinary";
 import { imageLoader } from "@/features/img-loading";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import SwipeableTemporaryDrawer from "../drawer";
 import NotifyDropdown from "./dropdown/notifications";
 import LoginIcon from "@mui/icons-material/Login";
@@ -47,7 +46,11 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { requireLogin } from "@/features/toasting";
+import {
+  errorMessage,
+  successMessage,
+  warningMessage,
+} from "@/features/toasting";
 const Input = styled("input")(({ theme }) => ({
   width: 200,
   backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
@@ -87,20 +90,13 @@ type NavProps = {
 const TopNav = (props: NavProps) => {
   const { info, userCart, token, products } = props;
   const [isPending, startTransition] = useTransition();
+  const { replace } = useRouter();
   const router = useRouter();
+
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [onSearch, setOnSearch] = useState(false);
   const [isReloading, setReloading] = useState<boolean>(false);
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams);
-      params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams]
-  );
 
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
@@ -116,12 +112,8 @@ const TopNav = (props: NavProps) => {
   const cookies = getCookies();
 
   useEffect(() => {
-    if (userCart) {
-      startTransition(() => {
-        setReloading(true);
-        setCartItems(userCart);
-      });
-    }
+    setReloading(true);
+    setCartItems(userCart!);
     setUser(
       info
         ? info
@@ -187,26 +179,32 @@ const TopNav = (props: NavProps) => {
         // losing client-side browser or React state.
       }
     } catch (error) {
-      requireLogin();
+      warningMessage("Vui lòng đăng nhập");
       scrollToTop();
       router.push("/login");
       router.refresh();
     }
   };
 
-  const handleChange = (e: any) => {
-    setKeyword(e.target.value);
+  const handleChange = (keyword: string) => {
+    setKeyword(keyword);
   };
 
-  const onSearchValue = (value: string) => {
-    setKeyword(value);
-    setOnSearch(false);
-  };
-
-  const searchProducts = async (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-    router.push("/product?" + createQueryString("name", keyword));
-    setKeyword("");
+  const handleSearchProducts = () => {
+    const params = new URLSearchParams(searchParams);
+    if (keyword && keyword.trim().length > 0) {
+      params.set("query", keyword.trim());
+      try {
+        replace(`/product?${params.toString()}`);
+        setKeyword("");
+        successMessage("Tìm kiếm thành công");
+      } catch (error) {
+        setKeyword("");
+        errorMessage("Tìm kiếm thất bại");
+      }
+    } else {
+      params.delete("query");
+    }
   };
 
   return (
@@ -218,7 +216,6 @@ const TopNav = (props: NavProps) => {
           as={"/"}
         >
           <Image
-            // loader={imageLoader}
             className={`w-auto min-w-[5rem] h-[3.25rem] transition-all`}
             alt="Logo of the shop"
             src={logo}
@@ -228,15 +225,10 @@ const TopNav = (props: NavProps) => {
             priority={true}
           ></Image>
         </Link>
-        <form
-          className="bg-white rounded-[0.25rem] flex items-center relative col-span-6 sm:col-span-7 md:col-span-4 lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-[2.75rem]"
-          // action={`/search`}
-          // method="post"
-          onSubmit={searchProducts}
-        >
+        <div className="bg-white rounded-[0.25rem] flex items-center relative col-span-6 sm:col-span-7 md:col-span-4 lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-[2.75rem]">
           <Input
             value={keyword}
-            onChange={handleChange}
+            onChange={(e) => handleChange(e.target.value)}
             onFocus={() => setOnSearch(true)}
             name="keyword"
             autoComplete="off"
@@ -245,8 +237,7 @@ const TopNav = (props: NavProps) => {
             placeholder="Tìm kiếm sản phẩm..."
           ></Input>
           <button
-            onClick={() => onSearchValue(keyword)}
-            type="submit"
+            onClick={handleSearchProducts}
             className="absolute right-[0.25rem] transition-opacity hover:opacity-60 bg-primary-color
              cursor-pointer text-white grid place-content-center rounded-md py-[10px] px-5"
           >
@@ -271,40 +262,49 @@ const TopNav = (props: NavProps) => {
                   Không tìm thấy sản phẩm
                 </div>
               ) : (
-                products.map((product) => {
-                  return (
-                    <Link
-                      key={product.productId}
-                      href={`/product/${product.productId}`}
-                    >
-                      <li
-                        className="flex justify-between item-center px-2 py-3 max-h-[6rem] gap-x-2
-                        hover:bg-primary-color hover:text-white cursor-pointer"
+                products
+                  .filter((product) => {
+                    const value = keyword.toLowerCase();
+                    const name = product.name.toLowerCase();
+                    return value && name.includes(value) && name !== value;
+                  })
+                  .map((product) => {
+                    return (
+                      <Link
+                        key={product.productId}
+                        href={`/product/${product.productId}`}
                       >
-                        <CldImage
-                          key={"image-" + product.productId}
-                          loader={imageLoader}
-                          priority
-                          className="max-w-[5rem] group-hover:shadow-sd"
-                          alt="autocompleImg"
-                          src={product.image}
-                          width={120}
-                          height={40}
-                        ></CldImage>
-                        <span
-                          key={product.productId}
-                          className="truncate cursor-pointer"
+                        <li
+                          className="flex item-center p-3 max-h-max gap-x-2
+                        hover:bg-primary-color hover:text-white cursor-pointer border-b border-border-color"
                         >
-                          {product.name}
-                        </span>
-                      </li>
-                    </Link>
-                  );
-                })
+                          <div className="border border-border-color max-w-[5rem] h-max">
+                            <CldImage
+                              loader={imageLoader}
+                              blurDataURL={product.image}
+                              placeholder="blur"
+                              className="group-hover:shadow-sd"
+                              alt="autocompleImg"
+                              src={product.image}
+                              width={120}
+                              height={40}
+                              priority
+                            ></CldImage>
+                          </div>
+                          <span
+                            key={product.productId}
+                            className="cursor-pointer text-left"
+                          >
+                            {product.name}
+                          </span>
+                        </li>
+                      </Link>
+                    );
+                  })
               )}
             </Listbox>
           )}
-        </form>
+        </div>
         <ul
           className={`justify-end items-center md:col-span-5 xl:col-span-4 max-md:hidden flex`}
         >
@@ -511,7 +511,7 @@ const TopNav = (props: NavProps) => {
                 <Link href="/cart">
                   <div
                     onClick={() => {
-                      if (!info) requireLogin();
+                      if (!info) warningMessage("Vui lòng đăng nhập");
                     }}
                     className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
                   >

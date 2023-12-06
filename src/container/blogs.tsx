@@ -17,10 +17,10 @@ const Blogs = () => {
             <Link href="/blog">
               <Image
                 loader={imageLoader}
+                className="w-full h-full"
                 placeholder="blur"
-                className="w-full"
-                width={300}
-                height={300}
+                width={645}
+                height={551}
                 alt="latestBlog"
                 src={blog_img1}
               ></Image>
@@ -51,10 +51,9 @@ const Blogs = () => {
             <div className="col-span-full sm:col-span-6 md:col-span-4 lg:col-span-6">
               <Link href="/blog">
                 <Image
-                  loader={imageLoader}
-                  placeholder="blur"
                   className="w-full h-full"
-                  width={100}
+                  width={322.5}
+                  height={275.5}
                   alt="latestBlog"
                   src={blog_img2}
                 ></Image>
@@ -85,10 +84,11 @@ const Blogs = () => {
             <div className="col-span-full sm:col-span-6 md:col-span-4 lg:col-span-6">
               <Link href="/blog">
                 <Image
-                  loader={imageLoader}
-                  placeholder="blur"
+                  // loader={imageLoader}
+                  // placeholder="blur"
                   className="w-full h-full"
-                  width={100}
+                  width={322.5}
+                  height={275.5}
                   alt="latestBlog"
                   src={blog_img3}
                 ></Image>

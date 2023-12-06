@@ -4,76 +4,65 @@ import Footer from "@/components/footer/footer";
 import { fetchUserCredentials, refreshLogin } from "../page";
 import { cookies } from "next/headers";
 import { getCookie, hasCookie } from "cookies-next";
-import { UserInfo } from "@/features/types";
-import { isTokenExpired } from "@/features/jwt-decode";
-import { redirect } from "next/navigation";
 
 import CartHeader from "@/components/header/cart-header";
 import { userCart } from "./cart/page";
 
 const CartLayout = async ({ children }: { children: ReactNode }) => {
-  const res = await fetchUserCredentials(
-    getCookie("accessToken", { cookies })!
-  );
-  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+  const [userCredentialsRes, userCartRes] = await Promise.all([
+    fetchUserCredentials(getCookie("accessToken", { cookies })!),
+    userCart(getCookie("accessToken", { cookies })!),
+  ]);
 
-  let result = null,
-    fullToken;
-  if (res.statusCode == 401) {
+  let userInfo = undefined,
+    cart = undefined,
+    fullToken = undefined;
+
+  if (
+    userCredentialsRes.statusCode === 401 ||
+    userCredentialsRes.status === 500
+  ) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
-      if (isTokenExpired(refreshToken)) {
-        redirect("/login");
-      }
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
         fullToken = refresh.result;
-        const res2 = await fetchUserCredentials(refresh.result.accessToken);
-        result = res2;
-      } else redirect("/login");
+        const [res, res2] = await Promise.all([
+          fetchUserCredentials(refresh.result.accessToken),
+          userCart(refresh.result.accessToken),
+        ]);
+        userInfo = res.success
+          ? {
+              fullname: res.result.fullname,
+              email: res.result.email,
+              phone: res.result.phone,
+              dob: res.result.dob,
+              gender: res.result.gender,
+              address: res.result.address,
+              avatar: res.result.avatar,
+              ewallet: res.result.ewallet,
+              role: res.result.role,
+            }
+          : undefined;
+        cart = res2.success ? res2.result.cartItems : undefined;
+      }
     }
-  }
-  let info: UserInfo = {
-    fullname: null,
-    email: "",
-    phone: "",
-    dob: null,
-    gender: null,
-    address: null,
-    avatar: null,
-    ewallet: null,
-    role: "",
-  };
-  const userInfo: UserInfo | undefined =
-    res && res.success
+  } else {
+    userInfo = userCredentialsRes.success
       ? {
-          ...info,
-          fullname: res.result.fullname,
-          email: res.result.email,
-          phone: res.result.phone,
-          dob: res.result.dob,
-          gender: res.result.gender,
-          address: res.result.address,
-          avatar: res.result.avatar,
-          ewallet: res.result.ewallet,
-          role: res.result.role,
-        }
-      : result && result.success
-      ? {
-          ...info,
-          fullname: result.result.fullname,
-          email: result.result.email,
-          phone: result.result.phone,
-          dob: result.result.dob,
-          gender: result.result.gender,
-          address: result.result.address,
-          avatar: result.result.avatar,
-          ewallet: result.result.ewallet,
-          role: res.result.role,
+          fullname: userCredentialsRes.result.fullname,
+          email: userCredentialsRes.result.email,
+          phone: userCredentialsRes.result.phone,
+          dob: userCredentialsRes.result.dob,
+          gender: userCredentialsRes.result.gender,
+          address: userCredentialsRes.result.address,
+          avatar: userCredentialsRes.result.avatar,
+          ewallet: userCredentialsRes.result.ewallet,
+          role: userCredentialsRes.result.role,
         }
       : undefined;
-  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
-
+    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
+  }
   return (
     <>
       <CartHeader userInfo={userInfo} fullToken={fullToken} userCart={cart} />

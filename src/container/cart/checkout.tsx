@@ -12,12 +12,11 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import OrderInfo from "@/container/order/info";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import Button from "@mui/material/Button";
-import { deleteAllCartItem, makeAnOrder } from "@/hooks/useAuth";
+import { makeAnOrder } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { toast } from "react-toastify";
-import { noAddressAdded, requireLogin } from "@/features/toasting";
 import { redirect, useRouter } from "next/navigation";
-import useLocal from "@/hooks/useLocalStorage";
+import { warningMessage } from "@/features/toasting";
 
 type CheckOutProps = {
   userInfo?: UserInfo;
@@ -29,24 +28,20 @@ type OrderInfo = {
   fullName: string;
   phone: string;
   address: string;
-  transactionType: string;
+  paymentMethod: string;
 };
 
 const Checkout = (props: CheckOutProps) => {
   const router = useRouter();
-  const { userInfo, userCart } = props;
+  const { userInfo } = props;
   const { cartItems, setCartItems } = useContext(CartContext);
   const [orderInfo, setOrderInfo] = useState<OrderInfo>({
     cartItemIds: cartItems?.map((cart) => cart.cartItemId) || [],
     fullName: userInfo?.fullname || "",
     phone: userInfo?.phone || "",
     address: userInfo?.address?.split(",")[0] || "",
-    transactionType: "COD",
+    paymentMethod: "COD",
   });
-
-  // if (cartItems.length == 0) {
-  //   redirect("/cart");
-  // }
 
   const thisPaths = usePath();
   const urlLink = thisPaths;
@@ -59,11 +54,15 @@ const Checkout = (props: CheckOutProps) => {
     });
   };
 
+  if (cartItems.length == 0) {
+    redirect("/cart");
+  }
+
   const handleSubmitOrder = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     const newOrder: OrderInfo = orderInfo;
     if (newOrder.address.length == 0) {
-      noAddressAdded();
+      warningMessage("Vui lòng chọn địa chỉ nhận hàng");
       return;
     }
     try {
@@ -76,7 +75,7 @@ const Checkout = (props: CheckOutProps) => {
           autoClose: 1500,
           isLoading: false,
         });
-        setCartItems([]);
+        // setCartItems([]);
         router.push("/profile/order-tracking");
         router.refresh();
       } else if (res.statusCode == 500) {
@@ -87,7 +86,7 @@ const Checkout = (props: CheckOutProps) => {
           isLoading: false,
         });
       } else if (res.statusCode == 401) {
-        requireLogin();
+        warningMessage("Vui lòng đăng nhập");
         router.push("/login");
         router.refresh();
       } else {
@@ -207,6 +206,8 @@ const Checkout = (props: CheckOutProps) => {
                       <div className="pr-4 float-left">
                         <Image
                           loader={imageLoader}
+                          blurDataURL={cartItem.image}
+                          placeholder="blur"
                           src={cartItem.image}
                           width={120}
                           height={120}
@@ -255,7 +256,7 @@ const Checkout = (props: CheckOutProps) => {
                     onClick={() =>
                       setOrderInfo({
                         ...orderInfo,
-                        transactionType:
+                        paymentMethod:
                           item == "Thanh toán khi nhận" ? "COD" : "E_WALLET",
                       })
                     }
@@ -311,7 +312,7 @@ const Checkout = (props: CheckOutProps) => {
                     </td>
                     <td className="w-[12rem]">
                       <span>
-                        {orderInfo.transactionType == "COD"
+                        {orderInfo.paymentMethod == "COD"
                           ? "Thanh toán khi nhận"
                           : "Ví VNPay"}
                       </span>

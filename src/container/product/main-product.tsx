@@ -7,7 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { imageLoader, theme } from "@/features/img-loading";
 import Button from "@mui/material/Button";
@@ -39,6 +39,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AccordionDetails from "@mui/material/AccordionDetails";
+import { warningMessage } from "@/features/toasting";
 
 export const BootstrapInput = styled(InputBase)(({ theme }) => ({
   "& .MuiInputBase-input": {
@@ -46,13 +47,6 @@ export const BootstrapInput = styled(InputBase)(({ theme }) => ({
     position: "relative",
     backgroundColor: "white",
     fontSize: 16,
-    // transition: theme.transitions.create(["border-color", "box-shadow"]),
-    // Use the system font instead of the default Roboto font.
-    // "&:focus": {
-    //   borderRadius: 4,
-    //   borderColor: "#80bdff",
-    //   boxShadow: "0 0 0 0.2rem rgba(0,123,255,.25)",
-    // },
   },
 }));
 
@@ -76,16 +70,25 @@ const MainProduct = (props: MainProductProps) => {
   const title = urlLink[0];
   const { categories, brands, products } = props;
 
-  const [filterProductList, setFitlerProductList] = useState(products);
+  const [filterProductList, setFitlerProductList] =
+    useState<Product[]>(products);
   const [filterValues, setFilterValues] = useState<FilterValue>({
     brand: "",
     category: "",
     price: [0, 5000000],
   });
   const [sortPrice, setSortPrice] = useState<string>("Giá");
+  const [isSearching, setIsSearching] = useState(false);
   const [isActive, setIsActive] = useState<string>("Phổ biến");
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    if (products) {
+      setFitlerProductList(products);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
 
   function handleChangePage(event: React.ChangeEvent<unknown>, value: number) {
     setPage(value);
@@ -119,6 +122,9 @@ const MainProduct = (props: MainProductProps) => {
       price: [0, 5000000],
     });
     setIsFiltering(false);
+    if (searchParams.get("query")?.trim().length! > 0) {
+      router.replace("/product");
+    }
     setFitlerProductList(products);
     setIsActive("Phổ biến");
     setSortPrice("Giá");
@@ -136,6 +142,7 @@ const MainProduct = (props: MainProductProps) => {
       ...filterValues,
       [e.target.name]: value,
     });
+    setIsSearching(true);
   }
 
   function handleSort(value: string) {
@@ -160,42 +167,56 @@ const MainProduct = (props: MainProductProps) => {
   async function handleSearchByFilter(event: { preventDefault: () => void }) {
     event.preventDefault();
 
-    const id = toast.loading("Đang tìm kiếm...");
-
-    const name = searchParams.get("name") || "";
-    const categoryName = filterValues.category || "";
-    const brandName = filterValues.brand || "";
-    const price = filterValues.price || [0, 240000];
-
-    try {
-      const res = await getData(
-        `${HTTP_PORT}/api/v1/products?productName=${name}&categoryName=${categoryName}&brandName=${brandName}&priceFrom=${price[0]}&priceTo=${price[1]}`
-      );
-      if (res.success) {
+    if (isSearching) {
+      const name = `${
+        searchParams.get("query")?.trim()
+          ? `productName=${searchParams.get("query")?.trim()}`
+          : ""
+      }`;
+      const categoryName = `${
+        filterValues.category.trim().length > 0
+          ? `categoryName=${filterValues.category.trim()}`
+          : ""
+      }`;
+      const brandName = `${
+        filterValues.brand.trim().length > 0
+          ? `brandName=${filterValues.brand.trim()}`
+          : ""
+      }`;
+      const price = filterValues.price || [0, 240000];
+      const id = toast.loading("Đang đăng xuất...");
+      try {
+        const res = await getData(
+          `${HTTP_PORT}/api/v1/products?priceFrom=${price[0]}&priceTo=${price[1]}&${name}
+          &${categoryName}&${brandName}`
+        );
+        console.log(res);
+        if (res.success) {
+          toast.update(id, {
+            render: `Hoàn tất`,
+            type: "success",
+            autoClose: 500,
+            isLoading: false,
+          });
+          setIsFiltering(true);
+          setFitlerProductList(res.result.content);
+          setFilterValues({
+            brand: "",
+            category: "",
+            price: [0, 5000000],
+          });
+        }
+      } catch (error: any) {
         toast.update(id, {
-          render: `Hoàn tất`,
-          type: "success",
+          render: `Không tìm thấy sản phẩm nào`,
+          type: "error",
           autoClose: 500,
           isLoading: false,
         });
-        setIsFiltering(true);
-        setFitlerProductList(res.result.content);
-        setFilterValues({
-          brand: "",
-          category: "",
-          price: [0, 5000000],
-        });
+        setIsFiltering(false);
+        setFitlerProductList([]);
       }
-    } catch (error: any) {
-      toast.update(id, {
-        render: `Không tìm thấy sản phẩm nào`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-      setIsFiltering(false);
-      setFitlerProductList([]);
-    }
+    } else warningMessage("Vui lòng chọn tiêu chí lọc sản phẩm");
   }
 
   const brandList: Brand[] = brands;
@@ -368,7 +389,7 @@ const MainProduct = (props: MainProductProps) => {
                     marks={priceMarks}
                     onChange={handlePriceList}
                     valueLabelDisplay="auto"
-                    getAriaValueText={FormatPrice}
+                    // getAriaValueText={FormatPrice}
                   />
                 </ul>
               </div>
@@ -521,7 +542,7 @@ const MainProduct = (props: MainProductProps) => {
                 className="col-span-full bg-[#f5f5f5] text-lg text-text-color py-4 rounded-sm flex items-center px-4
                 shadow-md"
               >
-                Result for the products : {filterProductList.length}
+                Kết quả tìm kiếm : {filterProductList.length}
               </div>
             )}
             {filterProductList && filterProductList.length > 0 ? (
@@ -539,12 +560,12 @@ const MainProduct = (props: MainProductProps) => {
                           new Date()
                         ) <= 72 && (
                           <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                            New
+                            Mới
                           </label>
                         )}
                         {product.priceMin != product.promotionalPriceMin && (
                           <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                            Sale
+                            Giảm giá
                           </label>
                         )}
                         <Link href={`/product/${product.productId}`}>
@@ -626,7 +647,7 @@ const MainProduct = (props: MainProductProps) => {
                 })
             ) : (
               <div className="col-span-full text-center text-3xl p-4 text-secondary-color">
-                No Products Found
+                Không tìm thấy sản phẩm nào
               </div>
             )}
             {filterProductList.length > 0 && (

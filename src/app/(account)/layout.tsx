@@ -12,54 +12,64 @@ import { userCart } from "../(user)/cart/page";
 import { prefetchAllProducts } from "../(guest)/product/page";
 
 const AccountLayout = async ({ children }: { children: ReactNode }) => {
-  const res = await fetchUserCredentials(
-    getCookie("accessToken", { cookies })!
-  );
-  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
-  let result = undefined,
+  const [userCredentialsRes, userCartRes, productsRes] = await Promise.all([
+    fetchUserCredentials(getCookie("accessToken", { cookies })!),
+    userCart(getCookie("accessToken", { cookies })!),
+    prefetchAllProducts(),
+  ]);
+
+  let userInfo = undefined,
+    cart = undefined,
     fullToken = undefined;
-  if (res.statusCode == 401) {
+
+  if (
+    userCredentialsRes.statusCode === 401 ||
+    userCredentialsRes.status === 500
+  ) {
     if (hasCookie("refreshToken", { cookies })) {
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
         fullToken = refresh.result;
-        const res2 = await fetchUserCredentials(refresh.result.accessToken);
-        result = res2;
+        const [res, res2] = await Promise.all([
+          fetchUserCredentials(refresh.result.accessToken),
+          userCart(refresh.result.accessToken),
+        ]);
+        userInfo = res.success
+          ? {
+              fullname: res.result.fullname,
+              email: res.result.email,
+              phone: res.result.phone,
+              dob: res.result.dob,
+              gender: res.result.gender,
+              address: res.result.address,
+              avatar: res.result.avatar,
+              ewallet: res.result.ewallet,
+              role: res.result.role,
+            }
+          : undefined;
+        cart = res2.success ? res2.result.cartItems : undefined;
       }
     }
-  }
-  const userInfo: UserInfo | undefined =
-    res && res.success
+  } else {
+    userInfo = userCredentialsRes.success
       ? {
-          fullname: res.result.fullname,
-          email: res.result.email,
-          phone: res.result.phone,
-          dob: res.result.dob,
-          gender: res.result.gender,
-          address: res.result.address,
-          avatar: res.result.avatar,
-          ewallet: res.result.ewallet,
-          role: res.result.role,
-        }
-      : result && result.success
-      ? {
-          fullname: result.result.fullname,
-          email: result.result.email,
-          phone: result.result.phone,
-          dob: result.result.dob,
-          gender: result.result.gender,
-          address: result.result.address,
-          avatar: result.result.avatar,
-          ewallet: result.result.ewallet,
-          role: res.result.role,
+          fullname: userCredentialsRes.result.fullname,
+          email: userCredentialsRes.result.email,
+          phone: userCredentialsRes.result.phone,
+          dob: userCredentialsRes.result.dob,
+          gender: userCredentialsRes.result.gender,
+          address: userCredentialsRes.result.address,
+          avatar: userCredentialsRes.result.avatar,
+          ewallet: userCredentialsRes.result.ewallet,
+          role: userCredentialsRes.result.role,
         }
       : undefined;
+    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
+  }
 
-  const productRes = await prefetchAllProducts();
-  const products: Product[] =
-    productRes && productRes.success && productRes.result.content;
-  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
+  const products =
+    productsRes && productsRes.success && productsRes.result.content;
 
   return (
     <>

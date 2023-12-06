@@ -9,6 +9,7 @@ import {
   prefetchAllProducts,
 } from "./(guest)/product/page";
 import { userCart } from "./(user)/cart/page";
+import { redirect } from "next/dist/server/api-utils";
 
 export const HTTP_PORT = process.env.NEXT_PUBLIC_API_URL;
 
@@ -82,62 +83,151 @@ export const logout = async (accessToken: string, refreshToken: string) => {
   } catch (error: any) {}
 };
 
-const Home = async () => {
-  const res = await fetchUserCredentials(
-    getCookie("accessToken", { cookies })!
-  );
-  const cateRes = await fetchAllCategories();
-  const productRes = await prefetchAllProducts();
-  const cartRes = await userCart(getCookie("accessToken", { cookies })!);
+// const Home = async () => {
+//   const res = await fetchUserCredentials(
+//     getCookie("accessToken", { cookies })!
+//   );
 
-  let result = undefined,
+//   let cartRes = await userCart(getCookie("accessToken", { cookies })!);
+
+//   let result = undefined,
+//     refreshUserCart = undefined,
+//     fullToken = undefined;
+//   if (res.statusCode == 401 || res.status == 500) {
+//     if (hasCookie("refreshToken", { cookies })) {
+//       const refreshToken = getCookie("refreshToken", { cookies })!;
+//       const refresh = await refreshLogin(refreshToken);
+//       if (refresh.success) {
+//         fullToken = refresh.result;
+//         const res = await fetchUserCredentials(refresh.result.accessToken);
+//         const res2 = await userCart(refresh.result.accessToken);
+//         result = res.result;
+//         refreshUserCart = res2.result;
+//       }
+//     }
+//   }
+
+//   const userInfo: UserInfo | undefined =
+//     res && res.success
+//       ? {
+//           fullname: res.result.fullname,
+//           email: res.result.email,
+//           phone: res.result.phone,
+//           dob: res.result.dob,
+//           gender: res.result.gender,
+//           address: res.result.address,
+//           avatar: res.result.avatar,
+//           ewallet: res.result.ewallet,
+//           role: res.result.role,
+//         }
+//       : result
+//       ? {
+//           fullname: result.fullname,
+//           email: result.email,
+//           phone: result.phone,
+//           dob: result.dob,
+//           gender: result.gender,
+//           address: result.address,
+//           avatar: result.avatar,
+//           ewallet: result.ewallet,
+//           role: res.role,
+//         }
+//       : undefined;
+
+//   const cart =
+//     cartRes && cartRes.success
+//       ? cartRes.result.cartItems
+//       : refreshUserCart
+//       ? refreshUserCart.cartItems
+//       : undefined;
+
+//   const cateRes = await fetchAllCategories();
+//   const productRes = await prefetchAllProducts();
+
+//   const categories: Category[] =
+//     cateRes && cateRes.success && cateRes.result.content;
+//   const products: Product[] =
+//     productRes && productRes.success && productRes.result.content;
+
+//   return (
+//     <>
+//       <Header
+//         userInfo={userInfo}
+//         userCart={cart}
+//         fullToken={fullToken}
+//         products={products}
+//       ></Header>
+//       <main className="font-sans bg-white mt-[4.75rem]">
+//         <Container products={products} categories={categories}></Container>
+//       </main>
+//       <Footer></Footer>
+//     </>
+//   );
+// };
+const Home = async () => {
+  const [userCredentialsRes, userCartRes, categoriesRes, productsRes] =
+    await Promise.all([
+      fetchUserCredentials(getCookie("accessToken", { cookies })!),
+      userCart(getCookie("accessToken", { cookies })!),
+      fetchAllCategories(),
+      prefetchAllProducts(),
+    ]);
+
+  let userInfo = undefined,
+    cart = undefined,
     fullToken = undefined;
-  if (res.statusCode == 401) {
+
+  if (
+    userCredentialsRes.statusCode === 401 ||
+    userCredentialsRes.status === 500
+  ) {
     if (hasCookie("refreshToken", { cookies })) {
-      console.log("Hello");
       const refreshToken = getCookie("refreshToken", { cookies })!;
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
         fullToken = refresh.result;
-        const res = await fetchUserCredentials(refresh.result.accessToken);
-        result = res;
+        const [res, res2] = await Promise.all([
+          fetchUserCredentials(refresh.result.accessToken),
+          userCart(refresh.result.accessToken),
+        ]);
+        userInfo = res.success
+          ? {
+              fullname: res.result.fullname,
+              email: res.result.email,
+              phone: res.result.phone,
+              dob: res.result.dob,
+              gender: res.result.gender,
+              address: res.result.address,
+              avatar: res.result.avatar,
+              ewallet: res.result.ewallet,
+              role: res.result.role,
+            }
+          : undefined;
+        cart = res2.success ? res2.result.cartItems : undefined;
       }
     }
-  }
-
-  const userInfo: UserInfo | undefined =
-    res && res.success
+  } else {
+    userInfo = userCredentialsRes.success
       ? {
-          fullname: res.result.fullname,
-          email: res.result.email,
-          phone: res.result.phone,
-          dob: res.result.dob,
-          gender: res.result.gender,
-          address: res.result.address,
-          avatar: res.result.avatar,
-          ewallet: res.result.ewallet,
-          role: res.result.role,
-        }
-      : result && result.success
-      ? {
-          fullname: result.result.fullname,
-          email: result.result.email,
-          phone: result.result.phone,
-          dob: result.result.dob,
-          gender: result.result.gender,
-          address: result.result.address,
-          avatar: result.result.avatar,
-          ewallet: result.result.ewallet,
-          role: res.result.role,
+          fullname: userCredentialsRes.result.fullname,
+          email: userCredentialsRes.result.email,
+          phone: userCredentialsRes.result.phone,
+          dob: userCredentialsRes.result.dob,
+          gender: userCredentialsRes.result.gender,
+          address: userCredentialsRes.result.address,
+          avatar: userCredentialsRes.result.avatar,
+          ewallet: userCredentialsRes.result.ewallet,
+          role: userCredentialsRes.result.role,
         }
       : undefined;
+    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
+  }
 
-  const categories: Category[] =
-    cateRes && cateRes.success && cateRes.result.content;
-  const products: Product[] =
-    productRes && productRes.success && productRes.result.content;
+  const categories =
+    categoriesRes && categoriesRes.success && categoriesRes.result.content;
+  const products =
+    productsRes && productsRes.success && productsRes.result.content;
 
-  const cart = cartRes && cartRes.success && cartRes.result.cartItems;
   return (
     <>
       <Header
@@ -153,4 +243,5 @@ const Home = async () => {
     </>
   );
 };
+
 export default Home;

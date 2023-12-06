@@ -1,5 +1,4 @@
 import { Carousel } from "react-responsive-carousel";
-import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronRight,
@@ -8,6 +7,7 @@ import {
 import { main_banner1, main_banner2, main_banner3 } from "@/assests/images";
 import Box from "@mui/material/Box";
 import { imageLoader } from "@/features/img-loading";
+import Image from "next/image";
 export const MyArrowNext = (clickHandler: () => void, hasNext: boolean) => {
   return (
     <div
@@ -68,13 +68,13 @@ const Banner = () => {
     >
       <Image
         loader={imageLoader}
-        blurDataURL={main_banner3.src}
-        src={main_banner3}
         alt="mainBanner3"
         placeholder="blur"
-        className="w-full h-full"
-        width={400}
-        height={300}
+        src={main_banner3}
+        className="h-full w-full"
+        width={800}
+        height={400}
+        priority={true}
       />
       <section className="grid grid-cols-12 p-4 max-md:px-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
         <div className="col-span-full md:col-span-8 md:col-start-3">
@@ -91,36 +91,36 @@ const Banner = () => {
           >
             <article className="grid grid-flow-col gap-x-4">
               <Image
-                loader={imageLoader}
-                blurDataURL={main_banner1.src}
-                placeholder="blur"
-                className="rounded-lg max-h-[245px]"
+                className="rounded-lg max-h-[300px] w-full"
                 alt="banner1"
                 src={main_banner1}
+                quality={100}
+                width={485}
+                height={206}
               />
               <Image
-                loader={imageLoader}
-                blurDataURL={main_banner2.src}
-                placeholder="blur"
                 className="rounded-lg max-h-[245px]"
+                width={485}
+                height={206}
+                quality={100}
                 alt="banner2"
                 src={main_banner2}
               />
             </article>
             <article className="grid grid-flow-col gap-x-4">
               <Image
-                loader={imageLoader}
-                blurDataURL={main_banner1.src}
-                placeholder="blur"
                 className="rounded-lg max-h-[245px]"
+                width={485}
+                height={206}
+                quality={100}
                 alt="banner1"
                 src={main_banner1}
               />
               <Image
-                loader={imageLoader}
-                blurDataURL={main_banner2.src}
-                placeholder="blur"
                 className="rounded-lg max-h-[245px]"
+                width={485}
+                height={206}
+                quality={100}
                 alt="banner2"
                 src={main_banner2}
               />

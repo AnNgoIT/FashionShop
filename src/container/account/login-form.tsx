@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -16,7 +16,7 @@ import { decodeToken } from "@/features/jwt-decode";
 import { getUserRole } from "@/hooks/useData";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
-import { loginSuccess } from "@/features/toasting";
+import { successMessage } from "@/features/toasting";
 
 type Login = {
   email: string;
@@ -52,7 +52,6 @@ const LoginForm = () => {
       email: account.email,
       password: account.password,
     };
-    // const id = toast.loading("Vui lòng đợi...");
     const response = await login(loginAccount);
     if (response.success) {
       setCookie("accessToken", response.result.accessToken, {
@@ -61,7 +60,6 @@ const LoginForm = () => {
       setCookie("refreshToken", response.result.refreshToken, {
         expires: decodeToken(response.result.refreshToken)!,
       });
-      // loginSuccess();
 
       const isAdmin = await getUserRole(response.result.accessToken);
       if (isAdmin.success) {
@@ -72,21 +70,15 @@ const LoginForm = () => {
           router.refresh();
           router.push("/shipper");
         } else {
-          loginSuccess();
+          successMessage("Đăng nhập thành công");
           router.back();
-          setTimeout(() => {
-            router.refresh();
-          }, 100);
+          router.refresh();
         }
       }
     } else {
       toast.dismiss();
       setError("Tài khoản hoặc mật khẩu chưa chính xác, vui lòng thử lại!");
     }
-    // Xử lý logic đăng nhập ở đây
-    // Ví dụ: gửi yêu cầu đăng nhập đến máy chủ
-
-    // Reset trạng thái trường nhập liệu sau khi xử lý
   };
 
   return (

@@ -52,7 +52,7 @@ export async function generateStaticParams() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const res = await fetchAllCategories();
 
-  const categories = res && res.success ? res.result.content : [];
+  const categories = res?.success ? res.result.content : [];
 
   // Get the paths we want to pre-render based on categories
   return categories.map((category: Category) => ({

@@ -22,6 +22,29 @@ export const prefetchAllProducts = async () => {
   } catch (error) {}
 };
 
+export const findProductsByProductName = async (productName: string) => {
+  try {
+    const res = await fetch(
+      `${HTTP_PORT}/api/v1/products?productName=${productName}`,
+      {
+        method: "GET", // *GET, POST, PUT, DELETE, etc.
+        mode: "same-origin", // no-cors, *cors, same-origin
+        cache: "no-cache",
+        credentials: "include", // include, *same-origin, omit
+        headers: {
+          "Content-Type": "application/json",
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: "follow", // manual, *follow, error
+        referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      }
+    );
+    // The return value is *not* serialized
+    // You can return Date, Map, Set, etc.
+    return res.json();
+  } catch (error) {}
+};
+
 export const fetchAllCategories = async () => {
   try {
     const res = await fetch(`${HTTP_PORT}/api/v1/categories`, {
@@ -64,18 +87,26 @@ export const fetchAllBrands = async () => {
   } catch (error: any) {}
 };
 
-const ProductPage = async () => {
-  const cateRes = await fetchAllCategories();
-  const brandRes = await fetchAllBrands();
-  const productRes = await prefetchAllProducts();
-  const categories: Category[] =
-    cateRes && cateRes.success ? cateRes.result.content : [];
+const ProductPage = async ({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string;
+    page?: string;
+  };
+}) => {
+  const query = searchParams?.query || "";
+  const [productRes, cateRes, brandRes] = await Promise.all([
+    findProductsByProductName(query),
+    fetchAllCategories(),
+    fetchAllBrands(),
+  ]);
 
-  const brands: Brand[] =
-    brandRes && brandRes.success ? brandRes.result.content : [];
+  const products = productRes?.success ? productRes.result.content : [];
+  const categories = cateRes?.success ? cateRes.result.content : [];
+  const brands = brandRes?.success ? brandRes.result.content : [];
 
-  const products: Product[] =
-    productRes && productRes.success ? productRes.result.content : [];
+  // Sử dụng dữ liệu products, categories, brands ở đây
 
   return (
     <MainProduct categories={categories} brands={brands} products={products} />

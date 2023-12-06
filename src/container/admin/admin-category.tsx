@@ -381,12 +381,12 @@ const AdminCategory = (props: AdminCategoryProps) => {
               {category && category.image ? (
                 <Image
                   loader={imageLoader}
+                  placeholder="blur"
                   className="w-[6.25rem] h-[6.25rem] rounded-md"
                   width={300}
                   height={300}
                   src={category.image}
                   alt="Uploaded Image"
-                  priority
                 ></Image>
               ) : (
                 <p className="grid place-content-center text-xl text-text-color">
@@ -458,14 +458,13 @@ const AdminCategory = (props: AdminCategoryProps) => {
                       >
                         <Image
                           loader={imageLoader}
+                          placeholder="blur"
                           key={`cate-img-${option.categoryId}`}
-                          // placeholder="blur"
                           className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
                           width={120}
                           height={120}
                           alt="productImg"
                           src={option.image == "" ? product_1 : option.image}
-                          priority
                         ></Image>
                         <span key={`cate-name-${option.categoryId}`}>
                           {option.name}

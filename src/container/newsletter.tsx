@@ -20,7 +20,7 @@ const Newsletter = () => {
               placeholder="Nhập email của bạn"
             ></input>
             <button
-              className="absolute z-[1] right-0 rounded-full bg-primary-color text-base font-medium text-center 
+              className="absolute z-[0] right-0 rounded-full bg-primary-color text-base font-medium text-center 
                             leading-4 text-white py-[18px] px-[26px] hover:bg-text-color hover:cursor-pointer"
             >
               Đăng ký

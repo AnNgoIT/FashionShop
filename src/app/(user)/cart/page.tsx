@@ -1,7 +1,8 @@
-import { HTTP_PORT } from "@/app/page";
+import { HTTP_PORT, refreshLogin } from "@/app/page";
 import Cart from "@/container/cart/cart";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const userCart = async (accessToken: string) => {
   try {
@@ -17,10 +18,6 @@ export const userCart = async (accessToken: string) => {
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
-    if (!res.ok) {
-      return [];
-    }
-
     // The return value is *not* serialized
     // You can return Date, Map, Set, etc.
     return res.json(); // parses JSON response into native JavaScript objects
@@ -30,7 +27,26 @@ export const userCart = async (accessToken: string) => {
 const CartPage = async () => {
   const res = await userCart(getCookie("accessToken", { cookies })!);
 
-  const cart = res && res.success && res.result.cartItems;
+  let refreshUserCart = undefined,
+    fullToken = undefined;
+  if (res.statusCode == 401 || res.status == 500) {
+    if (hasCookie("refreshToken", { cookies })) {
+      const refreshToken = getCookie("refreshToken", { cookies })!;
+      const refresh = await refreshLogin(refreshToken);
+      if (refresh.success) {
+        fullToken = refresh.result;
+        const res = await userCart(refresh.result.accessToken);
+        refreshUserCart = res.result;
+      }
+    }
+  }
+
+  const cart =
+    res && res.success
+      ? res.result.cartItems
+      : refreshUserCart
+      ? refreshUserCart.cartItems
+      : undefined;
   return <Cart userCart={cart} />;
 };
 
