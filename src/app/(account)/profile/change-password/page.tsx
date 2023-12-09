@@ -75,8 +75,7 @@ const ChangePasswordPage = () => {
         router.refresh();
       }
       if (response.statusCode == 401) {
-        warningMessage("Vui lòng đăng nhập");
-        router.push("/login");
+        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
         router.refresh();
       } else if (response.statusCode == 400) {
         toast.update(id, {

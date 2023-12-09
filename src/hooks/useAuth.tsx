@@ -366,7 +366,7 @@ export const makeAnOrder = async (accessToken: string, payload: any) => {
     const data = res && res.data ? res.data : {};
     return data;
   } catch (error: any) {
-    return error.response.data;
+    return error.data;
   }
 };
 

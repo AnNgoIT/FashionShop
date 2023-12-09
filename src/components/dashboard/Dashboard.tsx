@@ -12,14 +12,17 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { mainListItems } from "./listItems";
-import { ReactNode, useContext, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { logout } from "@/hooks/useAuth";
-import { deleteCookie, getCookies } from "cookies-next";
+import { deleteCookie, getCookies, setCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import router from "next/router";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { UserContext } from "@/store";
+import { decodeToken } from "@/features/jwt-decode";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import { successMessage } from "@/features/toasting";
 
 const drawerWidth: number = 240;
 
@@ -76,10 +79,11 @@ const defaultTheme = createTheme();
 
 export default function Dashboard({
   children,
-  title,
-}: {
+  token,
+}: // title,
+{
   children: ReactNode;
-  title: string;
+  token?: { accessToken?: string; refreshToken?: string };
 }) {
   const router = useRouter();
   const { setUser } = useContext(UserContext);
@@ -89,49 +93,40 @@ export default function Dashboard({
     setOpen(!open);
   };
 
-  const handleLogout = async () => {
-    try {
-      const cookies = getCookies();
-      const id = toast.loading("Đăng xuất...");
-      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
-      if (res.success) {
-        deleteCookie("accessToken");
-        deleteCookie("refreshToken");
-        toast.update(id, {
-          render: `Đăng xuất thành công`,
-          type: "success",
-          autoClose: 1000,
-          isLoading: false,
-        });
-        // Refresh the current route and fetch new data from the server without
-        // losing client-side browser or React state.
-        router.refresh();
-        router.push("/");
-      } else {
-        deleteCookie("accessToken");
-        deleteCookie("refreshToken");
-        toast.update(id, {
-          render: `Vui lòng đăng nhập`,
-          type: "warning",
-          autoClose: 1000,
-          isLoading: false,
-        });
-        router.push("/login");
-      }
-    } catch (error) {
-    } finally {
-      setUser({
-        fullname: null,
-        email: "",
-        phone: "",
-        dob: null,
-        gender: null,
-        address: null,
-        avatar: "",
-        ewallet: 0,
-        role: "GUEST",
+  useEffect(() => {
+    if (token) {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+        maxAge: ACCESS_MAX_AGE,
       });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  const handleLogout = async () => {
+    const cookies = getCookies();
+    const res = await logout(cookies.accessToken!, cookies.refreshToken!);
+    if (res.success) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
+      successMessage("Đăng xuất thành công");
+      // Refresh the current route and fetch new data from the server without
+      // losing client-side browser or React state.
+      router.refresh();
+      router.push("/");
+    } else if (res.statusCode == 401) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
       router.push("/login");
+      router.refresh();
     }
   };
 
@@ -163,9 +158,7 @@ export default function Dashboard({
               color="inherit"
               noWrap
               sx={{ flexGrow: 1, textTransform: "capitalize" }}
-            >
-              {title}
-            </Typography>
+            ></Typography>
             <Typography
               onClick={handleLogout}
               component="button"
@@ -181,7 +174,7 @@ export default function Dashboard({
                 },
               }}
             >
-              Logout
+              Đăng xuất
             </Typography>
           </Toolbar>
         </AppBar>

@@ -1,6 +1,8 @@
 import { fetchAllCategories } from "@/app/(guest)/product/page";
-import { HTTP_PORT } from "@/app/page";
+import { HTTP_PORT, refreshLogin } from "@/app/page";
 import AdminCategory from "@/container/admin/admin-category";
+import { getCookie, hasCookie } from "cookies-next";
+import { cookies } from "next/headers";
 import React from "react";
 
 export const fetchAllStyles = async () => {
@@ -20,21 +22,37 @@ export const fetchAllStyles = async () => {
     // The return value is *not* serialized
     // You can return Date, Map, Set, etc.
 
-    if (!res.ok) {
-      // This will activate the closest `error.js` Error Boundary
-      throw new Error("Failed to fetch style data");
-    }
-
     return res.json();
   } catch (error: any) {}
 };
 const AdminCategoryPage = async () => {
-  const res = await fetchAllCategories();
-  const styleRes = await fetchAllStyles();
-  const category = res && res.success && res.result.content;
-  const style = styleRes && styleRes.success && styleRes.result.content;
+  const [res, styleRes] = await Promise.all([
+    fetchAllCategories(),
+    fetchAllStyles(),
+  ]);
 
-  return <AdminCategory categories={category} styles={style}></AdminCategory>;
+  let fullToken = undefined;
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refreshSession = await refreshLogin(refreshToken);
+    if (refreshSession.success) {
+      fullToken = refreshSession.result;
+    }
+  }
+
+  const category = res?.success ? res.result.content : [];
+  const style = styleRes?.success ? styleRes.result.content : [];
+
+  return (
+    <AdminCategory
+      token={fullToken}
+      categories={category}
+      styles={style}
+    ></AdminCategory>
+  );
 };
 
 export default AdminCategoryPage;

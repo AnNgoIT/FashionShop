@@ -44,18 +44,19 @@ export const getAuthenticated = async (url: string, accessToken: string) => {
   const config = {
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
+      // "Access-Control-Allow-Origin": "*",
       Authorization: "Bearer " + accessToken,
     },
     signal: newAbortSignal(2000), // Aborts request after 5 seconds
   };
 
   try {
-    const res = await axios.get(url, config);
+    const res = await axios.get(HTTP_PORT + url, config);
     const data = res && res.data ? res.data : {};
     return data;
   } catch (error: any) {
-    if (error.response.data.statusCode == 401) {
+    console.log(error);
+    if (error.data.statusCode == 401) {
       if (hasCookie("refreshToken")) {
         const refreshToken = getCookie("refreshToken");
         try {

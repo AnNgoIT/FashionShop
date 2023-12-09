@@ -27,12 +27,12 @@ const Services = () => {
             className={`text-left ml-[12px] min-w-[220px] max-w-[350px]`}
           >
             <h1
-              className={`text-primary-color uppercase text-[20px] mt-[3px] max-[575px]:leading-[25px] font-semibold text-ellipsis whitespace-nowrap`}
+              className={`text-primary-color uppercase text-lg mt-[3px] max-[575px]:leading-[25px] font-semibold text-ellipsis whitespace-nowrap`}
             >
               Miễn phí vận chuyển
             </h1>
-            <p className="text-[#999] text-sm w-[304px]">
-              Miễn phí vận chuyển đơn hàng trên 200k VNĐ
+            <p className="text-[#999] text-sm">
+              Miễn phí vận chuyển đơn hàng từ 200k VNĐ
             </p>
           </article>
         </div>
@@ -50,12 +50,12 @@ const Services = () => {
             className={`text-left ml-[12px] min-w-[220px] max-w-[350px]`}
           >
             <h1
-              className={`text-primary-color uppercase text-[20px] mt-[3px] max-[575px]:leading-[25px] font-semibold`}
+              className={`text-primary-color uppercase text-lg mt-[3px] max-[575px]:leading-[25px] font-semibold`}
             >
               ƯU ĐÃI GIẢM GIÁ
             </h1>
-            <p className="text-[#999] text-sm w-[304px]">
-              Ưu đãi hấp dẫn trên nhiều sản phẩm
+            <p className="text-[#999] text-sm">
+              Ưu đãi hấp dẫn trên nhiều loại sản phẩm tốt
             </p>
           </article>
         </div>
@@ -76,11 +76,11 @@ const Services = () => {
             className={`text-left ml-[12px] min-w-[220px] max-w-[350px]`}
           >
             <h1
-              className={`text-primary-color uppercase text-[20px] mt-[3px] max-[575px]:leading-[25px] font-semibold`}
+              className={`text-primary-color uppercase text-lg mt-[3px] max-[575px]:leading-[25px] font-semibold`}
             >
               CHĂM SÓC KHÁCH HÀNG
             </h1>
-            <p className="text-[#999] text-sm w-[304px]">
+            <p className="text-[#999] text-sm">
               Hỗ trợ khách hàng tận tình và nhanh chóng
             </p>
           </article>

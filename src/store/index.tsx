@@ -109,7 +109,7 @@ export const VerifyEmailProvider = ({ children }: any) => {
   );
 };
 
-export const FilterProductlProvider = ({ children }: any) => {
+export const FilterProductProvider = ({ children }: any) => {
   const [product, setProduct] = useState<Product>({
     productId: 0,
     name: "",

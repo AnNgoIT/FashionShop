@@ -26,8 +26,10 @@ import { UserContext } from "@/store";
 import { updateProfile } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 const Address = () => {
+  const router = useRouter();
   const { user, setUser } = useContext(UserContext);
   const [address, setAddress] = useState<string | null>("");
   const [provinces, setProvinces] = useState<string>("");
@@ -119,16 +121,24 @@ const Address = () => {
         autoClose: 1500,
         isLoading: false,
       });
-    } else if (res.statusCode == 500) {
+    } else if (res.status == 500) {
       toast.update(id, {
         render: `Lỗi hệ thống`,
         type: "error",
         autoClose: 1500,
         isLoading: false,
       });
+    } else if (res.statusCode == 401) {
+      toast.update(id, {
+        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+        type: "warning",
+        autoClose: 1500,
+        isLoading: false,
+      });
+      router.refresh();
     } else {
       toast.update(id, {
-        render: `${res.message}`,
+        render: `Truyền dữ liệu chưa chính xác`,
         type: "error",
         autoClose: 1500,
         isLoading: false,

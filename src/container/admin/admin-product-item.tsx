@@ -17,7 +17,7 @@ import TablePagination from "@mui/material/TablePagination";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import UpdateIcon from "@mui/icons-material/Update";
 import { Product, StyleValue, productItem } from "@/features/types";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -29,20 +29,29 @@ import Image from "next/image";
 import {
   VisuallyHiddenInput,
   imageLoader,
+  modalProductItemStyle,
   modalStyle,
 } from "@/features/img-loading";
-import { CldImage } from "next-cloudinary";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemText from "@mui/material/ListItemText";
 import { getCookie } from "cookies-next";
-import { createData } from "@/hooks/useAdmin";
-import { toast } from "react-toastify";
+import { createData, getDataAdmin } from "@/hooks/useAdmin";
 import { useRouter } from "next/navigation";
+import {
+  errorMessage,
+  successMessage,
+  warningMessage,
+} from "@/features/toasting";
+import LoadingComponent from "@/components/loading";
+import { toast } from "react-toastify";
 
 type AdminProductItemProps = {
+  productId: number;
+  productName: string;
   products: Product[];
-  // productItems: productItem[];
+  openProductItem: boolean;
+  handleCloseProductItem: Dispatch<SetStateAction<boolean>>;
   styleValues: StyleValue[];
 };
 
@@ -52,12 +61,19 @@ type StyleList = {
 
 const AdminProductItem = (props: AdminProductItemProps) => {
   const router = useRouter();
-  const { products, styleValues } = props;
+  const {
+    productId,
+    productName,
+    products,
+    openProductItem,
+    handleCloseProductItem,
+    styleValues,
+  } = props;
 
   const [productItem, setProductItem] = useState<productItem>({
     productItemId: -1,
-    parentId: 0,
-    parentName: "",
+    parentId: productId,
+    parentName: productName,
     quantity: 0,
     sold: 0,
     image: "",
@@ -66,39 +82,69 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     styleValueNames: [],
     sku: "",
   });
-
   const [isUpdate, setUpdate] = useState<boolean>(false);
   const [image, setImage] = useState<any>("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [productList, setProductList] = useState<productItem[]>([]);
+  const [productList, setProductList] = useState<productItem[] | undefined>(
+    undefined
+  );
 
   const [styleValueList, setStyleValueList] = useState<
     StyleValue[] | undefined
   >(undefined);
   const [styleValueNames, setStyleValueNames] = useState<string[]>([]);
   const [styleList, setStyleList] = useState<StyleList | null>(null);
-  const [open, setOpen] = useState<boolean>(false);
-  const [updateId, setUpdateId] = useState<string>("-1");
   const [page, setPage] = useState(0);
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    resetProductItem();
-    setUpdate(false);
-    setOpen(false);
-  };
-  // const openUpdateModal = (id: string) => {
-  //   const product = productList.find((product) => product.productId === id);
-  //   // setName(product?.name!);
-  //   // setQuantity(product?.totalQuantity!);
-  //   // setDes(product?.description!);
-  //   // setPrice(product?.priceMin!);
-  //   setUpdateId(id);
-  //   setUpdate(true);
-  //   handleOpen();
-  // };
+  useEffect(() => {
+    const handleProductName = (name: string, id: number) => {
+      setProductItem({
+        ...productItem,
+        parentName: name,
+        parentId: id,
+        image: "",
+      });
+
+      let newStyleValueList: StyleValue[] = [];
+      let newStyleList: StyleList = {};
+
+      const styleNames = products.find(
+        (item) => item.name === name
+      )!.styleNames;
+      const productItemStyles = products.find(
+        (item) => item.name === name
+      )!.styleValueNames;
+
+      styleNames &&
+        styleNames.forEach((styleName: string) => {
+          newStyleList = { ...newStyleList, [styleName]: "" };
+        });
+
+      newStyleValueList.push(
+        ...styleValues.filter((styleValue) =>
+          productItemStyles.includes(styleValue.name)
+        )
+      );
+      setStyleValueNames(styleNames);
+      setStyleList(newStyleList);
+      setStyleValueList(newStyleValueList);
+    };
+    const handleProductItemList = async (productId: number) => {
+      const productItemList = await getDataAdmin(
+        `/api/v1/productItems/parent/${productId}`,
+        getCookie("accessToken")!
+      );
+      if (productItemList.success) {
+        setProductList(productItemList.result.content);
+      } else setProductList([]);
+    };
+
+    if (productName !== "" && productId !== -1) {
+      handleProductName(productName, productId);
+      handleProductItemList(productId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productName, productId]);
 
   function changeStyleNameToId() {
     let result: any = {};
@@ -120,38 +166,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     });
 
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
-  };
-
-  const handleProductName = (e: any) => {
-    const value = e.target.value;
-    setProductItem({
-      ...productItem,
-      parentName: value,
-    });
-
-    let newStyleValueList: StyleValue[] = [];
-    let newStyleList: StyleList = {};
-
-    const styleNames = products.find(
-      (item) => item.productId === e.target.value
-    )!.styleNames;
-    const productItemStyles = products.find(
-      (item) => item.productId === e.target.value
-    )!.styleValueNames;
-
-    styleNames &&
-      styleNames.forEach((styleName: string) => {
-        newStyleList = { ...newStyleList, [styleName]: "" };
-      });
-
-    newStyleValueList.push(
-      ...styleValues.filter((styleValue) =>
-        productItemStyles.includes(styleValue.name)
-      )
-    );
-    setStyleValueNames(styleNames);
-    setStyleList(newStyleList);
-    setStyleValueList(newStyleValueList);
   };
 
   const handleStyleList = (e: any) => {
@@ -187,7 +201,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
   async function handleCreateProduct(e: { preventDefault: () => void }) {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("productId", productItem.parentName.toString());
+    formData.append("productId", productItem.parentId.toString());
     formData.append("image", image);
     formData.append("quantity", productItem.quantity.toString() || "");
     formData.append("price", productItem.price.toString());
@@ -195,14 +209,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       "styleValueIds",
       Object.values(changeStyleNameToId()).join(",")
     );
-    const payload = {
-      productId: productItem.parentName,
-      quantity: productItem.quantity || 0,
-      image: image,
-      price: productItem.price || 0,
-      styleValueIds: Object.values(changeStyleNameToId()).join(","),
-    };
-    const id = toast.loading("Creating...");
+    const id = toast.loading("Tạo sản phẩm mới...");
     const res = await createData(
       "/api/v1/users/admin/productItems",
       getCookie("accessToken")!,
@@ -210,43 +217,62 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     );
     if (res.success) {
       toast.update(id, {
-        render: `Created Product Items Success`,
+        render: `Tạo sản phẩm mới thành công`,
         type: "success",
         autoClose: 500,
         isLoading: false,
       });
-      // resetProductItem();
+      resetProductItem();
+      productList && setProductList([...productList, res.result]);
       // handleClose();
-      // router.refresh();
+      router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {
-        render: `You don't have permission`,
-        type: "error",
+        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+        type: "warning",
         autoClose: 500,
         isLoading: false,
       });
+      router.refresh();
+      handleClose();
     } else if (res.statusCode == 409) {
       toast.update(id, {
-        render: "Product Item already existed",
+        render: `phân loại này đã tồn tại`,
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
-    } else {
+    } else if (res.statusCode == 400) {
       toast.update(id, {
-        render: "Server Error",
+        render: `Lỗi nhập dữ liệu không trùng khớp`,
+        type: "error",
+        autoClose: 500,
+        isLoading: false,
+      });
+    } else if (res.status == 500) {
+      handleClose();
+      toast.update(id, {
+        render: `Lỗi hệ thống`,
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
     }
   }
+  function handleClose() {
+    resetProductItem();
+    setProductList([]);
+    setImage("");
+    setStyleList(null);
+    setStyleValueList(undefined);
+    handleCloseProductItem(false);
+  }
 
   function resetProductItem() {
     setProductItem({
       productItemId: -1,
-      parentId: 0,
-      parentName: "",
+      parentId: productId,
+      parentName: productName,
       quantity: 0,
       sold: 0,
       image: "",
@@ -255,249 +281,249 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       styleValueNames: [],
       sku: "",
     });
-    setPage(0);
-    setRowsPerPage(5);
-    setStyleValueList(undefined);
-    setStyleValueNames([]);
+    setImage("");
   }
 
-  // function handleUpdateProduct(
-  //   event: React.FormEvent<HTMLFormElement>,
-  //   id: string
-  // ) {
-  //   event.preventDefault();
-  //   const newProductList = productList.map((item) => {
-  //     if (item.productId == id) {
-  //     }
-  //     return item;
-  //   });
-  //   setProductList(newProductList);
-  //   resetProductItem();
-  //   setUpdateId("-1");
-  //   handleClose();
-  // }
-
   return (
-    <Box
-      component="main"
-      sx={{
-        backgroundColor: (theme) =>
-          theme.palette.mode === "light"
-            ? theme.palette.grey[100]
-            : theme.palette.grey[900],
-        flexGrow: 1,
-        height: "100vh",
-        overflow: "auto",
-      }}
+    <Modal
+      open={openProductItem}
+      onClose={handleClose}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
     >
-      <Toolbar />
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={modalStyle}>
-          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Product ID: ${updateId}` : "Create Product Items"}
-          </h2>
-          <form
-            onSubmit={
-              isUpdate
-                ? (event) => {} //handleUpdateProduct(event, updateId)
-                : (event) => handleCreateProduct(event)
-            }
-            className="col-span-full grid grid-flow-col grid-cols-12 "
-          >
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="parentName">
-                  Product Name
-                </InputLabel>
-                <Select
-                  required
-                  id="parentName"
-                  name="parentName"
-                  value={productItem.parentName}
-                  label="Product Name"
-                  onChange={handleProductName}
+      <Box sx={modalProductItemStyle}>
+        <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
+          Tạo phân loại sản phẩm
+        </h2>
+        <form
+          onSubmit={(event) => handleCreateProduct(event)}
+          className="grid grid-flow-col grid-cols-12"
+        >
+          <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+            <FormControl className="col-span-8 col-start-3">
+              <InputLabel className="mb-2" htmlFor="parentName">
+                Tên sản phẩm
+              </InputLabel>
+              <OutlinedInput
+                required
+                id="parentName"
+                name="parentName"
+                disabled={true}
+                readOnly={true}
+                value={productItem.parentName}
+                label="Tên sản phẩm"
+              ></OutlinedInput>
+            </FormControl>
+          </div>
+          <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+            <FormControl className="col-span-8 col-start-3">
+              <InputLabel className="mb-2" htmlFor="Quantity">
+                Số lượng
+              </InputLabel>
+              <OutlinedInput
+                type="number"
+                required
+                autoComplete="off"
+                fullWidth
+                id="Quantity"
+                name="quantity"
+                value={productItem.quantity}
+                onChange={handleProductItem}
+                label="Số lượng"
+              />
+            </FormControl>
+          </div>
+          <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+            <FormControl className="col-span-8 col-start-3">
+              <InputLabel className="mb-2" htmlFor="Price">
+                Giá
+              </InputLabel>
+              <OutlinedInput
+                type="number"
+                required
+                autoComplete="off"
+                fullWidth
+                id="Price"
+                name="price"
+                value={productItem.price}
+                onChange={handleProductItem}
+                label="Giá"
+              />
+            </FormControl>
+          </div>
+          {styleValueList &&
+            styleValueNames &&
+            styleList &&
+            styleValueNames.length > 0 &&
+            styleValueNames.map((name) => {
+              return (
+                <div
+                  key={`name-${name}`}
+                  className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4"
                 >
-                  {products &&
-                    products.length > 0 &&
-                    products.map((product) => {
-                      return (
-                        <MenuItem
-                          sx={{
-                            maxWidth: "19.5rem",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                          key={product.productId}
-                          value={product.productId}
-                        >
-                          {product.name}
-                        </MenuItem>
-                      );
-                    })}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="Quantity">
-                  Quantity
-                </InputLabel>
-                <OutlinedInput
-                  type="number"
-                  autoComplete="off"
-                  fullWidth
-                  id="Quantity"
-                  name="quantity"
-                  value={productItem.quantity}
-                  onChange={handleProductItem}
-                  label="Quantity"
-                />
-              </FormControl>
-            </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="Price">
-                  Price
-                </InputLabel>
-                <OutlinedInput
-                  type="number"
-                  autoComplete="off"
-                  fullWidth
-                  id="Price"
-                  name="price"
-                  value={productItem.price}
-                  onChange={handleProductItem}
-                  label="Price"
-                />
-              </FormControl>
-            </div>
-            {styleValueList &&
-              styleValueNames &&
-              styleList &&
-              styleValueNames.length > 0 &&
-              styleValueNames.map((name) => {
-                return (
-                  <div
-                    key={`name-${name}`}
-                    className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4"
-                  >
-                    <FormControl className="col-span-full">
-                      <InputLabel className="mb-2" htmlFor={name}>
-                        {name}
-                      </InputLabel>
-                      <Select
-                        id={`${name}`}
-                        name={name}
-                        value={styleList[name]}
-                        onChange={handleStyleList}
-                        input={<OutlinedInput label={name} />}
-                      >
-                        {styleValueList
-                          .filter((styleValue) => styleValue.styleName == name)
-                          .map((style) => (
-                            <MenuItem
-                              key={style.styleValueId}
-                              value={style.name}
-                            >
-                              <ListItemText primary={style.name} />
-                            </MenuItem>
-                          ))}
-                      </Select>
-                    </FormControl>
-                  </div>
-                );
-              })}
-            <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium my-4">
-              <div className="grid grid-flow-col w-fit gap-x-2">
-                {productItem && productItem.image ? (
-                  <Image
-                    loader={imageLoader}
-                    className="w-[6.25rem] h-[6.25rem] rounded-md"
-                    width={300}
-                    height={300}
-                    src={productItem.image}
-                    alt="Uploaded Image"
-                    priority
-                  ></Image>
-                ) : (
-                  <p className="grid place-content-center text-xl text-text-color">
-                    No Image
-                  </p>
-                )}
-              </div>
-              <Button
-                sx={{ marginTop: "1rem", background: "#639df1" }}
-                component="label"
-                variant="contained"
-                className="mt-4 bg-primary-color hover:bg-text-color w-max"
-              >
-                Upload file
-                <VisuallyHiddenInput
-                  required
-                  onChange={(e) => handleImageUpload(e)}
-                  type="file"
-                />
-              </Button>
-            </div>
-            <div className="col-span-full">
-              <button
-                className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
-                           float-right px-[15px] text-white rounded-[5px]"
-                type="submit"
-              >
-                {isUpdate ? "Save" : "Create"}
-              </button>
-            </div>
-          </form>
-        </Box>
-      </Modal>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {/* Products */}
-        <Grid item xs={12} md={4} lg={3}>
-          <Paper
-            sx={{
-              p: 2,
-              display: "flex",
-              flexDirection: "column",
-              // height: 240,
-              overflow: "auto",
-            }}
-          >
-            <Title>
-              <div className="grid grid-flow-col items-center justify-between min-w-[768px]">
-                <span> Product Item List</span>
-                <div className="w-max">
-                  <NavigateButton onClick={handleOpen}>
-                    <AddIcon sx={{ marginRight: "0.25rem" }} />
-                    New Product Items
-                  </NavigateButton>
+                  <FormControl className="col-span-8 col-start-3">
+                    <InputLabel className="mb-2" htmlFor={name}>
+                      {name == "Color"
+                        ? "Màu sắc"
+                        : name == "Size"
+                        ? "Kích cỡ"
+                        : "Khác"}
+                    </InputLabel>
+                    <Select
+                      id={`${name}`}
+                      name={name}
+                      value={styleList[name]}
+                      onChange={handleStyleList}
+                      required
+                      input={
+                        <OutlinedInput
+                          label={
+                            name == "Color"
+                              ? "Màu sắc"
+                              : name == "Size"
+                              ? "Kích cỡ"
+                              : "Khác"
+                          }
+                        />
+                      }
+                    >
+                      {styleValueList
+                        .filter((styleValue) => styleValue.styleName == name)
+                        .map((style) => (
+                          <MenuItem key={style.styleValueId} value={style.name}>
+                            <ListItemText primary={style.name} />
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </div>
-              </div>
-            </Title>
-
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Image</TableCell>
-                  <TableCell>Style</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Sold</TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableHead>
-            </Table>
-          </Paper>
-        </Grid>
-      </Container>
-    </Box>
+              );
+            })}
+          <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium my-4">
+            <div className="grid grid-flow-col w-fit gap-x-2">
+              {productItem && image && productItem.image ? (
+                <Image
+                  loader={imageLoader}
+                  className="w-[6.25rem] h-[6.25rem] rounded-md"
+                  width={300}
+                  height={300}
+                  src={productItem.image}
+                  alt="Uploaded Image"
+                  priority
+                ></Image>
+              ) : (
+                <p className="grid place-content-center text-xl text-text-color">
+                  Không có ảnh nào
+                </p>
+              )}
+            </div>
+            <Button
+              sx={{ marginTop: "1rem", background: "#639df1" }}
+              component="label"
+              variant="contained"
+              className="mt-4 bg-primary-color hover:bg-text-color w-max"
+            >
+              Tải ảnh lên
+              <VisuallyHiddenInput
+                required
+                onChange={(e) => handleImageUpload(e)}
+                type="file"
+              />
+            </Button>
+          </div>
+          <div className="col-span-8 col-start-3">
+            <button
+              className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+                           float-right px-[15px] text-white rounded-[5px]"
+              type="submit"
+            >
+              {isUpdate ? "Lưu" : "Tạo"}
+            </button>
+          </div>
+        </form>
+        <div className="w-full mt-16 min-h-[8rem]">
+          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
+            Danh sách phân loại sản phẩm
+          </h2>
+          {productList && productList.length > 0 ? (
+            <Container maxWidth="xl" sx={{ paddingX: "0px!important" }}>
+              <Grid item xs={12} md={4} lg={3}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    // height: 240,
+                    overflow: "auto",
+                  }}
+                >
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Image</TableCell>
+                        <TableCell>Style</TableCell>
+                        <TableCell>Quantity</TableCell>
+                        <TableCell>Price</TableCell>
+                        <TableCell>Sold</TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {productList
+                        .sort((a, b) => b.productItemId - a.productItemId)
+                        .map((item) => (
+                          <TableRow key={item.productItemId}>
+                            <TableCell
+                              sx={{ minWidth: "5rem", minHeight: "5rem" }}
+                            >
+                              <Image
+                                className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
+                                loader={imageLoader}
+                                placeholder="blur"
+                                blurDataURL={item.image}
+                                width={80}
+                                height={80}
+                                alt="productImg"
+                                src={item.image}
+                              ></Image>
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                minWidth: "12rem",
+                                maxWidth: "13rem",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              <p className="truncate w-full">
+                                {item.styleValueNames.join(" - ")}
+                              </p>
+                            </TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>
+                              <span className="max-md:block max-md:w-max">
+                                {FormatPrice(item.price)} VNĐ
+                              </span>
+                            </TableCell>
+                            <TableCell>{item.sold}</TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Grid>
+            </Container>
+          ) : productList && productList.length == 0 ? (
+            <div className="text-lg min-h-[6rem] grid place-content-center p-4 text-secondary-color">
+              Không có phân loại sản phẩm nào
+            </div>
+          ) : (
+            <LoadingComponent />
+          )}
+        </div>
+      </Box>
+    </Modal>
   );
 };
 

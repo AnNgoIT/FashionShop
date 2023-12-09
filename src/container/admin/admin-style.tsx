@@ -26,18 +26,21 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import { createData } from "@/hooks/useAdmin";
-import { getCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemText from "@mui/material/ListItemText";
+import { decodeToken } from "@/features/jwt-decode";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 
 type AdminStyleProps = {
   styles: Style[];
+  token?: { accessToken?: string; refreshToken?: string };
 };
 const AdminStyle = (props: AdminStyleProps) => {
-  const { styles } = props;
+  const { styles, token } = props;
   const router = useRouter();
   const [style, setStyle] = useState<Style>({
     styleId: 0,
@@ -61,7 +64,21 @@ const AdminStyle = (props: AdminStyleProps) => {
       setstyleList(
         styles.sort((a, b) => b.styleId - a.styleId).slice(0, rowsPerPage)
       );
-  }, [styles, rowsPerPage]);
+    if (token) {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+        maxAge: ACCESS_MAX_AGE,
+      });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
+    }
+  }, [styles, rowsPerPage, token]);
 
   function resetStyle() {
     setStyle({
@@ -164,7 +181,7 @@ const AdminStyle = (props: AdminStyleProps) => {
     const payload = {
       name: style.name,
     };
-    const id = toast.loading("Creating...");
+    const id = toast.loading("Đang tạo...");
     const res = await createData(
       "/api/v1/users/admin/styles",
       getCookie("accessToken")!,
@@ -173,7 +190,7 @@ const AdminStyle = (props: AdminStyleProps) => {
     );
     if (res.success) {
       toast.update(id, {
-        render: `Created Style Success`,
+        render: `Tạo kiểu mới thành công`,
         type: "success",
         autoClose: 500,
         isLoading: false,
@@ -182,21 +199,22 @@ const AdminStyle = (props: AdminStyleProps) => {
       router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {
-        render: `You don't have permission`,
+        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
+      router.refresh();
     } else if (res.statusCode == 409) {
       toast.update(id, {
-        render: "Style already existed",
+        render: "Kiểu sản phẩm này đã tồn tại",
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
     } else {
       toast.update(id, {
-        render: "Server Error",
+        render: "Lỗi hệ thống",
         type: "error",
         autoClose: 500,
         isLoading: false,
@@ -226,7 +244,7 @@ const AdminStyle = (props: AdminStyleProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Style ID: ${updateId}` : "Create Style"}
+            {isUpdate ? `Style ID: ${updateId}` : "Tạo kiểu mới"}
           </h2>
           <form
             onSubmit={
@@ -239,7 +257,7 @@ const AdminStyle = (props: AdminStyleProps) => {
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Name">
-                  Name
+                  Tên
                 </InputLabel>
                 <OutlinedInput
                   autoComplete="off"
@@ -248,7 +266,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                   id="Name"
                   value={style.name}
                   onChange={handleStyle}
-                  label="Name"
+                  label="Tên"
                 />
               </FormControl>
             </div>
@@ -258,7 +276,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                      float-right px-[15px] text-white rounded-[5px]"
                 type="submit"
               >
-                {isUpdate ? "Save" : "Create"}
+                {isUpdate ? "Lưu" : "Tạo"}
               </button>
             </div>
           </form>
@@ -277,7 +295,7 @@ const AdminStyle = (props: AdminStyleProps) => {
           >
             <Title>
               <div className="flex w-full justify-between items-center min-w-[680px]">
-                <span>Style List</span>
+                <span>Danh sách kiểu sản phẩm</span>
                 <Autocomplete
                   sx={{ width: 300 }}
                   onChange={(e, newStyle) =>
@@ -291,7 +309,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                   options={styles}
                   getOptionLabel={(option) => option.name}
                   renderInput={(params) => (
-                    <TextField {...params} label="styles" />
+                    <TextField {...params} label="Kiểu sản phẩm" />
                   )}
                   renderOption={(props, option) => {
                     return (
@@ -300,7 +318,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                         key={option.styleId}
                         className="flex justify-between items-center gap-x-4 px-3 py-2 border-b border-border-color"
                       >
-                        <span key={`cate-name-${option.styleId}`}>
+                        <span key={`style-name-${option.styleId}`}>
                           {option.name}
                         </span>
                       </li>
@@ -318,14 +336,14 @@ const AdminStyle = (props: AdminStyleProps) => {
                 />
                 <NavigateButton onClick={handleOpen}>
                   <AddIcon sx={{ marginRight: "0.25rem" }} />
-                  New Style
+                  Tạo kiểu mới
                 </NavigateButton>
               </div>
             </Title>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
+                  <TableCell>Tên</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>

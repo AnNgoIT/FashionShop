@@ -31,7 +31,7 @@ const RelatedProduct = (props: RelateProductProps) => {
         <Carousel
           swipeable={true}
           draggable={false}
-          ssr={true}
+          // ssr={true}
           responsive={responsive}
           autoPlay={true}
           infinite={true}
@@ -48,7 +48,7 @@ const RelatedProduct = (props: RelateProductProps) => {
             productList.map((product: Product) => {
               return (
                 <div
-                  className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
+                  className={`group transition-all hover:cursor-pointer hover:shadow-hd col-span-3`}
                   key={product.productId}
                 >
                   <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
@@ -68,63 +68,34 @@ const RelatedProduct = (props: RelateProductProps) => {
                         loader={imageLoader}
                         blurDataURL={product.image}
                         placeholder="blur"
-                        className="group-hover:shadow-lg"
                         alt="productImage"
                         src={product.image}
                         width={500}
                         height={500}
                       ></Image>
-                    </Link>
-                  </div>
-                  <div className="relative w-full">
-                    <div className="px-2 py-1">
-                      <p
-                        className="text-text-color text-base pt-2.5 overflow-hidden font-medium
+                      <div className="relative w-full">
+                        <div className="px-2 py-1">
+                          <p
+                            className="text-text-color text-base pt-2.5 overflow-hidden font-medium
                    text-ellipsis whitespace-nowrap "
-                      >
-                        {product.name}
-                      </p>
-                      <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                        {product && FormatPrice(product.promotionalPriceMin)}{" "}
-                        VNĐ
-                        {product &&
-                          product.priceMin != product.promotionalPriceMin && (
-                            <span className="line-through text-text-light-color ml-2 text-sm">
-                              {FormatPrice(product.priceMin)} VNĐ
-                            </span>
-                          )}
-                      </h3>
-                    </div>
-                    <div className="absolute top-0 left-0 right-0 w-full h-full">
-                      <ul
-                        className="bg-[#f5f5f5] group-hover:flex group-hover:animate-appear 
-                                    justify-center items-center h-full hidden"
-                      >
-                        <li
-                          className="border-r border-[#c6c6c6]
-                                    px-2.5 h-[1.25rem]"
-                        >
-                          <div>
-                            <Link href="/cart">
-                              <FontAwesomeIcon
-                                className="text-xl hover:text-primary-color transition-all"
-                                icon={faBagShopping}
-                              />
-                            </Link>
-                          </div>
-                        </li>
-                        <li className="px-2.5 h-[1.25rem]">
-                          <div>
-                            <Link href="/wishlist">
-                              <FontAwesomeIcon
-                                className="text-xl hover:text-primary-color transition-all"
-                                icon={faHeart}
-                              />
-                            </Link>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
+                          >
+                            {product.name}
+                          </p>
+                          <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
+                            {product &&
+                              FormatPrice(product.promotionalPriceMin)}{" "}
+                            VNĐ
+                            {product &&
+                              product.priceMin !=
+                                product.promotionalPriceMin && (
+                                <span className="line-through text-text-light-color ml-2 text-sm">
+                                  {FormatPrice(product.priceMin)} VNĐ
+                                </span>
+                              )}
+                          </h3>
+                        </div>
+                      </div>
+                    </Link>
                   </div>
                 </div>
               );

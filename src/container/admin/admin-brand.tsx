@@ -26,18 +26,21 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import { createData } from "@/hooks/useAdmin";
-import { getCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemText from "@mui/material/ListItemText";
+import { decodeToken } from "@/features/jwt-decode";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 
 type AdminBrandProps = {
   brands: Brand[];
+  token?: { accessToken?: string; refreshToken?: string };
 };
 const AdminBrand = (props: AdminBrandProps) => {
-  const { brands } = props;
+  const { brands, token } = props;
   const router = useRouter();
   const [brand, setBrand] = useState<Brand>({
     brandId: 0,
@@ -62,7 +65,21 @@ const AdminBrand = (props: AdminBrandProps) => {
       setBrandList(
         brands.sort((a, b) => b.brandId - a.brandId).slice(0, rowsPerPage)
       );
-  }, [brands, rowsPerPage]);
+    if (token) {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+        maxAge: ACCESS_MAX_AGE,
+      });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
+    }
+  }, [brands, rowsPerPage, token]);
 
   function resetBrand() {
     setBrand({
@@ -167,7 +184,7 @@ const AdminBrand = (props: AdminBrandProps) => {
       name: brand.name,
       nation: brand.nation,
     };
-    const id = toast.loading("Creating...");
+    const id = toast.loading("Đang tạo...");
     const res = await createData(
       "/api/v1/users/admin/brands",
       getCookie("accessToken")!,
@@ -176,7 +193,7 @@ const AdminBrand = (props: AdminBrandProps) => {
     );
     if (res.success) {
       toast.update(id, {
-        render: `Created Brand Success`,
+        render: `Tạo thương hiệu mới thành công`,
         type: "success",
         autoClose: 500,
         isLoading: false,
@@ -185,21 +202,22 @@ const AdminBrand = (props: AdminBrandProps) => {
       router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {
-        render: `You don't have permission`,
-        type: "error",
+        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+        type: "warning",
         autoClose: 500,
         isLoading: false,
       });
+      router.refresh();
     } else if (res.statusCode == 409) {
       toast.update(id, {
-        render: "Brand already existed",
+        render: "Thương hiệu này đã tồn tại",
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
     } else {
       toast.update(id, {
-        render: "Server Error",
+        render: "Lỗi hệ thống",
         type: "error",
         autoClose: 500,
         isLoading: false,
@@ -242,7 +260,7 @@ const AdminBrand = (props: AdminBrandProps) => {
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Name">
-                  Name
+                  Tên
                 </InputLabel>
                 <OutlinedInput
                   autoComplete="off"
@@ -251,21 +269,21 @@ const AdminBrand = (props: AdminBrandProps) => {
                   id="Name"
                   value={brand.name}
                   onChange={handleBrand}
-                  label="Name"
+                  label="Tên"
                 />
               </FormControl>
             </div>
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="nation">
-                  Nation
+                  Quốc gia
                 </InputLabel>
                 <Select
                   id="nation"
                   name="nation"
                   value={brand.nation}
                   onChange={handleBrand}
-                  input={<OutlinedInput label="Category Style" />}
+                  input={<OutlinedInput label="Quốc gia" />}
                 >
                   {["VIETNAM", "CHINA", "USA", "JAPAN", "THAILAND"].map(
                     (nation: string, index: number) => (
@@ -283,7 +301,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                      float-right px-[15px] text-white rounded-[5px]"
                 type="submit"
               >
-                {isUpdate ? "Save" : "Create"}
+                {isUpdate ? "Lưu" : "Tạo"}
               </button>
             </div>
           </form>
@@ -302,7 +320,7 @@ const AdminBrand = (props: AdminBrandProps) => {
           >
             <Title>
               <div className="flex w-full justify-between items-center min-w-[680px]">
-                <span>Brand List</span>
+                <span>Danh sách thương hiệu</span>
                 <Autocomplete
                   sx={{ width: 300 }}
                   onChange={(e, newBrand) =>
@@ -316,7 +334,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                   options={brands}
                   getOptionLabel={(option) => option.name}
                   renderInput={(params) => (
-                    <TextField {...params} label="Brands" />
+                    <TextField {...params} label="Thương hiệu" />
                   )}
                   renderOption={(props, option) => {
                     return (
@@ -325,7 +343,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                         key={option.brandId}
                         className="flex justify-between items-center gap-x-4 px-3 py-2 border-b border-border-color"
                       >
-                        <span key={`cate-name-${option.brandId}`}>
+                        <span key={`brand-name-${option.brandId}`}>
                           {option.name}
                         </span>
                       </li>
@@ -343,15 +361,15 @@ const AdminBrand = (props: AdminBrandProps) => {
                 />
                 <NavigateButton onClick={handleOpen}>
                   <AddIcon sx={{ marginRight: "0.25rem" }} />
-                  New Brand
+                  Tạo thương hiệu mới
                 </NavigateButton>
               </div>
             </Title>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Nation</TableCell>
+                  <TableCell>Tên</TableCell>
+                  <TableCell>Quốc gia</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>
@@ -363,7 +381,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                       <TableCell>
                         <span className="text-center">{item.name}</span>
                       </TableCell>
-                      <TableCell>{item.nation || "Unknown"}</TableCell>
+                      <TableCell>{item.nation || "Không xác định"}</TableCell>
                       <TableCell sx={{ minWidth: "18rem" }}>
                         <Button
                           onClick={() => openUpdateModal(item.brandId)}

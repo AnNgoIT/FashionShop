@@ -17,7 +17,7 @@ export function warningMessage(message: string) {
 export function errorMessage(message: string) {
   toast(message, {
     position: "top-right",
-    type: "success",
+    type: "error",
     autoClose: 1000,
     hideProgressBar: false,
     closeOnClick: true,

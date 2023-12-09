@@ -37,10 +37,13 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
-import { getCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { createData } from "@/hooks/useAdmin";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import AdminProductItem from "./admin-product-item";
+import { decodeToken } from "@/features/jwt-decode";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -54,6 +57,7 @@ export const MenuProps = {
 };
 
 type AdminProductProps = {
+  token?: { accessToken?: string; refreshToken?: string };
   products: Product[];
   categories: Category[];
   brands: Brand[];
@@ -66,7 +70,7 @@ type StyleList = {
 
 const AdminProduct = (props: AdminProductProps) => {
   const router = useRouter();
-  const { products, categories, brands, styleValues } = props;
+  const { token, products, categories, brands, styleValues } = props;
 
   const [productItem, setProductItem] = useState<Product>({
     productId: -1,
@@ -102,7 +106,21 @@ const AdminProduct = (props: AdminProductProps) => {
       setProductList(
         products.sort((a, b) => b.productId - a.productId).slice(0, rowsPerPage)
       );
-  }, [products, rowsPerPage]);
+    if (token) {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+        maxAge: ACCESS_MAX_AGE,
+      });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
+    }
+  }, [products, rowsPerPage, token]);
 
   const [styleValueList, setStyleValueList] = useState<
     StyleValue[] | undefined
@@ -110,7 +128,21 @@ const AdminProduct = (props: AdminProductProps) => {
   const [styleValueNames, setStyleValueNames] = useState<string[]>([]);
   const [styleList, setStyleList] = useState<StyleList | null>(null);
   const [open, setOpen] = useState<boolean>(false);
-  const [updateId, setUpdateId] = useState<string>("-1");
+  const [productName, setProductName] = useState("");
+  const [productId, setProductId] = useState<number>(-1);
+  const [openProductItem, setOpenProductItem] = useState<boolean>(false);
+
+  const handleOpenProductItem = (name: string, id: number) => {
+    setProductName(name);
+    setProductId(id);
+    setOpenProductItem(true);
+  };
+  const handleCloseProductItem = () => {
+    setProductName("");
+    setOpenProductItem(false);
+  };
+
+  const [productItemId, setProductItemId] = useState<number>(-1);
   const [page, setPage] = useState(0);
 
   const handleOpen = () => {
@@ -121,16 +153,6 @@ const AdminProduct = (props: AdminProductProps) => {
     setUpdate(false);
     setOpen(false);
   };
-  // const openUpdateModal = (id: string) => {
-  //   const product = productList.find((product) => product.productId === id);
-  //   // setName(product?.name!);
-  //   // setQuantity(product?.totalQuantity!);
-  //   // setDes(product?.description!);
-  //   // setPrice(product?.priceMin!);
-  //   setUpdateId(id);
-  //   setUpdate(true);
-  //   handleOpen();
-  // };
 
   function changeStyleNameToId() {
     let result: any = {};
@@ -239,16 +261,16 @@ const AdminProduct = (props: AdminProductProps) => {
       "styleValueIds",
       Object.values(changeStyleNameToId()).join(",")
     );
-    const payload = {
-      ...productItem,
-      name: productItem.name,
-      description: productItem.description || "",
-      image: productItem.image,
-      categoryId: productItem.categoryName,
-      branId: productItem.brandName,
-      styleValueIds: Object.values(changeStyleNameToId()).join(","),
-    };
-    const id = toast.loading("Creating...");
+    // const payload = {
+    //   ...productItem,
+    //   name: productItem.name,
+    //   description: productItem.description || "",
+    //   image: productItem.image,
+    //   categoryId: productItem.categoryName,
+    //   branId: productItem.brandName,
+    //   styleValueIds: Object.values(changeStyleNameToId()).join(","),
+    // };
+    const id = toast.loading("Tạo sản phẩm mới...");
     const res = await createData(
       "/api/v1/users/admin/products",
       getCookie("accessToken")!,
@@ -256,7 +278,7 @@ const AdminProduct = (props: AdminProductProps) => {
     );
     if (res.success) {
       toast.update(id, {
-        render: `Created Product Success`,
+        render: `Tạo sản phẩm mới thành công`,
         type: "success",
         autoClose: 500,
         isLoading: false,
@@ -266,21 +288,22 @@ const AdminProduct = (props: AdminProductProps) => {
       router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {
-        render: `You don't have permission`,
+        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
+      router.refresh();
     } else if (res.statusCode == 409) {
       toast.update(id, {
-        render: "Product already existed",
+        render: "Sản phẩm đã tồn tại",
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
     } else {
       toast.update(id, {
-        render: "Server Error",
+        render: "Lỗi hệ thống",
         type: "error",
         autoClose: 500,
         isLoading: false,
@@ -326,8 +349,6 @@ const AdminProduct = (props: AdminProductProps) => {
       rating: 0,
       styleNames: [],
       styleValueNames: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
       isSelling: false,
       isActive: false,
     });
@@ -338,21 +359,21 @@ const AdminProduct = (props: AdminProductProps) => {
     setImage("");
   }
 
-  // function handleUpdateProduct(
-  //   event: React.FormEvent<HTMLFormElement>,
-  //   id: string
-  // ) {
-  //   event.preventDefault();
-  //   const newProductList = productList.map((item) => {
-  //     if (item.productId == id) {
-  //     }
-  //     return item;
-  //   });
-  //   setProductList(newProductList);
-  //   resetProductItem();
-  //   setUpdateId("-1");
-  //   handleClose();
-  // }
+  function handleUpdateProduct(
+    event: React.FormEvent<HTMLFormElement>,
+    productId: number
+  ) {
+    event.preventDefault();
+    const newProductList = productList.map((item) => {
+      if (item.productId == productId) {
+      }
+      return item;
+    });
+    setProductList(newProductList);
+    resetProductItem();
+    setProductItemId(-1);
+    handleClose();
+  }
 
   return (
     <Box
@@ -376,12 +397,12 @@ const AdminProduct = (props: AdminProductProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Product ID: ${updateId}` : "Create Product"}
+            {isUpdate ? `ID Sản phẩm: ${productItemId}` : "Tạo sản phẩm mới"}
           </h2>
           <form
             onSubmit={
               isUpdate
-                ? (event) => {} //handleUpdateProduct(event, updateId)
+                ? (event) => handleUpdateProduct(event, productItemId)
                 : (event) => handleCreateProduct(event)
             }
             className="col-span-full grid grid-flow-col grid-cols-12 "
@@ -389,7 +410,7 @@ const AdminProduct = (props: AdminProductProps) => {
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Name">
-                  Name
+                  Tên sản phẩm
                 </InputLabel>
                 <OutlinedInput
                   required
@@ -400,14 +421,14 @@ const AdminProduct = (props: AdminProductProps) => {
                   value={productItem.name}
                   onChange={handleProductItem}
                   // placeholder="Type your Name"
-                  label="Name"
+                  label="Tên sản phẩm"
                 />
               </FormControl>
             </div>
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Description">
-                  Description
+                  Mô tả
                 </InputLabel>
                 <OutlinedInput
                   inputProps={{ maxLength: 1000 }}
@@ -421,14 +442,14 @@ const AdminProduct = (props: AdminProductProps) => {
                   name="description"
                   value={productItem.description}
                   onChange={handleProductItem}
-                  label="Description"
+                  label="Mô tả"
                 />
               </FormControl>
             </div>
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Category">
-                  Category
+                  Danh mục
                 </InputLabel>
                 <Select
                   required
@@ -436,7 +457,7 @@ const AdminProduct = (props: AdminProductProps) => {
                   id="Category"
                   name="categoryName"
                   value={productItem.categoryName}
-                  label="Category"
+                  label="Danh mục"
                   onChange={handleCategories}
                 >
                   {categories &&
@@ -461,7 +482,7 @@ const AdminProduct = (props: AdminProductProps) => {
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Brand">
-                  Brand
+                  Thương hiệu
                 </InputLabel>
                 <Select
                   required
@@ -469,7 +490,7 @@ const AdminProduct = (props: AdminProductProps) => {
                   id="Brand"
                   name="brandName"
                   value={productItem.brandName}
-                  label="Brand"
+                  label="Thương hiệu"
                   onChange={handleProductItem}
                 >
                   {brands &&
@@ -532,6 +553,7 @@ const AdminProduct = (props: AdminProductProps) => {
                 {productItem && productItem.image ? (
                   <Image
                     loader={imageLoader}
+                    blurDataURL={productItem.image}
                     placeholder="blur"
                     className="w-[6.25rem] h-[6.25rem] rounded-md"
                     width={300}
@@ -541,7 +563,7 @@ const AdminProduct = (props: AdminProductProps) => {
                   ></Image>
                 ) : (
                   <p className="grid place-content-center text-xl text-text-color">
-                    No Image
+                    Không có ảnh nào
                   </p>
                 )}
               </div>
@@ -551,7 +573,7 @@ const AdminProduct = (props: AdminProductProps) => {
                 variant="contained"
                 className="mt-4 bg-primary-color hover:bg-text-color w-max"
               >
-                Upload file
+                Tải ảnh lên
                 <VisuallyHiddenInput
                   required
                   onChange={(e) => handleImageUpload(e)}
@@ -565,12 +587,20 @@ const AdminProduct = (props: AdminProductProps) => {
                            float-right px-[15px] text-white rounded-[5px]"
                 type="submit"
               >
-                {isUpdate ? "Save" : "Create"}
+                {isUpdate ? "Lưu" : "Tạo"}
               </button>
             </div>
           </form>
         </Box>
       </Modal>
+      <AdminProductItem
+        productName={productName}
+        products={products}
+        openProductItem={openProductItem}
+        handleCloseProductItem={handleCloseProductItem}
+        styleValues={styleValues}
+        productId={productId}
+      />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* Products */}
         <Grid item xs={12} md={4} lg={3}>
@@ -585,7 +615,7 @@ const AdminProduct = (props: AdminProductProps) => {
           >
             <Title>
               <div className="grid grid-flow-col items-center justify-between min-w-[768px]">
-                <span> Product List</span>
+                <span> Danh sách sản phẩm</span>
                 <Autocomplete
                   sx={{ minWidth: 350 }}
                   onChange={(e, newProduct) =>
@@ -610,6 +640,7 @@ const AdminProduct = (props: AdminProductProps) => {
                       >
                         <Image
                           loader={imageLoader}
+                          blurDataURL={option.image || product_1.src}
                           placeholder="blur"
                           key={`product-img-${option.productId}`}
                           // placeholder="blur"
@@ -638,7 +669,7 @@ const AdminProduct = (props: AdminProductProps) => {
                 <div className="w-max">
                   <NavigateButton onClick={handleOpen}>
                     <AddIcon sx={{ marginRight: "0.25rem" }} />
-                    New Product
+                    Sản phẩm mới
                   </NavigateButton>
                 </div>
               </div>
@@ -647,13 +678,13 @@ const AdminProduct = (props: AdminProductProps) => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Image</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Total Quantity</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Sold</TableCell>
+                  <TableCell>Tên</TableCell>
+                  <TableCell>Hình ảnh</TableCell>
+                  <TableCell>Mô tả</TableCell>
+                  <TableCell>Tổng số lượng</TableCell>
+                  <TableCell>Trạng thái</TableCell>
+                  <TableCell>Giá</TableCell>
+                  <TableCell>Đã bán</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>
@@ -698,7 +729,9 @@ const AdminProduct = (props: AdminProductProps) => {
                       <TableCell>{item.totalSold}</TableCell>
                       <TableCell>
                         <Button
-                          // onClick={() => openUpdateModal(item.productId)}
+                          onClick={() =>
+                            handleOpenProductItem(item.name, item.productId)
+                          }
                           sx={{
                             "&:hover": {
                               backgroundColor: "transparent",

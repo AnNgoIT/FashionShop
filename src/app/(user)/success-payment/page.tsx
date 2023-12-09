@@ -1,21 +1,18 @@
-import React, { ReactNode } from "react";
-
-import Footer from "@/components/footer/footer";
-import { fetchUserCredentials, refreshLogin } from "../page";
-import { cookies } from "next/headers";
+import { fetchUserCredentials, refreshLogin } from "@/app/page";
+import SuccessPayment from "@/container/payment/success-payment";
 import { getCookie, hasCookie } from "cookies-next";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import CartHeader from "@/components/header/cart-header";
-import { userCart } from "./cart/page";
+export default async function SuccessPaymentPage() {
+  const isPayment = getCookie("isPayment", { cookies });
+  if (!isPayment) redirect("/");
 
-const CartLayout = async ({ children }: { children: ReactNode }) => {
-  const [userCredentialsRes, userCartRes] = await Promise.all([
-    fetchUserCredentials(getCookie("accessToken", { cookies })!),
-    userCart(getCookie("accessToken", { cookies })!),
-  ]);
+  const userCredentialsRes = await fetchUserCredentials(
+    getCookie("accessToken", { cookies })!
+  );
 
   let userInfo = undefined,
-    cart = undefined,
     fullToken = undefined;
 
   if (userCredentialsRes.statusCode === 401) {
@@ -24,10 +21,7 @@ const CartLayout = async ({ children }: { children: ReactNode }) => {
       const refresh = await refreshLogin(refreshToken);
       if (refresh.success) {
         fullToken = refresh.result;
-        const [res, res2] = await Promise.all([
-          fetchUserCredentials(refresh.result.accessToken),
-          userCart(refresh.result.accessToken),
-        ]);
+        const res = await fetchUserCredentials(refresh.result.accessToken);
         userInfo = res.success
           ? {
               fullname: res.result.fullname,
@@ -41,7 +35,6 @@ const CartLayout = async ({ children }: { children: ReactNode }) => {
               role: res.result.role,
             }
           : undefined;
-        cart = res2.success ? res2.result.cartItems : undefined;
       }
     }
   } else {
@@ -58,15 +51,7 @@ const CartLayout = async ({ children }: { children: ReactNode }) => {
           role: userCredentialsRes.result.role,
         }
       : undefined;
-    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
   }
-  return (
-    <>
-      <CartHeader userInfo={userInfo} fullToken={fullToken} userCart={cart} />
-      {children}
-      <Footer />
-    </>
-  );
-};
 
-export default CartLayout;
+  return <SuccessPayment />;
+}

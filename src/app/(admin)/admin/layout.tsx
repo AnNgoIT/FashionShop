@@ -1,14 +1,25 @@
-"use client";
 import Dashboard from "@/components/dashboard/Dashboard";
-import usePath from "@/hooks/usePath";
 
 import React, { ReactNode } from "react";
+import { fetchAllProductsByAdmin } from "./products/page";
+import { getCookie, hasCookie } from "cookies-next";
+import { cookies } from "next/headers";
+import { refreshLogin } from "@/app/page";
 
-const AdminLayout = ({ children }: { children: ReactNode }) => {
-  const thisPaths = usePath();
-  let title = thisPaths.at(-1)!;
-  if (title == "admin") title = "dashboard";
-  return <Dashboard title={title}>{children}</Dashboard>;
+const AdminLayout = async ({ children }: { children: ReactNode }) => {
+  let fullToken = undefined;
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refershProducts = await refreshLogin(refreshToken);
+    if (refershProducts.success) {
+      fullToken = refershProducts.result;
+    }
+  }
+
+  return <Dashboard token={fullToken}>{children}</Dashboard>;
 };
 
 export default AdminLayout;

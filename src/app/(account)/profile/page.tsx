@@ -12,15 +12,16 @@ const ProfilePage = async () => {
 
   let result = undefined,
     fullToken = undefined;
-  if (res.statusCode == 401) {
-    if (hasCookie("refreshToken", { cookies })) {
-      const refreshToken = getCookie("refreshToken", { cookies })!;
-      const refresh = await refreshLogin(refreshToken);
-      if (refresh.success) {
-        fullToken = refresh.result;
-        const res = await fetchUserCredentials(refresh.result.accessToken);
-        result = res;
-      }
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refresh = await refreshLogin(refreshToken);
+    if (refresh.success) {
+      fullToken = refresh.result;
+      const res = await fetchUserCredentials(refresh.result.accessToken);
+      result = res;
     }
   }
 

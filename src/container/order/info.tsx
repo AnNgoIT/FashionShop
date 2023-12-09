@@ -20,12 +20,14 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { updateProfile } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 type OrderInfoProps = {
   info?: UserInfo;
   handleOrderInfo: (value: string) => void;
 };
 const OrderInfo = (props: OrderInfoProps) => {
+  const router = useRouter();
   const { user, setUser } = useContext(UserContext);
   const { info, ...rest } = props;
 
@@ -105,6 +107,15 @@ const OrderInfo = (props: OrderInfoProps) => {
         autoClose: 1500,
         isLoading: false,
       });
+      router.refresh();
+    } else if (res.statusCode == 401) {
+      toast.update(id, {
+        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+        type: "warning",
+        autoClose: 1500,
+        isLoading: false,
+      });
+      router.refresh();
     } else {
       toast.update(id, {
         render: `${res.message}`,
@@ -112,6 +123,7 @@ const OrderInfo = (props: OrderInfoProps) => {
         autoClose: 1500,
         isLoading: false,
       });
+      router.refresh();
     }
     setUser({ ...user, address: newAddressList.join(",") });
   };

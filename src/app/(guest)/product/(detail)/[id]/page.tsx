@@ -1,6 +1,6 @@
 import { HTTP_PORT } from "@/app/page";
 import ProductDetail from "@/container/product/detail";
-import { Product, StyleValue, productItem } from "@/features/types";
+import { Product } from "@/features/types";
 import React from "react";
 import { prefetchAllProducts } from "../../page";
 import { notFound } from "next/navigation";
@@ -8,10 +8,10 @@ import { notFound } from "next/navigation";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
 
-const fetchStyleVlueColorsById = async (productId: string) => {
+const fetchStyleVluesById = async (id: string, type: string) => {
   try {
     const res = await fetch(
-      `${HTTP_PORT}/api/v1/products/styleValues/?productId=${productId}&styleName=Color`,
+      `${HTTP_PORT}/api/v1/products/styleValues/?productId=${id}&styleName=${type}`,
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         cache: "no-cache",
@@ -27,40 +27,13 @@ const fetchStyleVlueColorsById = async (productId: string) => {
     // The return value is *not* serialized
     // You can return Date, Map, Set, etc.
     return res.json();
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
-const fetchStyleVlueSizesById = async (productId: string) => {
+const fetchRelatedProducts = async (id: string) => {
   try {
     const res = await fetch(
-      `${HTTP_PORT}/api/v1/products/styleValues/?productId=${productId}&styleName=Size`,
-      {
-        method: "GET", // *GET, POST, PUT, DELETE, etc.
-        mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "no-cache",
-        credentials: "include", // include, *same-origin, omit
-        headers: {
-          "Content-Type": "application/json",
-        },
-        redirect: "follow", // manual, *follow, error
-        referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      }
-    );
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
-
-    return res.json();
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const fetchRelatedProducts = async (productId: string) => {
-  try {
-    const res = await fetch(
-      `${HTTP_PORT}/api/v1/products/${productId}/related-products`,
+      `${HTTP_PORT}/api/v1/products/${id}/related-products`,
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         mode: "same-origin", // no-cors, *cors, same-origin
@@ -78,38 +51,31 @@ const fetchRelatedProducts = async (productId: string) => {
     // You can return Date, Map, Set, etc.
 
     return res.json();
-  } catch (error: any) {
-    console.log(error);
-  }
+  } catch (error: any) {}
 };
 
-const fetchAllProductItemsByParentId = async (productId: string) => {
+const fetchAllProductItemsByParentId = async (id: string) => {
   try {
-    const res = await fetch(
-      `${HTTP_PORT}/api/v1/productItems/parent/${productId}`,
-      {
-        method: "GET", // *GET, POST, PUT, DELETE, etc.
-        mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "no-cache",
-        credentials: "include", // include, *same-origin, omit
-        headers: {
-          "Content-Type": "application/json",
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: "follow", // manual, *follow, error
-        referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      }
-    );
+    const res = await fetch(`${HTTP_PORT}/api/v1/productItems/parent/${id}`, {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      mode: "same-origin", // no-cors, *cors, same-origin
+      cache: "force-cache",
+      credentials: "include", // include, *same-origin, omit
+      headers: {
+        "Content-Type": "application/json",
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: "follow", // manual, *follow, error
+      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    });
     // The return value is *not* serialized
     // You can return Date, Map, Set, etc.
     return res.json();
-  } catch (error: any) {
-    console.log(error);
-  }
+  } catch (error: any) {}
 };
-const fetchProductsById = async (productId: string) => {
+const fetchProductsById = async (id: string) => {
   try {
-    const res = await fetch(`${HTTP_PORT}/api/v1/products/${productId}`, {
+    const res = await fetch(`${HTTP_PORT}/api/v1/products/${id}`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "same-origin", // no-cors, *cors, same-origin
       cache: "no-cache",
@@ -124,43 +90,37 @@ const fetchProductsById = async (productId: string) => {
     // The return value is *not* serialized
     // You can return Date, Map, Set, etc.
     return res.json();
-  } catch (error: any) {
-    console.log(error);
-  }
+  } catch (error: any) {}
 };
 
 const ProductDetailPage = async ({ params }: { params: { id: string } }) => {
-  const colorsRes = await fetchStyleVlueColorsById(params.id);
-  const sizesRes = await fetchStyleVlueSizesById(params.id);
-  const relatedRes = await fetchRelatedProducts(params.id);
-  const productItemRes = await fetchAllProductItemsByParentId(params.id);
-  const productDetailRes = await fetchProductsById(params.id);
+  const [relatedRes, productItemRes, productDetailRes, colorsRes, sizesRes] =
+    await Promise.all([
+      fetchRelatedProducts(params.id),
+      fetchAllProductItemsByParentId(params.id),
+      fetchProductsById(params.id),
+      fetchStyleVluesById(params.id, "Color"),
+      fetchStyleVluesById(params.id, "Size"),
+    ]);
+
   if (
-    !productItemRes.success ||
     !colorsRes.success ||
     !sizesRes.success ||
     !relatedRes.success ||
+    !productItemRes.success ||
     !productDetailRes.success
   ) {
     notFound();
   }
 
-  const color: StyleValue[] =
-    colorsRes && colorsRes.success && colorsRes.result.content;
-  const size: StyleValue[] =
-    sizesRes && sizesRes.success && sizesRes.result.content;
-
-  const relatedProduct: Product[] =
-    relatedRes && relatedRes.success && relatedRes.result.content;
-  const productItem: productItem[] =
-    productItemRes && productItemRes.success && productItemRes.result.content;
-
-  const productDetail: Product =
-    productDetailRes && productDetailRes.success && productDetailRes.result;
+  const color = colorsRes?.result?.content || [];
+  const size = sizesRes?.result?.content || [];
+  const relatedProduct = relatedRes?.result || [];
+  const productItem = productItemRes?.result?.content || [];
+  const productDetail = productDetailRes?.result || {};
 
   return (
     <ProductDetail
-      productId={params.id}
       color={color}
       size={size}
       relatedProduct={relatedProduct}

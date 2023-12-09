@@ -3,7 +3,6 @@ import OrderTracking from "@/container/order/tracking";
 import { orderItem } from "@/features/types";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
-import result from "postcss/lib/result";
 
 export async function getAllOrders(accessToken: string) {
   const res = await fetch(`${HTTP_PORT}/api/v1/users/customers/orders`, {
@@ -31,14 +30,15 @@ export default async function OrderTrackingPage() {
   const res = await getAllOrders(accessToken);
 
   let result = undefined;
-  if (res.statusCode == 401) {
-    if (hasCookie("refreshToken", { cookies })) {
-      const refreshToken = getCookie("refreshToken", { cookies })!;
-      const refresh = await refreshLogin(refreshToken);
-      if (refresh.success) {
-        const res = await getAllOrders(refresh.result.accessToken);
-        result = res.result;
-      }
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refresh = await refreshLogin(refreshToken);
+    if (refresh.success) {
+      const res = await getAllOrders(refresh.result.accessToken);
+      result = res.result;
     }
   }
   const order = res?.success

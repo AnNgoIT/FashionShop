@@ -141,13 +141,20 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
     } else {
       if (profile.statusCode == 401) {
         toast.update(id, {
-          render: `Cần đăng nhập để sử dụng chức năng này`,
+          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
           type: "warning",
           autoClose: 1500,
           isLoading: false,
         });
-        router.push("/login");
+        router.refresh();
       } else if (profile.statusCode == 400) {
+        toast.update(id, {
+          render: `Dữ liệu nhập chưa chính xác`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
       }
       if (profile.statusCode == 500) {
         toast.update(id, {

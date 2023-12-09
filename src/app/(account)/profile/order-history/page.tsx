@@ -11,14 +11,15 @@ export default async function OrderHistoryPage() {
   const res = await getAllOrders(accessToken);
 
   let result = undefined;
-  if (res.statusCode == 401) {
-    if (hasCookie("refreshToken", { cookies })) {
-      const refreshToken = getCookie("refreshToken", { cookies })!;
-      const refresh = await refreshLogin(refreshToken);
-      if (refresh.success) {
-        const res = await getAllOrders(refresh.result.accessToken);
-        result = res.result;
-      }
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refresh = await refreshLogin(refreshToken);
+    if (refresh.success) {
+      const res = await getAllOrders(refresh.result.accessToken);
+      result = res.result;
     }
   }
   const order = res?.success

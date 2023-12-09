@@ -113,6 +113,22 @@ const ResetPasswordForm = () => {
           isLoading: false,
         });
         setErrors({ ...formErrors, otp: "Sai OTP" });
+      } else if (res.statusCode == 401) {
+        toast.update(id, {
+          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else if (res.statusCode == 500) {
+        toast.update(id, {
+          render: `Lỗi hệ thống`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
       }
       // Reset trạng thái trường nhập liệu sau khi xử lý
     } else setErrors(formErrors);

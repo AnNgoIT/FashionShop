@@ -13,8 +13,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import { useContext, useEffect, useState } from "react";
-import { UserContext } from "@/store";
+import { useEffect, useState } from "react";
 import Skeleton from "@mui/material/Skeleton";
 import { UserInfo } from "@/features/types";
 const theme = createTheme({
@@ -29,7 +28,6 @@ const theme = createTheme({
   },
 });
 const ProfileNav = ({ info }: { info?: UserInfo }) => {
-  // const { user, setUser } = useContext(UserContext);
   const [userInfo, setUserInfo] = useState({
     avatar: info?.avatar || "",
     fullname: info?.fullname || "",
@@ -42,7 +40,6 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
         fullname: info?.fullname || "",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info]);
 
   return (

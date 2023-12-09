@@ -13,10 +13,11 @@ import OrderInfo from "@/container/order/info";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import Button from "@mui/material/Button";
 import { makeAnOrder } from "@/hooks/useAuth";
-import { getCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { redirect, useRouter } from "next/navigation";
 import { warningMessage } from "@/features/toasting";
+import { getAuthenticated } from "@/hooks/useData";
 
 type CheckOutProps = {
   userInfo?: UserInfo;
@@ -34,7 +35,7 @@ type OrderInfo = {
 const Checkout = (props: CheckOutProps) => {
   const router = useRouter();
   const { userInfo } = props;
-  const { cartItems, setCartItems } = useContext(CartContext);
+  const { cartItems } = useContext(CartContext);
   const [orderInfo, setOrderInfo] = useState<OrderInfo>({
     cartItemIds: cartItems?.map((cart) => cart.cartItemId) || [],
     fullName: userInfo?.fullname || "",
@@ -65,40 +66,65 @@ const Checkout = (props: CheckOutProps) => {
       warningMessage("Vui lòng chọn địa chỉ nhận hàng");
       return;
     }
-    try {
-      const id = toast.loading("Vui lòng chờ...");
-      const res = await makeAnOrder(getCookie("accessToken")!, newOrder);
-      if (res.success) {
+    const id = toast.loading("Vui lòng chờ...");
+    const res = await makeAnOrder(getCookie("accessToken")!, newOrder);
+    if (res.success) {
+      if (newOrder.paymentMethod == "COD") {
         toast.update(id, {
           render: `Bạn đã đặt hàng thành công`,
           type: "success",
           autoClose: 1500,
           isLoading: false,
         });
-        // setCartItems([]);
         router.push("/profile/order-tracking");
         router.refresh();
-      } else if (res.statusCode == 500) {
-        toast.update(id, {
-          render: `Lỗi hệ thống`,
-          type: "error",
-          autoClose: 1500,
-          isLoading: false,
-        });
-      } else if (res.statusCode == 401) {
-        warningMessage("Vui lòng đăng nhập");
-        router.push("/login");
-        router.refresh();
-      } else {
-        toast.update(id, {
-          render: `${res.message}`,
-          type: "error",
-          autoClose: 1500,
-          isLoading: false,
-        });
+      } else if (newOrder.paymentMethod == "E_WALLET") {
+        const vnPayPayment = await getAuthenticated(
+          `/api/v1/users/customers/orders/${res.result.content.orderId}/checkout-eWallet`,
+          getCookie("accessToken")!
+        );
+        if (vnPayPayment.success) {
+          toast.dismiss();
+          setCookie("isPayment", true);
+          window.location.href = vnPayPayment.result;
+          router.refresh();
+        } else if (vnPayPayment.statusCode == 401) {
+          warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+          router.refresh();
+        } else if (vnPayPayment.status == 500) {
+          toast.update(id, {
+            render: `Lỗi hệ thống`,
+            type: "error",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          router.refresh();
+        } else {
+          toast.update(id, {
+            render: `Dữ liệu truyền chưa chính xác`,
+            type: "error",
+            autoClose: 1500,
+            isLoading: false,
+          });
+        }
       }
-    } catch (error: any) {
-      console.log(error);
+    } else if (res.status == 500) {
+      toast.update(id, {
+        render: `Lỗi hệ thống`,
+        type: "error",
+        autoClose: 1500,
+        isLoading: false,
+      });
+    } else if (res.statusCode == 401) {
+      warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+      router.refresh();
+    } else {
+      toast.update(id, {
+        render: `Dữ liệu truyền chưa chính xác`,
+        type: "error",
+        autoClose: 1500,
+        isLoading: false,
+      });
     }
   };
 
@@ -337,7 +363,9 @@ const Checkout = (props: CheckOutProps) => {
                 className="bg-secondary-color  transition-all duration-200 hover:opacity-60 py-[1.125rem]
                 float-right px-6 font-medium text-white rounded-md text-base"
               >
-                Đặt hàng
+                {orderInfo.paymentMethod == "E_WALLET"
+                  ? "Thanh toán"
+                  : "Đặt hàng"}
               </button>
             </div>
           </div>

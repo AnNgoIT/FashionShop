@@ -19,7 +19,6 @@ import { Product, StyleValue, productItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
 import { CartContext } from "@/store";
 import {
   errorMessage,
@@ -29,16 +28,16 @@ import {
 import { getUserCart } from "@/hooks/useAuth";
 
 type ProductDetailProps = {
-  productId: string;
   color: StyleValue[];
   size: StyleValue[];
-  productDetail: Product;
   relatedProduct: Product[];
   productItems: productItem[];
+  productDetail: Product;
 };
 
 const ProductDetail = (props: ProductDetailProps) => {
   const { color, size, relatedProduct, productItems, productDetail } = props;
+
   const router = useRouter();
 
   const thisPaths = usePath();
@@ -95,6 +94,7 @@ const ProductDetail = (props: ProductDetailProps) => {
         setProductItem(newProductItem);
         setShowProductItem(true); // Khi đã tìm thấy sản phẩm phù hợp, hiển thị ảnh mới
       }
+      return;
     } else if (isColorActive.length > 0 || isSizeActive.length > 0) {
       const newProductItem = productItems.find((productItem) =>
         productItem.styleValueNames.includes(isColorActive[0])
@@ -103,13 +103,11 @@ const ProductDetail = (props: ProductDetailProps) => {
         setProductItem(newProductItem);
         setShowProductItem(true); // Khi đã tìm thấy sản phẩm phù hợp, hiển thị ảnh mới
       }
+      return;
     } else {
       setShowProductItem(false); // Nếu không có size hoặc color active, ẩn ảnh
     }
   }, [isColorActive, isSizeActive, productItems]);
-
-  const sizeList = size;
-  const colorList = color;
 
   function handleSizeList(size: string) {
     let newSize: string[] = [];
@@ -224,6 +222,48 @@ const ProductDetail = (props: ProductDetailProps) => {
     } else setSelected(true);
   };
 
+  const handleCheckout = async (e: any, productItem: productItem) => {
+    e.preventDefault();
+    if (
+      (productDetail.styleNames.length == 1 &&
+        (isSizeActive.length > 0 || isColorActive.length > 0)) ||
+      (productDetail.styleNames.length > 1 &&
+        isSizeActive.length > 0 &&
+        isColorActive.length > 0)
+    ) {
+      const payload = {
+        productItemId: productItem.productItemId,
+        quantity: qty,
+      };
+      if (hasCookie("accessToken")) {
+        const res = await addProductItemToCart(
+          getCookie("accessToken")!,
+          payload
+        );
+        if (res.success) {
+          setSelected(false);
+          resetProductItem();
+          const currCart = await getUserCart(getCookie("accessToken")!);
+          if (currCart.success) {
+            setCartItems(currCart.result.cartItems);
+            router.push("/cart/checkout");
+          }
+          // router.refresh();
+        } else if (res.response.data.statusCode === 401) {
+          warningMessage("Cần đăng nhập để sử dụng chức năng này");
+          router.push("/login");
+          return;
+        } else {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        }
+      } else {
+        warningMessage("Vui lòng đăng nhập");
+        router.push("/login");
+      }
+    } else setSelected(true);
+  };
+
   return (
     <>
       <main className="font-montserrat bg-white mt-[76px] relative z-0">
@@ -284,26 +324,24 @@ const ProductDetail = (props: ProductDetailProps) => {
       </main>
       <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
-          <div className="col-span-full md:col-span-6 lg:col-span-5 lg:col-start-2 xl:col-span-4 xl:col-start-2 outline outline-1 outline-border-color h-fit">
+          <div className="col-span-full md:col-span-5 lg:col-span-5 lg:col-start-2 outline outline-1 outline-border-color">
             {showProductItem ? (
               <ImageMagnifier
                 src={productItem.image}
                 bgImg={productItem.image}
-                height={480}
+                height={484}
                 zoomLevel={2.5}
               ></ImageMagnifier>
             ) : (
               <ImageMagnifier
                 src={productDetail.image}
                 bgImg={productDetail.image}
-                height={480}
+                height={484}
                 zoomLevel={2.5}
               ></ImageMagnifier>
             )}
           </div>
-          <div
-            className={`col-span-full md:col-span-6 lg:col-span-5 xl:col-span-5`}
-          >
+          <div className={`col-span-full md:col-span-7 lg:col-span-5`}>
             <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
               {productDetail && productDetail.name}
             </h3>
@@ -354,10 +392,10 @@ const ProductDetail = (props: ProductDetailProps) => {
                 <p className="leading-7">Vận chuyển nhanh chóng và tiện lợi</p>
               </li>
             </ul>
-            {sizeList && sizeList.length > 0 && (
+            {size && size.length > 0 && (
               <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
                 <span className="text-md mr-2 min-w-[5rem]">Sizes:</span>
-                {sizeList.map((item: StyleValue) => {
+                {size.map((item: StyleValue) => {
                   return (
                     <div
                       onClick={() => {
@@ -365,7 +403,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                         // increasePriceBySize(item.price);
                       }}
                       key={item.styleValueId}
-                      className={`outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all
+                      className={`outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all truncate
                               ${
                                 isSizeActive.includes(item.name) &&
                                 " bg-primary-color text-white"
@@ -377,10 +415,10 @@ const ProductDetail = (props: ProductDetailProps) => {
                 })}
               </ul>
             )}
-            {colorList && colorList.length > 0 && (
+            {color && color.length > 0 && (
               <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
                 <span className="text-md mr-2 min-w-[5rem]">Màu:</span>
-                {colorList.map((item) => {
+                {color.map((item) => {
                   return (
                     <li
                       onClick={() => {
@@ -388,7 +426,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                         // increasePriceBySize(item.price);
                       }}
                       key={item.styleValueId}
-                      className={`outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all
+                      className={`outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all truncate
                               ${
                                 isColorActive.includes(item.name)
                                   ? " bg-primary-color text-white"
@@ -452,24 +490,25 @@ const ProductDetail = (props: ProductDetailProps) => {
                 ></FontAwesomeIcon>
                 Thêm vào giỏ hàng
               </button>
-              <Link href="/wishlist">
-                <button
-                  className="rounded-[4px] bg-primary-color text-white px-[15px] py-[11px] 
+              <button
+                onClick={(e) => {
+                  handleCheckout(e, productItem);
+                }}
+                className="rounded-[4px] bg-primary-color text-white px-[15px] py-[11px] 
                                   font-medium flex justify-center items-center hover:bg-text-color
                                   transition-all duration-200 ml-6  text-ellipsis whitespace-nowrap"
-                >
-                  <FontAwesomeIcon
-                    className="pr-2 text-[20px]"
-                    icon={faHeart}
-                  ></FontAwesomeIcon>
-                  Theo dõi sản phẩm
-                </button>
-              </Link>
+              >
+                <FontAwesomeIcon
+                  className="pr-2 text-[20px]"
+                  icon={faCheck}
+                ></FontAwesomeIcon>
+                Mua hàng ngay
+              </button>
             </div>
           </div>
         </div>
         <div
-          className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px] py-16`}
+          className={`col-span-full lg:col-span-10 lg:col-start-2 grid grid-cols-12 gap-x-[30px] py-16`}
         >
           <ContentSwitcher
             description={productDetail.description}

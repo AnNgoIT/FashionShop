@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { empty_order, product_1 } from "@/assests/images";
+import { empty_order } from "@/assests/images";
 import React, { useEffect, useState } from "react";
 import InfoIcon from "@mui/icons-material/Info";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -100,7 +100,7 @@ const OrderTracking = ({ orders }: { orders: orderItem[] }) => {
         );
         router.refresh();
       } else if (res.statusCode == 401) {
-        warningMessage("Đang tải lại trang");
+        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
         handleCloseDialog();
         router.refresh();
       } else if (res.statusCode == 500) {

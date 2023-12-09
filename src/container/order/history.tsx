@@ -15,8 +15,11 @@ import { getUserOrder } from "@/hooks/useAuth";
 import FeedbackIcon from "@mui/icons-material/Feedback";
 import { getCookie } from "cookies-next";
 import dayjs from "dayjs";
+import { warningMessage } from "@/features/toasting";
+import { useRouter } from "next/navigation";
 
 const OrderHistory = ({ orders }: { orders: orderItem[] }) => {
+  const router = useRouter();
   const [orderDetail, setOrderDetail] = useState<productItemInOrder[] | null>(
     null
   );
@@ -34,6 +37,9 @@ const OrderHistory = ({ orders }: { orders: orderItem[] }) => {
     const res = await getUserOrder(item.orderId, getCookie("accessToken")!);
     if (res.success) {
       setOrderDetail(res.result.orderItems);
+    } else if (res.statusCode == 401) {
+      warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+      router.refresh();
     }
     setOpen(true);
   };

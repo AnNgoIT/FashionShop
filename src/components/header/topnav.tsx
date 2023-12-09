@@ -147,42 +147,33 @@ const TopNav = (props: NavProps) => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userCart]);
+  }, [info, token, userCart]);
 
   const handleLogout = async () => {
-    try {
-      const id = toast.loading("Đang đăng xuất...");
-      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
-      if (res.success) {
-        deleteCookie("accessToken");
-        deleteCookie("refreshToken");
-        toast.update(id, {
-          render: `Đăng xuất thành công`,
-          type: "success",
-          autoClose: 1000,
-          isLoading: false,
-        });
-        setUser({
-          fullname: null,
-          email: "",
-          phone: "",
-          dob: null,
-          gender: null,
-          address: null,
-          avatar: "",
-          ewallet: 0,
-          role: "GUEST",
-        });
-        setCartItems([]);
-        scrollToTop();
-        router.push("/login");
-        router.refresh();
-        // Refresh the current route and fetch new data from the server without
-        // losing client-side browser or React state.
-      }
-    } catch (error) {
-      warningMessage("Vui lòng đăng nhập");
-      scrollToTop();
+    const res = await logout(cookies.accessToken!, cookies.refreshToken!);
+    if (res.success) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
+      successMessage("Đăng xuất thành công");
+      setUser({
+        fullname: null,
+        email: "",
+        phone: "",
+        dob: null,
+        gender: null,
+        address: null,
+        avatar: "",
+        ewallet: 0,
+        role: "GUEST",
+      });
+      setCartItems([]);
+      router.push("/login");
+      router.refresh();
+      // Refresh the current route and fetch new data from the server without
+      // losing client-side browser or React state.
+    } else if (res.statusCode == 401) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
       router.push("/login");
       router.refresh();
     }

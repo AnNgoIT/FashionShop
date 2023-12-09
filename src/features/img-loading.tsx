@@ -122,6 +122,21 @@ export const modalStyle = {
   p: 3.5,
 };
 
+export const modalProductItemStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 800,
+
+  maxHeight: "90vh",
+  overflow: "auto",
+  bgcolor: "background.paper",
+  borderRadius: "0.25rem",
+  boxShadow: 24,
+  p: 3.5,
+};
+
 export const modalOrderDetailStyle = {
   position: "absolute",
   top: "50%",

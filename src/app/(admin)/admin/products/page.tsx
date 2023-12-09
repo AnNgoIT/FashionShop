@@ -1,7 +1,7 @@
 import { fetchAllCategories, fetchAllBrands } from "@/app/(guest)/product/page";
-import { HTTP_PORT } from "@/app/page";
+import { HTTP_PORT, refreshLogin } from "@/app/page";
 import AdminProduct from "@/container/admin/admin-product";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
 export const fetchAllStyleValues = async () => {
@@ -25,44 +25,72 @@ export const fetchAllStyleValues = async () => {
 };
 
 export const fetchAllProductsByAdmin = async (accessToken: string) => {
-  try {
-    const res = await fetch(`${HTTP_PORT}/api/v1/users/admin/products`, {
-      method: "GET", // *GET, POST, PUT, DELETE, etc.
-      mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "no-cache",
-      credentials: "include", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    });
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
+  const res = await fetch(`${HTTP_PORT}/api/v1/users/admin/products`, {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    mode: "same-origin", // no-cors, *cors, same-origin
+    cache: "no-cache",
+    credentials: "include", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+  });
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
 
-    return res.json();
-  } catch (error: any) {
-    console.log(error);
-  }
+  return res.json();
 };
-
 const AdminProductPage = async () => {
-  const res = await fetchAllProductsByAdmin(
-    getCookie("accessToken", { cookies })!
-  );
-  const cateRes = await fetchAllCategories();
-  const brandRes = await fetchAllBrands();
-  const styleValuesRes = await fetchAllStyleValues();
-  const product = res && res.success && res.result.content;
-  const category = cateRes && cateRes.success && cateRes.result.content;
-  const brand = brandRes && brandRes.success && brandRes.result.content;
-  const styleValue =
-    styleValuesRes && styleValuesRes.success && styleValuesRes.result.content;
+  const [
+    productsResponse,
+    categoriesResponse,
+    brandsResponse,
+    styleValuesResponse,
+  ] = await Promise.all([
+    fetchAllProductsByAdmin(getCookie("accessToken", { cookies })!),
+    fetchAllCategories(),
+    fetchAllBrands(),
+    fetchAllStyleValues(),
+  ]);
+  let refreshedProducts = [],
+    fullToken = undefined;
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refershProducts = await refreshLogin(refreshToken);
+    if (refershProducts.success) {
+      fullToken = refershProducts.result;
+      const newProducts = await fetchAllProductsByAdmin(
+        refershProducts.result.accessToken
+      );
+      if (newProducts.success) {
+        refreshedProducts = newProducts.result.content;
+      }
+    }
+  }
+
+  const product = productsResponse?.success
+    ? productsResponse.result.content
+    : refreshedProducts;
+
+  const category = categoriesResponse?.success
+    ? categoriesResponse.result.content
+    : [];
+  const brand = brandsResponse?.success ? brandsResponse.result.content : [];
+  const styleValue = styleValuesResponse?.success
+    ? styleValuesResponse.result.content
+    : [];
+
+  // Tiếp tục xử lý dữ liệu ở đây
 
   return (
     <AdminProduct
+      token={fullToken}
       products={product}
       categories={category}
       brands={brand}

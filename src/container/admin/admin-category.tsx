@@ -31,8 +31,8 @@ import AddIcon from "@mui/icons-material/Add";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
-import { createData } from "@/hooks/useAdmin";
-import { getCookie } from "cookies-next";
+import { createData, patchData, putData } from "@/hooks/useAdmin";
+import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
@@ -42,13 +42,27 @@ import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
 import { getUniqueObjects } from "@/features/product";
 import { CldImage } from "next-cloudinary";
+import {
+  successMessage,
+  warningMessage,
+  errorMessage,
+} from "@/features/toasting";
+import { decodeToken } from "@/features/jwt-decode";
+import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 
 type AdminCategoryProps = {
   categories: Category[];
   styles: Style[];
+  token?: { accessToken?: string; refreshToken?: string };
+};
+
+type UpdateCategory = {
+  name: string;
+  parentId: number | null;
+  icon: string;
 };
 const AdminCategory = (props: AdminCategoryProps) => {
-  const { categories, styles } = props;
+  const { categories, styles,token } = props;
   const router = useRouter();
   const [category, setCategory] = useState<Category>({
     categoryId: 0,
@@ -63,7 +77,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
   const [isUpdate, setUpdate] = useState<boolean>(false);
 
   const [open, setOpen] = useState<boolean>(false);
-  const [updateId, setUpdateId] = useState<number>(-1);
+  const [updateCategory, setUpdateCategory] = useState<Category | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -78,7 +92,21 @@ const AdminCategory = (props: AdminCategoryProps) => {
           .sort((a, b) => b.categoryId - a.categoryId)
           .slice(0, rowsPerPage)
       );
-  }, [categories, rowsPerPage]);
+    if (token) {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+        maxAge: ACCESS_MAX_AGE,
+      });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+        maxAge: REFRESH_MAX_AGE,
+      });
+    }
+  }, [categories, rowsPerPage, token]);
 
   function resetCategory() {
     setCategory({
@@ -150,14 +178,15 @@ const AdminCategory = (props: AdminCategoryProps) => {
     });
   };
 
-  const openUpdateModal = (id: number) => {
-    // const category = categoryList.find((category) => category.categoryId == id);
-    // setUpdateId(id);
+  const openUpdateModal = (category: Category) => {
+    // const category = categoryList.find((category) => category.categoryId == id);\
+    setCategory(category);
+    setUpdateCategory(category);
     // setName(category?.name!);
     // setImage(category?.image!);
     // setUpdatedAt(category?.updatedAt!);
-    // setUpdate(true);
-    // handleOpen();
+    setUpdate(true);
+    handleOpen();
   };
 
   const handleChangePage = (event: any, newPage: number) => {
@@ -197,32 +226,54 @@ const AdminCategory = (props: AdminCategoryProps) => {
     setPage(0);
   };
 
-  // function handleUpdateCategory(
-  //   event: React.FormEvent<HTMLFormElement>,
-  //   id: number
-  // ) {
-  //   event.preventDefault();
-  //   const newCategoryList = categoryList.map((item: Category) => {
-  //     if (item.categoryId == id) {
-  //       item = {
-  //         categoryId: id,
-  //         name,
-  //         parentName: undefined,
-  //         image,
-  //         createdAt,
-  //         updatedAt,
-  //         isActive: true,
-  //         styleNames: [],
-  //       };
-  //     }
-  //     return item;
-  //   });
-  //   setCategoryList(newCategoryList);
+  const handleUpdateCategoryParentName = (e: any) => {
+    const value = e.target.value;
+    setUpdateCategory({
+      ...updateCategory!,
+      parentName: value,
+    });
+  };
 
-  //   resetCategory();
-  //   setUpdateId(-1);
-  //   handleClose();
-  // }
+  async function handleUpdateCategory(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const updatePayload: UpdateCategory = {
+      name: category?.name,
+      parentId:
+        categories.find(
+          (category) => category.name === updateCategory?.parentName
+        )?.categoryId || -1,
+      icon: category.image !== "" ? category.image : updateCategory?.image!,
+    };
+    console.log(updatePayload);
+
+    // const update = await putData(
+    //   `/api/v1/users/admin/categories/${updateCategory?.categoryId}`,
+    //   getCookie("accessToken")!,
+    //   updatePayload
+    // );
+    // if (update.success) {
+    //   successMessage("Đổi danh mục thành công");
+    //   // setOrderList((prevOrderItems) =>
+    //   //   prevOrderItems.map((item) =>
+    //   //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
+    //   //   )
+    //   // );
+    //   router.refresh();
+    //   handleClose();
+    // } else if (update.statusCode == 401) {
+    //   warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
+    //   router.refresh();
+    // } else if (update.status == 500) {
+    //   errorMessage("Lỗi hệ thống");
+    //   router.refresh();
+    // } else if (update.status == 404) {
+    //   errorMessage("Không tìm thấy danh mục này");
+    // } else errorMessage("Lỗi sai dữ liệu truyền");
+
+    // resetCategory();
+    // setUpdateCategory(null);
+    // handleClose();
+  }
   async function handleCreateCategory(e: { preventDefault: () => void }) {
     e.preventDefault();
 
@@ -232,7 +283,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
     formData.append("imageFile", image);
     formData.append("styleIds", changeStyleNameToId().join(","));
 
-    const id = toast.loading("Creating...");
+    const id = toast.loading("Đang tạo...");
     const res = await createData(
       "/api/v1/users/admin/categories",
       getCookie("accessToken")!,
@@ -240,7 +291,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
     );
     if (res.success) {
       toast.update(id, {
-        render: `Created Category Success`,
+        render: `Tạo mới danh mục thành công`,
         type: "success",
         autoClose: 500,
         isLoading: false,
@@ -249,26 +300,55 @@ const AdminCategory = (props: AdminCategoryProps) => {
       router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {
-        render: `You don't have permission`,
+        render: `Vui lòng đăng nhập`,
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
     } else if (res.statusCode == 409) {
       toast.update(id, {
-        render: "Category already existed",
+        render: "Danh mục này đã tồn tại",
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
     } else {
       toast.update(id, {
-        render: "Server Error",
+        render: "Lỗi hệ thống",
         type: "error",
         autoClose: 500,
         isLoading: false,
       });
     }
+  }
+
+  async function handleChangeCategoryActive(item: Category) {
+    console.log(item);
+    const newActiveStatus = item.isActive ? false : true;
+    const changeCategoryActive = await patchData(
+      `/api/v1/users/admin/categories/${item.categoryId}`,
+      getCookie("accessToken")!,
+      { isActive: newActiveStatus }
+    );
+
+    if (changeCategoryActive.success) {
+      successMessage("Đổi trạng thái danh mục thành công");
+      setCategoryList(
+        categories
+          .filter((category) => category.categoryId !== item.categoryId)
+          .sort((a, b) => b.categoryId - a.categoryId)
+          .slice(0, rowsPerPage)
+      );
+      router.refresh();
+    } else if (changeCategoryActive.status == 401) {
+      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
+      router.refresh();
+    } else if (changeCategoryActive.status == 500) {
+      errorMessage("Lỗi hệ thống");
+      router.refresh();
+    } else if (changeCategoryActive.status == 404) {
+      errorMessage("Không tìm thấy danh mục này");
+    } else errorMessage("Lỗi sai dữ liệu truyền");
   }
 
   return (
@@ -293,12 +373,12 @@ const AdminCategory = (props: AdminCategoryProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Category ID: ${updateId}` : "Create Category"}
+            {isUpdate ? `Cập nhật danh mục` : "Tạo danh mục mới"}
           </h2>
           <form
             onSubmit={
               isUpdate
-                ? (event) => {} //handleUpdateCategory(event, updateId)
+                ? (event) => handleUpdateCategory(event)
                 : (event) => handleCreateCategory(event)
             }
             className="col-span-full grid grid-flow-col grid-cols-12 "
@@ -306,7 +386,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="Name">
-                  Name
+                  Tên
                 </InputLabel>
                 <OutlinedInput
                   autoComplete="off"
@@ -316,70 +396,111 @@ const AdminCategory = (props: AdminCategoryProps) => {
                   value={category.name}
                   onChange={handleCategory}
                   // placeholder="Type your Name"
-                  label="Name"
+                  label="Tên"
                 />
               </FormControl>
             </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="parentName">
-                  Parent Category
-                </InputLabel>
-                <Select
-                  labelId="parentName"
-                  id="parent-name"
-                  name="parentName"
-                  value={category.parentName}
-                  label="Parent Category"
-                  onChange={handleCategory}
-                >
-                  {categories &&
-                    categories.length > 0 &&
-                    categories
-                      .filter((category) => category.parentName == null)
-                      .map((category) => {
-                        return (
-                          <MenuItem
-                            key={category.categoryId}
-                            value={category.categoryId}
-                          >
-                            {category.name}
-                          </MenuItem>
-                        );
-                      })}
-                </Select>
-              </FormControl>
-            </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="styleIds">
-                  Category Style
-                </InputLabel>
-                <Select
-                  id="category-styleNames"
-                  multiple
-                  name="styleIds"
-                  value={category.styleNames}
-                  onChange={handleStyle}
-                  input={<OutlinedInput label="Category Style" />}
-                  renderValue={(selected) => selected.join(", ")}
-                  MenuProps={MenuProps}
-                >
-                  {styles.map((style) => (
-                    <MenuItem key={style.styleId} value={style.name}>
-                      <Checkbox
-                        checked={category.styleNames.indexOf(style.name) > -1}
-                      />
-                      <ListItemText primary={style.name} />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </div>
+            {!isUpdate && (
+              <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+                <FormControl className="col-span-full">
+                  <InputLabel className="mb-2" htmlFor="parentName">
+                    Tên danh mục cha
+                  </InputLabel>
+                  <Select
+                    labelId="parentName"
+                    id="parent-name"
+                    name="parentName"
+                    defaultValue={category.parentName}
+                    label="Tên danh mục cha"
+                    onChange={handleCategory}
+                  >
+                    {categories &&
+                      categories.length > 0 &&
+                      categories
+                        .filter(
+                          (category) =>
+                            category.parentName == null &&
+                            category.categoryId !== undefined
+                        )
+                        .map((category) => {
+                          return (
+                            <MenuItem
+                              key={category.categoryId}
+                              value={category.categoryId}
+                            >
+                              {category.name}
+                            </MenuItem>
+                          );
+                        })}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
+            {isUpdate && updateCategory && (
+              <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+                <FormControl className="col-span-full">
+                  <InputLabel className="mb-2" htmlFor="parentName">
+                    Tên danh mục cha
+                  </InputLabel>
+                  <Select
+                    labelId="parentName"
+                    id="parent-name"
+                    name="parentName"
+                    value={updateCategory.parentName}
+                    label="Tên danh mục cha"
+                    onChange={handleUpdateCategoryParentName}
+                  >
+                    {categories &&
+                      categories.length > 0 &&
+                      categories
+                        .filter((category) => category.parentName == null)
+                        .map((category) => {
+                          return (
+                            <MenuItem
+                              key={category.categoryId}
+                              value={category.name}
+                            >
+                              {category.name}
+                            </MenuItem>
+                          );
+                        })}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
+            {!isUpdate && (
+              <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+                <FormControl className="col-span-full">
+                  <InputLabel className="mb-2" htmlFor="styleIds">
+                    Kiểu danh mục
+                  </InputLabel>
+                  <Select
+                    id="category-styleNames"
+                    multiple
+                    name="styleIds"
+                    value={category.styleNames}
+                    onChange={handleStyle}
+                    input={<OutlinedInput label="Kiểu danh mục" />}
+                    renderValue={(selected) => selected.join(", ")}
+                    MenuProps={MenuProps}
+                  >
+                    {styles.map((style) => (
+                      <MenuItem key={style.styleId} value={style.name}>
+                        <Checkbox
+                          checked={category.styleNames.indexOf(style.name) > -1}
+                        />
+                        <ListItemText primary={style.name} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
 
-            <div className="col-span-full grid text-sm text-[#999] font-medium mb-4">
+            <div className="col-span-full grid text-sm text-[#999] font-medium mb-4  place-items-center">
               {category && category.image ? (
                 <Image
+                  blurDataURL={category.image}
                   loader={imageLoader}
                   placeholder="blur"
                   className="w-[6.25rem] h-[6.25rem] rounded-md"
@@ -390,7 +511,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                 ></Image>
               ) : (
                 <p className="grid place-content-center text-xl text-text-color">
-                  No Image
+                  Không có ảnh nào
                 </p>
               )}
               <Button
@@ -399,9 +520,9 @@ const AdminCategory = (props: AdminCategoryProps) => {
                 variant="contained"
                 className="mt-4 bg-primary-color hover:bg-text-color w-max"
               >
-                Upload file
+                Tải ảnh lên
                 <VisuallyHiddenInput
-                  required
+                  required={!isUpdate}
                   onChange={(e) => handleImageUpload(e)}
                   type="file"
                 />
@@ -413,7 +534,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                      float-right px-[15px] text-white rounded-[5px]"
                 type="submit"
               >
-                {isUpdate ? "Save" : "Create"}
+                {isUpdate ? "Lưu" : "Tạo"}
               </button>
             </div>
           </form>
@@ -433,7 +554,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
           >
             <Title>
               <div className="flex w-full justify-between items-center min-w-[680px]">
-                <span>Category List</span>
+                <span>Danh sách danh mục sản phẩm</span>
                 <Autocomplete
                   sx={{ width: 300 }}
                   onChange={(e, newCatory) =>
@@ -447,7 +568,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                   options={categories}
                   getOptionLabel={(option) => option.name}
                   renderInput={(params) => (
-                    <TextField {...params} label="Categories" />
+                    <TextField {...params} label="Danh mục sản phẩm" />
                   )}
                   renderOption={(props, option) => {
                     return (
@@ -484,16 +605,16 @@ const AdminCategory = (props: AdminCategoryProps) => {
                 />
                 <NavigateButton onClick={handleOpen}>
                   <AddIcon sx={{ marginRight: "0.25rem" }} />
-                  New Category
+                  Tạo mới
                 </NavigateButton>
               </div>
             </Title>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Parent Category</TableCell>
-                  <TableCell>Image</TableCell>
+                  <TableCell>Tên</TableCell>
+                  <TableCell>Danh mục cha</TableCell>
+                  <TableCell>Ảnh</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>
@@ -504,7 +625,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                       <TableCell>
                         <span className="text-center">{item.name}</span>
                       </TableCell>
-                      <TableCell>{item.parentName || "None"}</TableCell>
+                      <TableCell>{item.parentName || "Không có"}</TableCell>
                       <TableCell>
                         <Image
                           loader={imageLoader}
@@ -517,19 +638,33 @@ const AdminCategory = (props: AdminCategoryProps) => {
                           priority
                         ></Image>
                       </TableCell>
-                      <TableCell sx={{ minWidth: "18rem" }}>
-                        <Button
-                          onClick={() => openUpdateModal(item.categoryId)}
-                          sx={{
-                            "&:hover": {
-                              backgroundColor: "transparent",
-                              opacity: "0.6",
-                            },
-                            color: "#639df1",
-                          }}
-                        >
-                          <UpdateIcon />
-                        </Button>
+                      <TableCell>
+                        <div className="flex items-center gap-x-2">
+                          <Button
+                            onClick={() => openUpdateModal(item)}
+                            sx={{
+                              "&:hover": {
+                                backgroundColor: "transparent",
+                                opacity: "0.6",
+                              },
+                              color: "#639df1",
+                            }}
+                          >
+                            <UpdateIcon />
+                          </Button>
+                          <Button
+                            onClick={() => handleChangeCategoryActive(item)}
+                            sx={{
+                              "&:hover": {
+                                backgroundColor: "transparent",
+                                opacity: "0.6",
+                              },
+                              color: "#639df1",
+                            }}
+                          >
+                            {item.isActive && "Ẩn hoạt động"}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

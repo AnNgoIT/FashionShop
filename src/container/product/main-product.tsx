@@ -317,8 +317,8 @@ const MainProduct = (props: MainProductProps) => {
                 alt="saleBanner2"
                 placeholder="blur"
                 className="w-full h-full rounded-lg"
-                width={400}
-                height={0}
+                width={1350}
+                height={250}
               />
             </Box>
           </div>
@@ -551,7 +551,7 @@ const MainProduct = (props: MainProductProps) => {
                 .map((product: Product) => {
                   return (
                     <li
-                      className={`group transition-all hover:cursor-pointer hover:shadow-sd col-span-1`}
+                      className={`group transition-all hover:cursor-pointer hover:shadow-hd col-span-1`}
                       key={product.productId}
                     >
                       <div className="relative outline outline-1 outline-border-color group-hover:outline-none">
@@ -570,17 +570,38 @@ const MainProduct = (props: MainProductProps) => {
                         )}
                         <Link href={`/product/${product.productId}`}>
                           {product.image ? (
-                            <CldImage
-                              loader={imageLoader}
-                              priority
-                              className="group-hover:shadow-sd"
-                              alt="productImage"
-                              src={product.image}
-                              // crop="fill"
-                              width={500}
-                              height={500}
-                              sizes="50vw"
-                            ></CldImage>
+                            <>
+                              <CldImage
+                                loader={imageLoader}
+                                priority
+                                alt="productImage"
+                                src={product.image}
+                                // crop="fill"
+                                width={500}
+                                height={500}
+                                sizes="50vw"
+                              ></CldImage>
+                              <div className="relative w-full">
+                                <div className="px-2 py-1">
+                                  <p
+                                    className="text-text-color text-base pt-[10px] overflow-hidden font-medium
+                           text-ellipsis whitespace-nowrap "
+                                  >
+                                    {product.name}
+                                  </p>
+                                  <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
+                                    {FormatPrice(product.promotionalPriceMin)}{" "}
+                                    VNĐ
+                                    {product.priceMin !=
+                                      product.promotionalPriceMin && (
+                                      <span className="line-through text-text-light-color ml-2 text-sm">
+                                        {FormatPrice(product.priceMin)} VNĐ
+                                      </span>
+                                    )}
+                                  </h3>
+                                </div>
+                              </div>
+                            </>
                           ) : (
                             <Skeleton
                               sx={{
@@ -592,55 +613,6 @@ const MainProduct = (props: MainProductProps) => {
                             />
                           )}
                         </Link>
-                      </div>
-                      <div className="relative w-full">
-                        <div className="px-2 py-1">
-                          <p
-                            className="text-text-color text-base pt-[10px] overflow-hidden font-medium
-                       text-ellipsis whitespace-nowrap "
-                          >
-                            {product.name}
-                          </p>
-                          <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                            {FormatPrice(product.promotionalPriceMin)} VNĐ
-                            {product.priceMin !=
-                              product.promotionalPriceMin && (
-                              <span className="line-through text-text-light-color ml-2 text-sm">
-                                {FormatPrice(product.priceMin)} VNĐ
-                              </span>
-                            )}
-                          </h3>
-                        </div>
-                        <div className="absolute top-0 left-0 right-0 w-full h-full">
-                          <ul
-                            className="bg-[#f5f5f5] group-hover:flex group-hover:animate-appear 
-                                        justify-center items-center h-full hidden"
-                          >
-                            <li
-                              className="border-r border-[#c6c6c6]
-                                        px-[10px] h-[20px]"
-                            >
-                              <div>
-                                <Link href="/cart">
-                                  <FontAwesomeIcon
-                                    className="text-[20px] hover:text-primary-color transition-all"
-                                    icon={faBagShopping}
-                                  />
-                                </Link>
-                              </div>
-                            </li>
-                            <li className="px-[10px] h-[20px]">
-                              <div>
-                                <Link href="/wishlist">
-                                  <FontAwesomeIcon
-                                    className="text-[20px] hover:text-primary-color transition-all"
-                                    icon={faHeart}
-                                  />
-                                </Link>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
                       </div>
                     </li>
                   );

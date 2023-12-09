@@ -87,7 +87,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[96px] relative z-0">
+      <main className="font-montserrat bg-white mt-[76px] lg:mt-[96px] relative z-0">
         <section className="lg:container border-white bg-background px-8 py-4 rounded-md max-md:rounded-none">
           <Breadcrumbs maxItems={2} aria-label="breadcrumb">
             <Link
@@ -107,7 +107,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
           </Breadcrumbs>
         </section>
       </main>
-      <div className="container grid grid-cols-12 max-md:px-4  mt-8 md:mt-12">
+      <div className="container grid grid-cols-12 max-md:px-4  my-8">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12">
           <Carousel
             showStatus={false}
@@ -127,23 +127,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                 <div className="relative z-[0] outline-1 outline outline-border-color group-hover:outline-none">
                   <Image
                     loader={imageLoader}
-                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[32rem]"
-                    alt="productImage"
-                    src={sale_banner1}
-                    width={300}
-                    height={300}
-                  ></Image>
-                </div>
-              </Link>
-            </div>
-            <div
-              className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
-            >
-              <Link href={`/product`}>
-                <div className="relative z-[0] outline-1 outline outline-border-color group-hover:outline-none">
-                  <Image
-                    loader={imageLoader}
-                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[32rem]"
+                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
                     alt="productImage"
                     src={sale_banner3}
                     width={300}
@@ -159,7 +143,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                 <div className="relative z-[0] outline-1 outline outline-border-color group-hover:outline-none">
                   <Image
                     loader={imageLoader}
-                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[32rem]"
+                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
                     alt="productImage"
                     src={sale_banner4}
                     width={300}
@@ -175,7 +159,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                 <div className="relative z-[0] outline-1 outline outline-border-color group-hover:outline-none">
                   <Image
                     loader={imageLoader}
-                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[32rem]"
+                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
                     alt="productImage"
                     src={sale_banner5}
                     width={300}
@@ -256,7 +240,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               className="col-span-full bg-[#f5f5f5] text-lg text-text-color py-4 rounded-sm flex items-center px-4
                 shadow-md"
             >
-              Result for the products : {productByCateList.length}
+              Kết quả tìm kiếm : {productByCateList.length}
             </div>
             {productByCateList && productByCateList.length > 0 ? (
               productByCateList
@@ -264,7 +248,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                 .map((product: Product) => {
                   return (
                     <li
-                      className={`group transition-all hover:cursor-pointer hover:shadow-sd col-span-1`}
+                      className={`group transition-all hover:cursor-pointer hover:shadow-hd col-span-1`}
                       key={product.productId}
                     >
                       <div className="relative outline outline-1 outline-border-color group-hover:outline-none">
@@ -273,27 +257,48 @@ export const ProductByCate = (props: ProductByCateProps) => {
                           new Date()
                         ) <= 72 && (
                           <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
-                            New
+                            Mới
                           </label>
                         )}
                         {product.priceMin != product.promotionalPriceMin && (
                           <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                            Sale
+                            Giảm giá
                           </label>
                         )}
                         <Link href={`/product/${product.productId}`}>
                           {product.image ? (
-                            <CldImage
-                              loader={imageLoader}
-                              priority
-                              className="group-hover:shadow-sd"
-                              alt="productImage"
-                              src={product.image}
-                              // crop="fill"
-                              width={500}
-                              height={500}
-                              // sizes="50vw"
-                            ></CldImage>
+                            <>
+                              <CldImage
+                                loader={imageLoader}
+                                priority
+                                alt="productImage"
+                                src={product.image}
+                                // crop="fill"
+                                width={500}
+                                height={500}
+                                // sizes="50vw"
+                              ></CldImage>
+                              <div className="relative w-full">
+                                <div className="px-2 py-1">
+                                  <p
+                                    className="text-text-color text-base pt-[10px] overflow-hidden font-medium
+                       text-ellipsis whitespace-nowrap "
+                                  >
+                                    {product.name}
+                                  </p>
+                                  <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
+                                    {FormatPrice(product.promotionalPriceMin)}{" "}
+                                    VNĐ
+                                    {product.priceMin !=
+                                      product.promotionalPriceMin && (
+                                      <span className="line-through text-text-light-color ml-2 text-sm">
+                                        {FormatPrice(product.priceMin)} VNĐ
+                                      </span>
+                                    )}
+                                  </h3>
+                                </div>
+                              </div>
+                            </>
                           ) : (
                             <Skeleton
                               sx={{
@@ -305,55 +310,6 @@ export const ProductByCate = (props: ProductByCateProps) => {
                             />
                           )}
                         </Link>
-                      </div>
-                      <div className="relative w-full">
-                        <div className="px-2 py-1">
-                          <p
-                            className="text-text-color text-base pt-[10px] overflow-hidden font-medium
-                       text-ellipsis whitespace-nowrap "
-                          >
-                            {product.name}
-                          </p>
-                          <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                            {FormatPrice(product.promotionalPriceMin)} VNĐ
-                            {product.priceMin !=
-                              product.promotionalPriceMin && (
-                              <span className="line-through text-text-light-color ml-2 text-sm">
-                                {FormatPrice(product.priceMin)} VNĐ
-                              </span>
-                            )}
-                          </h3>
-                        </div>
-                        <div className="absolute top-0 left-0 right-0 w-full h-full">
-                          <ul
-                            className="bg-[#f5f5f5] group-hover:flex group-hover:animate-appear 
-                                        justify-center items-center h-full hidden"
-                          >
-                            <li
-                              className="border-r border-[#c6c6c6]
-                                        px-[10px] h-[20px]"
-                            >
-                              <div>
-                                <Link href="/cart">
-                                  <FontAwesomeIcon
-                                    className="text-[20px] hover:text-primary-color transition-all"
-                                    icon={faBagShopping}
-                                  />
-                                </Link>
-                              </div>
-                            </li>
-                            <li className="px-[10px] h-[20px]">
-                              <div>
-                                <Link href="/wishlist">
-                                  <FontAwesomeIcon
-                                    className="text-[20px] hover:text-primary-color transition-all"
-                                    icon={faHeart}
-                                  />
-                                </Link>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
                       </div>
                     </li>
                   );

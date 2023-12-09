@@ -127,7 +127,7 @@ const Cart = (props: CartProps) => {
             setCartItemChecked((prevItems: cartItem[]) =>
               prevItems.map((item: cartItem) => {
                 const cartItem = currCart.result.cartItems.find(
-                  (item:any) => item.cartItemId == itemId
+                  (item: any) => item.cartItemId == itemId
                 );
                 return item.cartItemId === itemId
                   ? { ...item, quantity: cartItem?.quantity! }
@@ -136,8 +136,8 @@ const Cart = (props: CartProps) => {
             );
           }
         } else if (res.statusCode === 401) {
-          warningMessage("Vui lòng đăng nhập");
-          router.push("/login");
+          warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+          router.refresh();
         }
       } catch (error: any) {}
     }, 1000),
