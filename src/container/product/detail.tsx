@@ -324,7 +324,7 @@ const ProductDetail = (props: ProductDetailProps) => {
       </main>
       <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
-          <div className="col-span-full md:col-span-5 lg:col-span-5 lg:col-start-2 outline outline-1 outline-border-color">
+          <div className="col-span-full md:col-span-5 lg:col-span-5 lg:col-start-2 outline outline-1 outline-border-color h-fit">
             {showProductItem ? (
               <ImageMagnifier
                 src={productItem.image}
@@ -336,7 +336,7 @@ const ProductDetail = (props: ProductDetailProps) => {
               <ImageMagnifier
                 src={productDetail.image}
                 bgImg={productDetail.image}
-                height={484}
+                height={480}
                 zoomLevel={2.5}
               ></ImageMagnifier>
             )}

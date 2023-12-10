@@ -1,3 +1,4 @@
+import { OrderItem } from "@/app/(user)/cart/checkout/page";
 import { UUID } from "crypto";
 
 export type Category = {
@@ -172,4 +173,15 @@ export type Order = {
   address: string;
   phone: string;
   status: string;
+};
+
+export type deliveryItem = orderItem & {
+  deliveryId: number;
+  note: string;
+  isReceived: boolean;
+  isDelivered: boolean;
+  shipperName: string;
+  recipientName: string;
+  shipperId: UUID;
+  checkoutStatus: boolean;
 };

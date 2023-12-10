@@ -67,8 +67,8 @@ const LoginForm = () => {
           router.push("/admin");
           router.refresh();
         } else if (isAdmin.result === "SHIPPER") {
-          router.refresh();
           router.push("/shipper");
+          router.refresh();
         } else {
           successMessage("Đăng nhập thành công");
           router.back();

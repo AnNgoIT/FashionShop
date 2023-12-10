@@ -4,7 +4,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css"; // import Font Awesome CS
 import "react-multi-carousel/lib/styles.css";
 import "react-toastify/dist/ReactToastify.css";
 import type { Metadata } from "next";
-import { CartStateProvider, EWalletProvider, UserProvider } from "@/store";
+import { CartStateProvider, UserProvider } from "@/store";
 import ThemeRegistry from "@/components/ThemeRegistry/ThemeRegistry";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { ToastContainer } from "react-toastify";
@@ -45,7 +45,7 @@ export default function RootLayout({
             theme="light"
           />
           <UserProvider>
-              <CartStateProvider>{children}</CartStateProvider>
+            <CartStateProvider>{children}</CartStateProvider>
           </UserProvider>
         </ThemeRegistry>
       </body>

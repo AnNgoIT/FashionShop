@@ -55,6 +55,14 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
+
+  if (
+    userRole &&
+    userRole.result == "SHIPPER" &&
+    url.includes("shipper") == false
+  ) {
+    return NextResponse.redirect(new URL("/shipper", request.url));
+  }
 }
 
 export const config = {
@@ -69,5 +77,6 @@ export const config = {
     "/wishlist",
     "/cart",
     "/cart/checkout",
+    "/shipper",
   ],
 };
