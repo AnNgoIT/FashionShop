@@ -30,7 +30,7 @@ import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { styled } from "@mui/material/styles";
 import { imageLoader } from "@/features/img-loading";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import SwipeableTemporaryDrawer from "../drawer";
 import NotifyDropdown from "./dropdown/notifications";
 import LoginIcon from "@mui/icons-material/Login";
@@ -80,9 +80,12 @@ type NavProps = {
 };
 
 const TopNav = (props: NavProps) => {
+  const tokenParams = useSearchParams();
+
   const { info, userCart, token, products } = props;
   const { replace } = useRouter();
   const router = useRouter();
+  const pathName = usePathname();
 
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
@@ -93,27 +96,20 @@ const TopNav = (props: NavProps) => {
   const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
   const cookies = getCookies();
 
   useEffect(() => {
-    async function fetchUserCart() {
-      if (hasCookie("accessToken")) {
-        const res = await getUserCart(getCookie("accessToken")!);
-        if (res.success) {
-          setCartItems(res.result.cartItems);
-        }
-      } else {
-        setCartItems([]);
-      }
-    }
-    fetchUserCart();
+    // async function fetchUserCart() {
+    //   if (hasCookie("accessToken")) {
+    //     const res = await getUserCart(cookies.accessToken!);
+    //     if (res.success) {
+    //       setCartItems(res.result.cartItems);
+    //     }
+    //   } else {
+    //     setCartItems([]);
+    //   }
+    // }
+    // fetchUserCart();
     setReloading(true);
     setUser(
       info
@@ -130,7 +126,7 @@ const TopNav = (props: NavProps) => {
             role: "GUEST",
           }
     );
-
+    setCartItems(userCart || []);
     if (token) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
@@ -144,6 +140,11 @@ const TopNav = (props: NavProps) => {
         expires: decodeToken(token.refreshToken!)!,
         maxAge: REFRESH_MAX_AGE,
       });
+    }
+
+    const removeTokenParams = tokenParams.get("accessToken");
+    if (removeTokenParams) {
+      replace(`${pathName}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info, token, userCart]);

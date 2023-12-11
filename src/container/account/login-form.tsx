@@ -10,7 +10,7 @@ import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import { login } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { decodeToken } from "@/features/jwt-decode";
 import { getUserRole } from "@/hooks/useData";
@@ -36,6 +36,17 @@ const LoginForm = () => {
   ) => {
     event.preventDefault();
   };
+
+  // function getUrlParameter(name: string) {
+
+  //   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  //   var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+
+  //   var results = regex.exec(this.props.location.search);
+  //   return results === null
+  //     ? ""
+  //     : decodeURIComponent(results[1].replace(/\+/g, " "));
+  // }
 
   const handleAccountValue = (e: any) => {
     const value = e.target.value;
@@ -154,7 +165,7 @@ const LoginForm = () => {
       >
         Hoặc
       </h1>
-      <div className="col-span-full lg:col-span-6 lg:col-start-4 grid grid-flow-col place-content-center gap-6 pt-2">
+      <div className="col-span-full lg:col-span-8 xl:col-span-6 xl:col-start-4 lg:col-start-3 grid grid-flow-col place-content-center gap-6 pt-2">
         <Link href={GOOGLE_AUTH_URL}>
           <Button
             onClick={handleGoogleLogin}
@@ -168,7 +179,6 @@ const LoginForm = () => {
                 opacity: 0.8,
               },
             }}
-            className="bg-[#E94134] py-3.5 px-7 text-white capitalize"
           >
             <GoogleIcon /> Google
           </Button>
@@ -184,7 +194,6 @@ const LoginForm = () => {
               opacity: 0.8,
             },
           }}
-          className="bg-[#0866FF] py-3.5 px-7 text-white capitalize"
         >
           <FacebookIcon />
           Facebook

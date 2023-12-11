@@ -145,7 +145,14 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
         router.refresh();
       } else if (profile.statusCode == 400) {
         toast.update(id, {
-          render: `Dữ liệu nhập chưa chính xác`,
+          render: `Định dạng số điện thoại chưa chính xác`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+      } else if (profile.statusCode == 409) {
+        toast.update(id, {
+          render: `Số điện thoại đã tồn tại`,
           type: "warning",
           autoClose: 1500,
           isLoading: false,
@@ -156,14 +163,6 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
         toast.update(id, {
           render: `Chỉ hỗ trợ định dạng tệp PNG,JPG,JPEG`,
           type: "warning",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        router.refresh();
-      } else {
-        toast.update(id, {
-          render: `${profile.message}!`,
-          type: "error",
           autoClose: 1500,
           isLoading: false,
         });
@@ -238,9 +237,7 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
           </div>
           <div className="col-span-full lg:col-span-10 lg:col-start-2 text-sm text-[#999] font-medium mb-4">
             <FormControl className="w-full">
-              {/* <InputLabel htmlFor="phone">Phone</InputLabel> */}
               <MuiPhoneNumber
-                disabled={true}
                 // inputProps={{ maxLength: 10 }}
                 value={userInfo.phone}
                 disableAreaCodes={true}

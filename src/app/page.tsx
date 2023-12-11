@@ -39,7 +39,7 @@ export const refreshLogin = async (refreshToken: string) => {
   return res.json(); // parses JSON response into native JavaScript objects
 };
 
-export const fetchUserCredentials = cache(async (accessToken: string) => {
+export const fetchUserCredentials = async (accessToken: string) => {
   const res = await fetch(`${HTTP_PORT}/api/v1/users/profile`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     cache: "no-cache",
@@ -57,7 +57,7 @@ export const fetchUserCredentials = cache(async (accessToken: string) => {
   // You can return Date, Map, Set, etc.
 
   return res.json(); // parses JSON response into native JavaScript objects
-});
+};
 
 export const logout = async (accessToken: string, refreshToken: string) => {
   try {
@@ -82,44 +82,63 @@ export const logout = async (accessToken: string, refreshToken: string) => {
     return res.json(); // parses JSON response into native JavaScript objects
   } catch (error: any) {}
 };
-const Home = async () => {
+const Home = async ({
+  searchParams,
+}: {
+  searchParams?: {
+    accessToken?: string;
+    refreshToken?: string;
+  };
+}) => {
+  const paramsAccessToken = searchParams?.accessToken || "";
+  const paramsRefreshToken = searchParams?.refreshToken || "";
+  const accessToken = getCookie("accessToken", { cookies })!;
   const [userCredentialsRes, userCartRes, categoriesRes, productsRes] =
     await Promise.all([
-      fetchUserCredentials(getCookie("accessToken", { cookies })!),
-      userCart(getCookie("accessToken", { cookies })!),
+      fetchUserCredentials(
+        paramsAccessToken == "" ? accessToken : paramsAccessToken
+      ),
+      userCart(paramsAccessToken == "" ? accessToken : paramsAccessToken),
       fetchAllCategories(),
       prefetchAllProducts(),
     ]);
 
   let userInfo = undefined,
     cart = undefined,
-    fullToken = undefined;
+    fullToken =
+      paramsAccessToken == "" && paramsRefreshToken == ""
+        ? undefined
+        : {
+            accessToken: paramsAccessToken,
+            refreshToken: paramsRefreshToken,
+          };
 
-  if (userCredentialsRes.statusCode === 401) {
-    if (hasCookie("refreshToken", { cookies })) {
-      const refreshToken = getCookie("refreshToken", { cookies })!;
-      const refresh = await refreshLogin(refreshToken);
-      if (refresh.success) {
-        fullToken = refresh.result;
-        const [res, res2] = await Promise.all([
-          fetchUserCredentials(refresh.result.accessToken),
-          userCart(refresh.result.accessToken),
-        ]);
-        userInfo = res.success
-          ? {
-              fullname: res.result.fullname,
-              email: res.result.email,
-              phone: res.result.phone,
-              dob: res.result.dob,
-              gender: res.result.gender,
-              address: res.result.address,
-              avatar: res.result.avatar,
-              ewallet: res.result.ewallet,
-              role: res.result.role,
-            }
-          : undefined;
-        cart = res2.success ? res2.result.cartItems : undefined;
-      }
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refresh = await refreshLogin(refreshToken);
+    if (refresh.success) {
+      fullToken = refresh.result;
+      const [res, res2] = await Promise.all([
+        fetchUserCredentials(refresh.result.accessToken),
+        userCart(refresh.result.accessToken),
+      ]);
+      userInfo = res.success
+        ? {
+            fullname: res.result.fullname,
+            email: res.result.email,
+            phone: res.result.phone,
+            dob: res.result.dob,
+            gender: res.result.gender,
+            address: res.result.address,
+            avatar: res.result.avatar,
+            ewallet: res.result.ewallet,
+            role: res.result.role,
+          }
+        : undefined;
+      cart = res2.success ? res2.result.cartItems : undefined;
     }
   } else {
     userInfo = userCredentialsRes.success

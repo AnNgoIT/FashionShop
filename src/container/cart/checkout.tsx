@@ -64,67 +64,70 @@ const Checkout = (props: CheckOutProps) => {
     const newOrder: OrderInfo = orderInfo;
     if (newOrder.address.length == 0) {
       warningMessage("Vui lòng chọn địa chỉ nhận hàng");
-      return;
-    }
-    const id = toast.loading("Vui lòng chờ...");
-    const res = await makeAnOrder(getCookie("accessToken")!, newOrder);
-    if (res.success) {
-      if (newOrder.paymentMethod == "COD") {
+    } else if (!newOrder.phone) {
+      warningMessage("Vui lòng cung cấp số điện thoại");
+      router.push("/profile");
+    } else {
+      const id = toast.loading("Vui lòng chờ...");
+      const res = await makeAnOrder(getCookie("accessToken")!, newOrder);
+      if (res.success) {
+        if (newOrder.paymentMethod == "COD") {
+          toast.update(id, {
+            render: `Bạn đã đặt hàng thành công`,
+            type: "success",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          router.push("/profile/order-tracking");
+          router.refresh();
+        } else if (newOrder.paymentMethod == "E_WALLET") {
+          const vnPayPayment = await getAuthenticated(
+            `/api/v1/users/customers/orders/${res.result.content.orderId}/checkout-eWallet`,
+            getCookie("accessToken")!
+          );
+          if (vnPayPayment.success) {
+            toast.dismiss();
+            setCookie("isPayment", true);
+            window.location.href = vnPayPayment.result;
+            router.refresh();
+          } else if (vnPayPayment.statusCode == 401) {
+            warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+            router.refresh();
+          } else if (vnPayPayment.status == 500) {
+            toast.update(id, {
+              render: `Lỗi hệ thống`,
+              type: "error",
+              autoClose: 1500,
+              isLoading: false,
+            });
+            router.refresh();
+          } else {
+            toast.update(id, {
+              render: `Dữ liệu truyền chưa chính xác`,
+              type: "error",
+              autoClose: 1500,
+              isLoading: false,
+            });
+          }
+        }
+      } else if (res.status == 500) {
         toast.update(id, {
-          render: `Bạn đã đặt hàng thành công`,
-          type: "success",
+          render: `Lỗi hệ thống`,
+          type: "error",
           autoClose: 1500,
           isLoading: false,
         });
-        router.push("/profile/order-tracking");
+      } else if (res.statusCode == 401) {
+        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
         router.refresh();
-      } else if (newOrder.paymentMethod == "E_WALLET") {
-        const vnPayPayment = await getAuthenticated(
-          `/api/v1/users/customers/orders/${res.result.content.orderId}/checkout-eWallet`,
-          getCookie("accessToken")!
-        );
-        if (vnPayPayment.success) {
-          toast.dismiss();
-          setCookie("isPayment", true);
-          window.location.href = vnPayPayment.result;
-          router.refresh();
-        } else if (vnPayPayment.statusCode == 401) {
-          warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-          router.refresh();
-        } else if (vnPayPayment.status == 500) {
-          toast.update(id, {
-            render: `Lỗi hệ thống`,
-            type: "error",
-            autoClose: 1500,
-            isLoading: false,
-          });
-          router.refresh();
-        } else {
-          toast.update(id, {
-            render: `Dữ liệu truyền chưa chính xác`,
-            type: "error",
-            autoClose: 1500,
-            isLoading: false,
-          });
-        }
+      } else {
+        toast.update(id, {
+          render: `Dữ liệu truyền chưa chính xác`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
       }
-    } else if (res.status == 500) {
-      toast.update(id, {
-        render: `Lỗi hệ thống`,
-        type: "error",
-        autoClose: 1500,
-        isLoading: false,
-      });
-    } else if (res.statusCode == 401) {
-      warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-      router.refresh();
-    } else {
-      toast.update(id, {
-        render: `Dữ liệu truyền chưa chính xác`,
-        type: "error",
-        autoClose: 1500,
-        isLoading: false,
-      });
     }
   };
 

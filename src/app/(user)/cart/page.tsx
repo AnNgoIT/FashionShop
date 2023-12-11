@@ -29,15 +29,16 @@ const CartPage = async () => {
 
   let refreshUserCart = undefined,
     fullToken = undefined;
-  if (res.statusCode == 401) {
-    if (hasCookie("refreshToken", { cookies })) {
-      const refreshToken = getCookie("refreshToken", { cookies })!;
-      const refresh = await refreshLogin(refreshToken);
-      if (refresh.success) {
-        fullToken = refresh.result;
-        const res = await userCart(refresh.result.accessToken);
-        refreshUserCart = res.result;
-      }
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refreshToken", { cookies })
+  ) {
+    const refreshToken = getCookie("refreshToken", { cookies })!;
+    const refresh = await refreshLogin(refreshToken);
+    if (refresh.success) {
+      fullToken = refresh.result;
+      const res = await userCart(refresh.result.accessToken);
+      refreshUserCart = res.result;
     }
   }
 
