@@ -3,6 +3,7 @@ import { getCookie, hasCookie } from "cookies-next";
 import { refreshLogin } from "./useAuth";
 
 export const HTTP_PORT = process.env.NEXT_PUBLIC_API_URL;
+export const OAUTH2_PORT = process.env.NEXT_PUBLIC_OAUTH2_REDIRECT_URL;
 export const ACCESS_MAX_AGE = Number.isInteger(
   parseInt(process.env.NEXT_PUBLIC_ACCESS_MAX_AGE || "")
 )

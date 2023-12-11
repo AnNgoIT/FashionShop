@@ -44,7 +44,11 @@ export async function middleware(request: NextRequest) {
   const userRole = await getRole(authenticatedUser?.value);
 
   if (userRole && userRole.result == "CUSTOMER") {
-    if (userPaths.includes(url) || url.startsWith("/admin")) {
+    if (
+      userPaths.includes(url) ||
+      url.startsWith("/admin") ||
+      url.startsWith("/shipper")
+    ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }

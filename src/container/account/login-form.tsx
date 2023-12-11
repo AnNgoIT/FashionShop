@@ -17,6 +17,7 @@ import { getUserRole } from "@/hooks/useData";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
 import { successMessage } from "@/features/toasting";
+import { GOOGLE_AUTH_URL } from "@/constants";
 
 type Login = {
   email: string;
@@ -82,6 +83,8 @@ const LoginForm = () => {
       setError("Tài khoản hoặc mật khẩu chưa chính xác, vui lòng thử lại!");
     }
   };
+
+  const handleGoogleLogin = async () => {};
 
   return (
     <div
@@ -152,21 +155,24 @@ const LoginForm = () => {
         Hoặc
       </h1>
       <div className="col-span-full lg:col-span-6 lg:col-start-4 grid grid-flow-col place-content-center gap-6 pt-2">
-        <Button
-          sx={{
-            padding: "14px 28px",
-            background: "#E94134",
-            color: "white",
-            textTransform: "capitalize",
-            "&:hover": {
+        <Link href={GOOGLE_AUTH_URL}>
+          <Button
+            onClick={handleGoogleLogin}
+            sx={{
+              padding: "14px 28px",
               background: "#E94134",
-              opacity: 0.8,
-            },
-          }}
-          className="bg-[#E94134] py-3.5 px-7 text-white capitalize"
-        >
-          <GoogleIcon /> Google
-        </Button>
+              color: "white",
+              textTransform: "capitalize",
+              "&:hover": {
+                background: "#E94134",
+                opacity: 0.8,
+              },
+            }}
+            className="bg-[#E94134] py-3.5 px-7 text-white capitalize"
+          >
+            <GoogleIcon /> Google
+          </Button>
+        </Link>
         <Button
           sx={{
             padding: "14px 28px",
