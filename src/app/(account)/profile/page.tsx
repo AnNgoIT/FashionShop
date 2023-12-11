@@ -6,9 +6,9 @@ import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
 const ProfilePage = async () => {
-  const res = await fetchUserCredentials(
-    getCookie("accessToken", { cookies })!
-  );
+  const accessToken = getCookie("accessToken", { cookies })!;
+
+  const res = await fetchUserCredentials(accessToken);
 
   let result = undefined,
     fullToken = undefined;

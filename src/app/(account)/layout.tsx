@@ -11,10 +11,11 @@ import { userCart } from "../(user)/cart/page";
 import { prefetchAllProducts } from "../(guest)/product/page";
 
 const AccountLayout = async ({ children }: { children: ReactNode }) => {
-  const [userCredentialsRes, userCartRes, productsRes] = await Promise.all([
-    fetchUserCredentials(getCookie("accessToken", { cookies })!),
-    userCart(getCookie("accessToken", { cookies })!),
-    prefetchAllProducts(),
+  const accessToken = getCookie("accessToken", { cookies })!;
+
+  const [userCredentialsRes, userCartRes] = await Promise.all([
+    fetchUserCredentials(accessToken),
+    userCart(accessToken),
   ]);
 
   let userInfo = undefined,
@@ -64,6 +65,8 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
       : undefined;
     cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
   }
+
+  const productsRes = await prefetchAllProducts();
 
   const products =
     productsRes && productsRes.success && productsRes.result.content;

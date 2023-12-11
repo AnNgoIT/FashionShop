@@ -90,30 +90,36 @@ const Home = async ({
     refreshToken?: string;
   };
 }) => {
-  const paramsAccessToken = searchParams?.accessToken || "";
-  const paramsRefreshToken = searchParams?.refreshToken || "";
-  const accessToken = getCookie("accessToken", { cookies })!;
-  const [userCredentialsRes, userCartRes, categoriesRes, productsRes] =
-    await Promise.all([
-      fetchUserCredentials(
-        paramsAccessToken == "" ? accessToken : paramsAccessToken
-      ),
-      userCart(paramsAccessToken == "" ? accessToken : paramsAccessToken),
-      fetchAllCategories(),
-      prefetchAllProducts(),
-    ]);
+  const paramsAccessToken = searchParams?.accessToken;
+  const paramsRefreshToken = searchParams?.refreshToken;
 
+  const accessToken =
+    getCookie("accessToken", { cookies }) || paramsAccessToken;
   let userInfo = undefined,
     cart = undefined,
     fullToken =
-      paramsAccessToken == "" && paramsRefreshToken == ""
-        ? undefined
-        : {
-            accessToken: paramsAccessToken,
-            refreshToken: paramsRefreshToken,
-          };
+      paramsAccessToken && paramsRefreshToken ? searchParams : undefined;
+  if (accessToken) {
+    const [userCredentialsRes, userCartRes] = await Promise.all([
+      fetchUserCredentials(accessToken),
+      userCart(accessToken),
+    ]);
 
-  if (
+    userInfo = userCredentialsRes.success
+      ? {
+          fullname: userCredentialsRes.result.fullname,
+          email: userCredentialsRes.result.email,
+          phone: userCredentialsRes.result.phone,
+          dob: userCredentialsRes.result.dob,
+          gender: userCredentialsRes.result.gender,
+          address: userCredentialsRes.result.address,
+          avatar: userCredentialsRes.result.avatar,
+          ewallet: userCredentialsRes.result.ewallet,
+          role: userCredentialsRes.result.role,
+        }
+      : undefined;
+    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
+  } else if (
     !hasCookie("accessToken", { cookies }) &&
     hasCookie("refreshToken", { cookies })
   ) {
@@ -140,22 +146,10 @@ const Home = async ({
         : undefined;
       cart = res2.success ? res2.result.cartItems : undefined;
     }
-  } else {
-    userInfo = userCredentialsRes.success
-      ? {
-          fullname: userCredentialsRes.result.fullname,
-          email: userCredentialsRes.result.email,
-          phone: userCredentialsRes.result.phone,
-          dob: userCredentialsRes.result.dob,
-          gender: userCredentialsRes.result.gender,
-          address: userCredentialsRes.result.address,
-          avatar: userCredentialsRes.result.avatar,
-          ewallet: userCredentialsRes.result.ewallet,
-          role: userCredentialsRes.result.role,
-        }
-      : undefined;
-    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
   }
+
+  const categoriesRes = await fetchAllCategories();
+  const productsRes = await prefetchAllProducts();
 
   const categories =
     categoriesRes && categoriesRes.success && categoriesRes.result.content;

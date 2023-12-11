@@ -29,7 +29,7 @@ export const MyArrowPrev = (clickHandler: () => void, hasPrev: boolean) => {
       onClick={clickHandler}
       className={`${
         hasPrev ? "group hover:bg-primary-color" : ""
-      } myarrow left-0 -translate-x-8`}
+      } myarrow z-[1] left-0 -translate-x-8`}
     >
       <FontAwesomeIcon
         className="group-hover:text-white text-[17px] text-text-light-color"

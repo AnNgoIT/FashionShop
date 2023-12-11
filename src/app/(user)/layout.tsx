@@ -9,9 +9,11 @@ import CartHeader from "@/components/header/cart-header";
 import { userCart } from "./cart/page";
 
 const CartLayout = async ({ children }: { children: ReactNode }) => {
+  const accessToken = getCookie("accessToken", { cookies })!;
+
   const [userCredentialsRes, userCartRes] = await Promise.all([
-    fetchUserCredentials(getCookie("accessToken", { cookies })!),
-    userCart(getCookie("accessToken", { cookies })!),
+    fetchUserCredentials(accessToken),
+    userCart(accessToken),
   ]);
 
   let userInfo = undefined,

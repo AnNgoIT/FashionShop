@@ -115,7 +115,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
             >
               <Link href={`/product`}>
-                <div className="relative z-[0] outline-1 outline outline-border-color group-hover:outline-none">
+                <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
                   <Image
                     loader={imageLoader}
                     className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
@@ -131,7 +131,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
             >
               <Link href={`/product`}>
-                <div className="relative z-[0] outline-1 outline outline-border-color group-hover:outline-none">
+                <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
                   <Image
                     loader={imageLoader}
                     className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
@@ -147,7 +147,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
             >
               <Link href={`/product`}>
-                <div className="relative z-[0] outline-1 outline outline-border-color group-hover:outline-none">
+                <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
                   <Image
                     loader={imageLoader}
                     className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"

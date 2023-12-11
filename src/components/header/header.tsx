@@ -22,7 +22,7 @@ const Header = (props: HeaderProps) => {
       <div
         className={`bg-gradient-to-l md:bg-gradient-to-r from-[#0e9de9] to-[#639df1]
        fixed top-0 left-0 right-0 ${
-         pathName.includes("category") ? "z-[2]" : "z-[1]"
+         pathName.includes("category") ? "z-[1]" : "z-[1]"
        }`}
       >
         <div className="grid grid-cols-12 container">

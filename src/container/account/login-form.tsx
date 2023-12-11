@@ -17,7 +17,7 @@ import { getUserRole } from "@/hooks/useData";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
 import { successMessage } from "@/features/toasting";
-import { GOOGLE_AUTH_URL } from "@/constants";
+import { FACEBOOK_AUTH_URL, GOOGLE_AUTH_URL } from "@/constants";
 
 type Login = {
   email: string;
@@ -183,21 +183,23 @@ const LoginForm = () => {
             <GoogleIcon /> Google
           </Button>
         </Link>
-        <Button
-          sx={{
-            padding: "14px 28px",
-            background: "#0866FF",
-            color: "white",
-            textTransform: "capitalize",
-            "&:hover": {
+        <Link href={FACEBOOK_AUTH_URL}>
+          <Button
+            sx={{
+              padding: "14px 28px",
               background: "#0866FF",
-              opacity: 0.8,
-            },
-          }}
-        >
-          <FacebookIcon />
-          Facebook
-        </Button>
+              color: "white",
+              textTransform: "capitalize",
+              "&:hover": {
+                background: "#0866FF",
+                opacity: 0.8,
+              },
+            }}
+          >
+            <FacebookIcon />
+            Facebook
+          </Button>
+        </Link>
       </div>
       <div className="col-span-full text-sm text-center font-medium text-primary-color">
         <Link
