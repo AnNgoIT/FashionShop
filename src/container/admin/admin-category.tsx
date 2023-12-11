@@ -40,8 +40,6 @@ import { MenuProps } from "./admin-product";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
-import { getUniqueObjects } from "@/features/product";
-import { CldImage } from "next-cloudinary";
 import {
   successMessage,
   warningMessage,
@@ -62,7 +60,7 @@ type UpdateCategory = {
   icon: string;
 };
 const AdminCategory = (props: AdminCategoryProps) => {
-  const { categories, styles,token } = props;
+  const { categories, styles, token } = props;
   const router = useRouter();
   const [category, setCategory] = useState<Category>({
     categoryId: 0,

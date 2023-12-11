@@ -149,6 +149,10 @@ export type productItem = {
   price: number;
   promotionalPrice: number;
   styleValueNames: string[];
+  styleValueByStyles?: {
+    Color: string;
+    Size: string;
+  };
   sku: string;
   createdAt?: Date;
   updatedAt?: Date;

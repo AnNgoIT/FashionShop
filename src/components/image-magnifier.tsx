@@ -1,4 +1,4 @@
-import { CldImage } from "next-cloudinary";
+import Image from "next/image";
 import React, { useState } from "react";
 
 const ImageMagnifier = ({
@@ -24,13 +24,14 @@ const ImageMagnifier = ({
   return (
     // the container
     <div
+      className=" outline outline-1 outline-border-color"
       style={{
         position: "relative",
         height: height,
         width: width,
       }}
     >
-      <CldImage
+      <Image
         onMouseEnter={(e) => {
           // update image size and turn-on magnifier
           const elem = e.currentTarget;

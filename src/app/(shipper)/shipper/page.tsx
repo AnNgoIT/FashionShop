@@ -1,10 +1,9 @@
 import { HTTP_PORT, refreshLogin } from "@/app/page";
 import Shipper from "@/container/shipper/shipper";
 import { getCookie, hasCookie } from "cookies-next";
-import dynamic from "next/dynamic";
 import { cookies } from "next/headers";
 
-export const fetchAllShipperDeliveries = async (accessToken: string) => {
+const fetchAllShipperDeliveries = async (accessToken: string) => {
   const res = await fetch(`${HTTP_PORT}/api/v1/users/shippers/deliveries`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     mode: "same-origin", // no-cors, *cors, same-origin
@@ -24,12 +23,17 @@ export const fetchAllShipperDeliveries = async (accessToken: string) => {
   return res.json();
 };
 
-export default async function ShipperPage() {
-  const accessToken = getCookie("accessToken", { cookies });
+async function ShipperPage() {
+  const accessToken = getCookie("accessToken", { cookies })!;
+
+  const delivery = await fetchAllShipperDeliveries(accessToken);
 
   let refreshDeliveries = [],
     fullToken = undefined;
-  if (!accessToken || hasCookie("refershToken", { cookies })) {
+  if (
+    !hasCookie("accessToken", { cookies }) &&
+    hasCookie("refershToken", { cookies })
+  ) {
     const refreshToken = getCookie("refreshToken", { cookies })!;
     const res = await refreshLogin(refreshToken);
     if (res.success) {
@@ -42,13 +46,11 @@ export default async function ShipperPage() {
       }
     }
   }
-  const delivery =
-    accessToken && (await fetchAllShipperDeliveries(accessToken));
-  const result = delivery?.success
-    ? delivery.result.deliveryList
-    : refreshDeliveries.success
-    ? refreshDeliveries.result.deliveryList
-    : [];
+  const result =
+    delivery && delivery.success
+      ? delivery.result.deliveryList
+      : refreshDeliveries.result.deliveryList;
 
   return <Shipper token={fullToken} deliveries={result} />;
 }
+export default ShipperPage;

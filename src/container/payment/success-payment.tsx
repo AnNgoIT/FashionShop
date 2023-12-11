@@ -2,8 +2,7 @@
 import Link from "next/link";
 import React, { useEffect } from "react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { redirect } from "next/navigation";
-import { hasCookie, deleteCookie, getCookie } from "cookies-next";
+import { hasCookie, deleteCookie } from "cookies-next";
 
 const SuccessPayment = () => {
   useEffect(() => {

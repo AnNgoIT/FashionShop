@@ -3,6 +3,8 @@ import Header from "@/components/header/header";
 import Container from "@/container/container";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
+import { cache } from "react";
+
 import {
   fetchAllCategories,
   prefetchAllProducts,
@@ -37,7 +39,7 @@ export const refreshLogin = async (refreshToken: string) => {
   return res.json(); // parses JSON response into native JavaScript objects
 };
 
-export const fetchUserCredentials = async (accessToken: string) => {
+export const fetchUserCredentials = cache(async (accessToken: string) => {
   const res = await fetch(`${HTTP_PORT}/api/v1/users/profile`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     cache: "no-cache",
@@ -55,7 +57,7 @@ export const fetchUserCredentials = async (accessToken: string) => {
   // You can return Date, Map, Set, etc.
 
   return res.json(); // parses JSON response into native JavaScript objects
-};
+});
 
 export const logout = async (accessToken: string, refreshToken: string) => {
   try {
@@ -80,88 +82,6 @@ export const logout = async (accessToken: string, refreshToken: string) => {
     return res.json(); // parses JSON response into native JavaScript objects
   } catch (error: any) {}
 };
-
-// const Home = async () => {
-//   const res = await fetchUserCredentials(
-//     getCookie("accessToken", { cookies })!
-//   );
-
-//   let cartRes = await userCart(getCookie("accessToken", { cookies })!);
-
-//   let result = undefined,
-//     refreshUserCart = undefined,
-//     fullToken = undefined;
-//   if (res.statusCode == 401 || res.status == 500) {
-//     if (hasCookie("refreshToken", { cookies })) {
-//       const refreshToken = getCookie("refreshToken", { cookies })!;
-//       const refresh = await refreshLogin(refreshToken);
-//       if (refresh.success) {
-//         fullToken = refresh.result;
-//         const res = await fetchUserCredentials(refresh.result.accessToken);
-//         const res2 = await userCart(refresh.result.accessToken);
-//         result = res.result;
-//         refreshUserCart = res2.result;
-//       }
-//     }
-//   }
-
-//   const userInfo: UserInfo | undefined =
-//     res && res.success
-//       ? {
-//           fullname: res.result.fullname,
-//           email: res.result.email,
-//           phone: res.result.phone,
-//           dob: res.result.dob,
-//           gender: res.result.gender,
-//           address: res.result.address,
-//           avatar: res.result.avatar,
-//           ewallet: res.result.ewallet,
-//           role: res.result.role,
-//         }
-//       : result
-//       ? {
-//           fullname: result.fullname,
-//           email: result.email,
-//           phone: result.phone,
-//           dob: result.dob,
-//           gender: result.gender,
-//           address: result.address,
-//           avatar: result.avatar,
-//           ewallet: result.ewallet,
-//           role: res.role,
-//         }
-//       : undefined;
-
-//   const cart =
-//     cartRes && cartRes.success
-//       ? cartRes.result.cartItems
-//       : refreshUserCart
-//       ? refreshUserCart.cartItems
-//       : undefined;
-
-//   const cateRes = await fetchAllCategories();
-//   const productRes = await prefetchAllProducts();
-
-//   const categories: Category[] =
-//     cateRes && cateRes.success && cateRes.result.content;
-//   const products: Product[] =
-//     productRes && productRes.success && productRes.result.content;
-
-//   return (
-//     <>
-//       <Header
-//         userInfo={userInfo}
-//         userCart={cart}
-//         fullToken={fullToken}
-//         products={products}
-//       ></Header>
-//       <main className="font-sans bg-white mt-[4.75rem]">
-//         <Container products={products} categories={categories}></Container>
-//       </main>
-//       <Footer></Footer>
-//     </>
-//   );
-// };
 const Home = async () => {
   const [userCredentialsRes, userCartRes, categoriesRes, productsRes] =
     await Promise.all([

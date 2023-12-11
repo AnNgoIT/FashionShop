@@ -13,11 +13,7 @@ import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
 import Button from "@mui/material/Button";
-import {
-  VisuallyHiddenInput,
-  imageLoader,
-  onImageEdit,
-} from "@/features/img-loading";
+import { VisuallyHiddenInput } from "@/features/img-loading";
 import { UserInfo } from "@/features/types";
 import { UserContext } from "@/store";
 import dayjs from "dayjs";
@@ -156,7 +152,7 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
         });
         router.refresh();
       }
-      if (profile.statusCode == 500) {
+      if (profile.status == 500) {
         toast.update(id, {
           render: `Chỉ hỗ trợ định dạng tệp PNG,JPG,JPEG`,
           type: "warning",
@@ -325,11 +321,13 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
               </div>
             ) : (
               <Image
-                loader={imageLoader}
-                priority={true}
+                unoptimized={true}
+                // loader={imageLoader}
+                // blurDataURL={userInfo.avatar!}
+                // placeholder="blur"
                 className="rounded-full w-[7rem] h-[7rem]"
                 width={300}
-                height={300}
+                height={0}
                 src={userInfo.avatar!}
                 alt="Uploaded Image"
               ></Image>

@@ -1,8 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
 import Carousel from "react-multi-carousel";
 import { FormatPrice } from "@/features/product/FilterAmount";
 

@@ -33,7 +33,6 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import { onlyNumbers } from "@/features/product";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { CldImage } from "next-cloudinary";
 
 const AdminUserPage = () => {
   const users: User[] = [];
@@ -292,7 +291,7 @@ const AdminUserPage = () => {
             </div>
             <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium mb-4">
               {avatar && (
-                <CldImage
+                <Image
                   onClick={() => {
                     handleCustomButtonClick();
                   }}
@@ -301,7 +300,7 @@ const AdminUserPage = () => {
                   height={300}
                   src={avatar}
                   alt="Uploaded Image"
-                ></CldImage>
+                ></Image>
               )}
               <Button
                 sx={{ marginTop: "1rem", background: "#639df1" }}
@@ -365,7 +364,7 @@ const AdminUserPage = () => {
                         key={option.userId}
                         className="flex justify-between items-center px-3 py-2 border-b border-border-color"
                       >
-                        <CldImage
+                        <Image
                           loader={imageLoader}
                           key={`product-img-${option.userId}`}
                           // placeholder="blur"
@@ -377,7 +376,7 @@ const AdminUserPage = () => {
                             option.avatar == "" ? user_img1.src : option.avatar!
                           }
                           priority
-                        ></CldImage>
+                        ></Image>
                         <span key={`product-name-${option.userId}`}>
                           {option.email}
                         </span>
@@ -430,7 +429,7 @@ const AdminUserPage = () => {
                         }}
                         align="center"
                       >
-                        <CldImage
+                        <Image
                           loader={imageLoader}
                           // placeholder="blur"
                           className="w-[6.25rem] h-[6.25rem]"
@@ -439,7 +438,7 @@ const AdminUserPage = () => {
                           alt="productImg"
                           src={item.avatar == "" ? user_img1.src : item.avatar!}
                           priority
-                        ></CldImage>
+                        ></Image>
                       </TableCell>
                       <TableCell align="center">{item.email}</TableCell>
                       <TableCell align="center">{item.phone}</TableCell>

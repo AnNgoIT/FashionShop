@@ -1,9 +1,8 @@
 import { imageLoader } from "@/features/img-loading";
 import { Category } from "@/features/types";
-import { CldImage } from "next-cloudinary";
 import Link from "next/link";
 import React from "react";
-
+import Image from "next/image";
 const CategorySection = ({ categories }: { categories: Category[] }) => {
   return (
     <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 md:mt-12">
@@ -24,7 +23,7 @@ const CategorySection = ({ categories }: { categories: Category[] }) => {
                      hover:cursor-pointer outline outline-1 outline-border-color p-4"
                   >
                     <div className="grid place-content-center">
-                      <CldImage
+                      <Image
                         loader={imageLoader}
                         priority
                         width={400}
@@ -32,7 +31,7 @@ const CategorySection = ({ categories }: { categories: Category[] }) => {
                         className="w-[3rem] h-[3rem] md:w-[4rem] md:h-[4rem]  lg:w-[6rem] lg:h-[6rem] rounded-full"
                         alt="categoryImage"
                         src={category.image}
-                      ></CldImage>
+                      ></Image>
                     </div>
                     <p className="p-4 grid place-content-center truncate max-lg:hidden">
                       {category.name}

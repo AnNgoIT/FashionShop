@@ -17,7 +17,6 @@ import { Brand, Category, Product, StyleValue } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import { diffInHours } from "@/features/product/date";
 import Skeleton from "@mui/material/Skeleton";
-import { CldImage } from "next-cloudinary";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
@@ -571,7 +570,7 @@ const MainProduct = (props: MainProductProps) => {
                         <Link href={`/product/${product.productId}`}>
                           {product.image ? (
                             <>
-                              <CldImage
+                              <Image
                                 loader={imageLoader}
                                 priority
                                 alt="productImage"
@@ -580,7 +579,7 @@ const MainProduct = (props: MainProductProps) => {
                                 width={500}
                                 height={500}
                                 sizes="50vw"
-                              ></CldImage>
+                              ></Image>
                               <div className="relative w-full">
                                 <div className="px-2 py-1">
                                   <p

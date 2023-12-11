@@ -5,61 +5,14 @@ import React from "react";
 import { prefetchAllProducts } from "../../page";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
 
 const fetchStyleVluesById = async (id: string, type: string) => {
-  try {
-    const res = await fetch(
-      `${HTTP_PORT}/api/v1/products/styleValues/?productId=${id}&styleName=${type}`,
-      {
-        method: "GET", // *GET, POST, PUT, DELETE, etc.
-        cache: "no-cache",
-        credentials: "include", // include, *same-origin, omit
-        headers: {
-          "Content-Type": "application/json",
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: "follow", // manual, *follow, error
-        referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      }
-    );
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
-    return res.json();
-  } catch (error) {}
-};
-
-const fetchRelatedProducts = async (id: string) => {
-  try {
-    const res = await fetch(
-      `${HTTP_PORT}/api/v1/products/${id}/related-products`,
-      {
-        method: "GET", // *GET, POST, PUT, DELETE, etc.
-        mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "no-cache",
-        credentials: "include", // include, *same-origin, omit
-        headers: {
-          "Content-Type": "application/json",
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: "follow", // manual, *follow, error
-        referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      }
-    );
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
-
-    return res.json();
-  } catch (error: any) {}
-};
-
-const fetchAllProductItemsByParentId = async (id: string) => {
-  try {
-    const res = await fetch(`${HTTP_PORT}/api/v1/productItems/parent/${id}`, {
+  const res = await fetch(
+    `${HTTP_PORT}/api/v1/products/styleValues/?productId=${id}&styleName=${type}`,
+    {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
-      mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "force-cache",
+      cache: "no-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
@@ -67,11 +20,51 @@ const fetchAllProductItemsByParentId = async (id: string) => {
       },
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    });
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
-    return res.json();
-  } catch (error: any) {}
+    }
+  );
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+  return res.json();
+};
+
+const fetchRelatedProducts = async (id: string) => {
+  const res = await fetch(
+    `${HTTP_PORT}/api/v1/products/${id}/related-products`,
+    {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      mode: "same-origin", // no-cors, *cors, same-origin
+      cache: "no-cache",
+      credentials: "include", // include, *same-origin, omit
+      headers: {
+        "Content-Type": "application/json",
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: "follow", // manual, *follow, error
+      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    }
+  );
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+
+  return res.json();
+};
+
+const fetchAllProductItemsByParentId = async (id: string) => {
+  const res = await fetch(`${HTTP_PORT}/api/v1/productItems/parent/${id}`, {
+    method: "GET", // *GET, POST, PUT, DELETE, etc.
+    mode: "same-origin", // no-cors, *cors, same-origin
+    cache: "no-cache",
+    credentials: "include", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+  });
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+  return res.json();
 };
 const fetchProductsById = async (id: string) => {
   try {
@@ -130,7 +123,7 @@ const ProductDetailPage = async ({ params }: { params: { id: string } }) => {
   );
 };
 
-export async function generateStaticParams() {
+const staticParams = async () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const res = await prefetchAllProducts();
 
@@ -142,6 +135,9 @@ export async function generateStaticParams() {
       id: product.productId.toString(),
     },
   }));
-}
+};
+
+export const generateStaticParams =
+  process.env.NODE_ENV === "production" ? staticParams : undefined;
 
 export default ProductDetailPage;

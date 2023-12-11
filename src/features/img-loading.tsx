@@ -30,25 +30,39 @@ export const responsive = {
   },
   tablet: {
     breakpoint: { max: 1229, min: 768 },
+    items: 4,
+  },
+  mobile: {
+    breakpoint: { max: 768, min: 0 },
+    items: 4,
+  },
+};
+export const defaulResponsive3 = {
+  desktop: {
+    breakpoint: { max: 3000, min: 1230 },
+    items: 3,
+  },
+  tablet: {
+    breakpoint: { max: 1229, min: 768 },
     items: 3,
   },
   mobile: {
     breakpoint: { max: 768, min: 0 },
-    items: 2,
+    items: 3,
   },
 };
 export const defaulResponsive = {
   desktop: {
     breakpoint: { max: 3000, min: 1230 },
-    items: 1,
+    items: 2,
   },
   tablet: {
     breakpoint: { max: 1229, min: 768 },
-    items: 1,
+    items: 2,
   },
   mobile: {
     breakpoint: { max: 768, min: 0 },
-    items: 1,
+    items: 2,
   },
 };
 export const MyRightArrow = ({ onClick, ...rest }: any) => {

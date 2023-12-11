@@ -1,15 +1,10 @@
 "use client";
 import Link from "next/link";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
-import {
-  faCartShopping,
-  faUser,
-  faBell,
-} from "@fortawesome/free-solid-svg-icons"; // import the icons you need
+import { faUser, faBell } from "@fortawesome/free-solid-svg-icons"; // import the icons you need
 import Image from "next/image";
 import { logo } from "@/assests/images";
-import CartDropdown from "./dropdown/cart";
 import { CartContext, UserContext } from "@/store";
 import { user_img2 } from "@/assests/users";
 import Paper from "@mui/material/Paper";
@@ -25,11 +20,9 @@ import {
 } from "cookies-next";
 import { toast } from "react-toastify";
 import { usePathname, useRouter } from "next/navigation";
-import { Product, UserInfo, cartItem } from "@/features/types";
+import { UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
-import { useSearchParams } from "next/navigation";
-import SwipeableTemporaryDrawer from "../drawer";
 import NotifyDropdown from "./dropdown/notifications";
 import LoginIcon from "@mui/icons-material/Login";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
@@ -315,7 +308,7 @@ const CartTopNav = ({
                       alt="avatar"
                       src={info.avatar ? info.avatar : user_img2.src}
                     ></Avatar>
-                    <span className="lowercase text-white text-sm max-md:hidden">
+                    <span className="text-white text-sm max-md:hidden">
                       {info.fullname}
                     </span>
                   </Link>

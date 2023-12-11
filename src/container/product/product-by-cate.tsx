@@ -3,11 +3,7 @@ import { imageLoader, theme } from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { diffInHours } from "@/features/product/date";
 import { Product } from "@/features/types";
-import usePath from "@/hooks/usePath";
-import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Pagination from "@mui/material/Pagination";
-import { CldImage } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -21,12 +17,7 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import HomeIcon from "@mui/icons-material/Home";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { Carousel } from "react-responsive-carousel";
-import {
-  sale_banner1,
-  sale_banner3,
-  sale_banner4,
-  sale_banner5,
-} from "@/assests/images";
+import { sale_banner3, sale_banner4, sale_banner5 } from "@/assests/images";
 import { MyArrowNext, MyArrowPrev, MyIndicator } from "../banner";
 
 type ProductByCateProps = {
@@ -268,7 +259,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                         <Link href={`/product/${product.productId}`}>
                           {product.image ? (
                             <>
-                              <CldImage
+                              <Image
                                 loader={imageLoader}
                                 priority
                                 alt="productImage"
@@ -277,7 +268,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                                 width={500}
                                 height={500}
                                 // sizes="50vw"
-                              ></CldImage>
+                              ></Image>
                               <div className="relative w-full">
                                 <div className="px-2 py-1">
                                   <p

@@ -78,57 +78,10 @@ const defaultTheme = createTheme();
 
 export default function ShipperLayout({
   children,
-  token,
 }: // title,
 {
   children: ReactNode;
-  token?: { accessToken?: string; refreshToken?: string };
 }) {
-  const router = useRouter();
-  const { setUser } = useContext(UserContext);
-
-  const [open, setOpen] = useState(true);
-  const toggleDrawer = () => {
-    setOpen(!open);
-  };
-
-  useEffect(() => {
-    if (token) {
-      setCookie("accessToken", token.accessToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.accessToken!)!,
-        maxAge: ACCESS_MAX_AGE,
-      });
-      setCookie("refreshToken", token.refreshToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.refreshToken!)!,
-        maxAge: REFRESH_MAX_AGE,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
-
-  const handleLogout = async () => {
-    const cookies = getCookies();
-    const res = await logout(cookies.accessToken!, cookies.refreshToken!);
-    if (res.success) {
-      deleteCookie("accessToken");
-      deleteCookie("refreshToken");
-      successMessage("Đăng xuất thành công");
-      // Refresh the current route and fetch new data from the server without
-      // losing client-side browser or React state.
-      router.refresh();
-      router.push("/");
-    } else if (res.statusCode == 401) {
-      deleteCookie("accessToken");
-      deleteCookie("refreshToken");
-      router.push("/login");
-      router.refresh();
-    }
-  };
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <Box sx={{ display: "flex" }}>

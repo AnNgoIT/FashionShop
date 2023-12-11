@@ -1,15 +1,17 @@
+import { productItem } from "../types";
 import { onlyNumbers, MaxAmounts } from "./FilterAmount";
 
-const getUniqueObjects = (dataArray: any[]) => {
-  const uniqueNames = new Set();
-  const uniqueObjects: any[] = [];
+const getUniqueProductItems = (dataArray: productItem[]) => {
+  const uniqueColors: string[] = [];
+  const uniqueItemsByColor: productItem[] = [];
 
-  dataArray.forEach((obj) => {
-    if (!uniqueNames.has(obj.nation)) {
-      uniqueNames.add(obj.nation);
-      uniqueObjects.push(obj);
+  dataArray.forEach((item) => {
+    const color = item.styleValueByStyles && item.styleValueByStyles.Color;
+    if (!uniqueColors.includes(color!)) {
+      uniqueColors.push(color!);
+      uniqueItemsByColor.push(item);
     }
   });
-  return uniqueObjects;
+  return uniqueItemsByColor;
 };
-export { onlyNumbers, MaxAmounts, getUniqueObjects };
+export { onlyNumbers, MaxAmounts, getUniqueProductItems };

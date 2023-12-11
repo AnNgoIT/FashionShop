@@ -1,7 +1,6 @@
 "use client";
 import axios from "axios";
-import { HTTP_PORT, getAuthenticated } from "./useData";
-import useSWR from "swr";
+import { HTTP_PORT } from "./useData";
 
 export const register = async (payload: any) => {
   const config = {
@@ -41,36 +40,6 @@ export const login = async (payload: any) => {
   } catch (error: any) {
     return error.response.data;
   }
-};
-
-export const useUserCredentials = (accessToken: string) => {
-  const { data, error, isLoading } = useSWR(
-    accessToken ? `${HTTP_PORT}/api/v1/users/profile` : null,
-    (url: string) => getAuthenticated(url, accessToken),
-    {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        // Never retry on 404.
-        if (error.status === 404) return;
-
-        // Never retry for a specific key.
-        if (key === "/api/user") return;
-
-        // Only retry up to 3 times.
-        if (retryCount >= 3) return;
-
-        // Retry after 5 seconds.
-        setTimeout(() => revalidate({ retryCount }), 1000);
-      },
-      // suspense: true,
-    }
-  );
-  return {
-    userData: data,
-    isUserDataError: error,
-    isUserDataLoading: isLoading,
-  };
 };
 
 export const deleteUnverifyEmail = async (email: string) => {

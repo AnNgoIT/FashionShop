@@ -7,6 +7,8 @@ import { ReactNode } from "react";
 import { userCart } from "../(user)/cart/page";
 import { prefetchAllProducts } from "./product/page";
 
+export const dynamic = "force-dynamic";
+
 const GuestLayout = async ({ children }: { children: ReactNode }) => {
   const [userCredentialsRes, userCartRes, productsRes] = await Promise.all([
     fetchUserCredentials(getCookie("accessToken", { cookies })!),

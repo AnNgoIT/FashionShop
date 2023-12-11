@@ -1,5 +1,4 @@
 import MainProduct from "@/container/product/main-product";
-import { Brand, Category, Product } from "@/features/types";
 import { HTTP_PORT } from "@/app/page";
 
 export const prefetchAllProducts = async () => {
@@ -29,7 +28,7 @@ export const findProductsByProductName = async (productName: string) => {
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "no-cache",
+        cache: "force-cache",
         credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +49,7 @@ export const fetchAllCategories = async () => {
     const res = await fetch(`${HTTP_PORT}/api/v1/categories`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "no-cache",
+      cache: "force-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +71,7 @@ export const fetchAllBrands = async () => {
     const res = await fetch(`${HTTP_PORT}/api/v1/brands`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "no-cache",
+      cache: "force-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",

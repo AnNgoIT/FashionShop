@@ -1,9 +1,8 @@
 "use client";
 import Image from "next/image";
-import { empty_order, product_1 } from "@/assests/images";
+import { empty_order } from "@/assests/images";
 import React, { useEffect, useState } from "react";
 import InfoIcon from "@mui/icons-material/Info";
-import CancelIcon from "@mui/icons-material/Cancel";
 import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { Total } from "@/features/cart/TotalPrice";

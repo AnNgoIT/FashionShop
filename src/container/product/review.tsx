@@ -32,7 +32,7 @@ const Review = () => {
   return (
     <article>
       <h3 className="text-[22px] leading-[30px] font-semibold mb-5">
-        03 COMMENTS
+        03 bình luận
       </h3>
       <form action="/comments" method="post" className="flex">
         <div className="w-fit mr-1">

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useContext, useEffect, useState, useTransition } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
 import {
   faSearch,
@@ -29,7 +29,6 @@ import { Product, UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { styled } from "@mui/material/styles";
-import { CldImage } from "next-cloudinary";
 import { imageLoader } from "@/features/img-loading";
 import { useSearchParams, useRouter } from "next/navigation";
 import SwipeableTemporaryDrawer from "../drawer";
@@ -184,7 +183,7 @@ const TopNav = (props: NavProps) => {
   };
 
   const handleSearchProducts = () => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
     if (keyword && keyword.trim().length > 0) {
       params.set("query", keyword.trim());
       try {
@@ -272,7 +271,7 @@ const TopNav = (props: NavProps) => {
                         hover:bg-primary-color hover:text-white cursor-pointer border-b border-border-color"
                         >
                           <div className="border border-border-color max-w-[5rem] h-max">
-                            <CldImage
+                            <Image
                               loader={imageLoader}
                               blurDataURL={product.image}
                               placeholder="blur"
@@ -282,7 +281,7 @@ const TopNav = (props: NavProps) => {
                               width={120}
                               height={40}
                               priority
-                            ></CldImage>
+                            ></Image>
                           </div>
                           <span
                             key={product.productId}
@@ -438,7 +437,7 @@ const TopNav = (props: NavProps) => {
                       alt="avatar"
                       src={info.avatar ? info.avatar : user_img2.src}
                     ></Avatar>
-                    <span className="lowercase text-white text-sm max-md:hidden">
+                    <span className=" text-white text-sm max-md:hidden">
                       {info.fullname}
                     </span>
                   </Link>

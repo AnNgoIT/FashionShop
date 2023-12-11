@@ -3,9 +3,7 @@ import { Category } from "@/features/types";
 import { HTTP_PORT } from "@/app/page";
 import { ProductByCate } from "@/container/product/product-by-cate";
 import { fetchAllCategories } from "../../product/page";
-import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
 
 const fetchAllProductByCategoryName = async (categoryName: string) => {
@@ -48,7 +46,7 @@ const ProductByCategoryPage = async ({
   return <ProductByCate productsByCate={product} />;
 };
 
-export async function generateStaticParams() {
+const staticParams = async () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const res = await fetchAllCategories();
 
@@ -60,6 +58,9 @@ export async function generateStaticParams() {
       categoryName: category.name,
     },
   }));
-}
+};
+
+export const generateStaticParams =
+  process.env.NODE_ENV === "production" ? staticParams : undefined;
 
 export default ProductByCategoryPage;

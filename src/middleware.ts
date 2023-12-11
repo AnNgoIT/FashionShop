@@ -34,9 +34,10 @@ export async function middleware(request: NextRequest) {
       if (
         authPaths.includes(url) ||
         url.startsWith("/profile") ||
-        url.startsWith("/admin")
+        url.startsWith("/admin") ||
+        url.startsWith("/shipper")
       ) {
-        return NextResponse.redirect(new URL("/login", request.url));
+        return NextResponse.redirect(new URL("/", request.url));
       }
     }
   }
@@ -78,5 +79,13 @@ export const config = {
     "/cart",
     "/cart/checkout",
     "/shipper",
+    {
+      source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
+      missing: [
+        { type: "header", key: "next-router-prefetch" },
+        { type: "header", key: "purpose", value: "prefetch" },
+      ],
+    },
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

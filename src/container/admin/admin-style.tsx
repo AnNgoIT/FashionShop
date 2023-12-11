@@ -1,6 +1,5 @@
 "use client";
 import Title from "@/components/dashboard/Title";
-import UpdateIcon from "@mui/icons-material/Update";
 import Toolbar from "@mui/material/Toolbar";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
@@ -29,11 +28,8 @@ import { createData } from "@/hooks/useAdmin";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import ListItemText from "@mui/material/ListItemText";
-import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import { decodeToken } from "@/features/jwt-decode";
 
 type AdminStyleProps = {
   styles: Style[];

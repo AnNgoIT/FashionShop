@@ -1,8 +1,9 @@
 "use client";
-import React from "react";
+import { Suspense } from "react";
 import TopNav from "./topnav";
 import { Product, UserInfo, cartItem } from "@/features/types";
 import { usePathname } from "next/navigation";
+import LoadingComponent from "../loading";
 
 export type HeaderProps = {
   userInfo?: UserInfo;
@@ -25,12 +26,14 @@ const Header = (props: HeaderProps) => {
        }`}
       >
         <div className="grid grid-cols-12 container">
-          <TopNav
-            userCart={userCart}
-            products={products}
-            info={userInfo}
-            token={fullToken}
-          ></TopNav>
+          <Suspense fallback={<LoadingComponent />}>
+            <TopNav
+              userCart={userCart}
+              products={products}
+              info={userInfo}
+              token={fullToken}
+            ></TopNav>
+          </Suspense>
         </div>
       </div>
     </header>

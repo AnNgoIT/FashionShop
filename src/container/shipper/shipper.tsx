@@ -14,8 +14,6 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Button from "@mui/material/Button";
 import TablePagination from "@mui/material/TablePagination";
-import FormControl from "@mui/material/FormControl";
-import dayjs from "dayjs";
 import {
   errorMessage,
   successMessage,
@@ -363,7 +361,7 @@ const Shipper = ({
             fontSize: "1.25rem",
           }}
         >
-          {deliveries !== undefined ? deliveries[0].shipperName : ""}
+          {deliveries && deliveries.length > 0 ? deliveries[0].shipperName : ""}
         </Typography>
         <Typography
           onClick={handleLogout}

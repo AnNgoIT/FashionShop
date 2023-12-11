@@ -20,7 +20,7 @@ const ContentSwitcher = ({ description }: any) => {
           }`}
           onClick={() => handleItemClick(0)}
         >
-          Description
+          Mô tả
         </li>
         <li
           className={`product-detail-tags ${
@@ -28,7 +28,7 @@ const ContentSwitcher = ({ description }: any) => {
           }`}
           onClick={() => handleItemClick(1)}
         >
-          Review
+          Bình luận
         </li>
       </ul>
       <div className="py-5">

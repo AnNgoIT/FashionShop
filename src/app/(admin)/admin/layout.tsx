@@ -5,6 +5,8 @@ import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { refreshLogin } from "@/app/page";
 
+// export const runtime = "edge"; // 'nodejs' (default) | 'edge'
+
 const AdminLayout = async ({ children }: { children: ReactNode }) => {
   let fullToken = undefined;
   if (

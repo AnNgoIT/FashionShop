@@ -1,12 +1,9 @@
-import NavigateButton from "@/components/button";
 import { UserInfo } from "@/features/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import React, { useContext, useEffect, useState } from "react";
 import { provinces as provincesData } from "@/store/provinces";

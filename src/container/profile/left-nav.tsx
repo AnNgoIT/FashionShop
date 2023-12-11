@@ -98,7 +98,7 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
                     height={20}
                   />
                 ) : (
-                  <span className="lowercase text-text-color text-sm max-lg:hidden">
+                  <span className=" text-text-color text-sm max-lg:hidden">
                     {userInfo.fullname}
                   </span>
                 )}

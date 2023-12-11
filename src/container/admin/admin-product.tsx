@@ -32,7 +32,6 @@ import {
   modalStyle,
 } from "@/features/img-loading";
 import { product_1 } from "@/assests/images";
-import { CldImage } from "next-cloudinary";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
@@ -697,14 +696,14 @@ const AdminProduct = (props: AdminProductProps) => {
                         <span>{item.name}</span>
                       </TableCell>
                       <TableCell sx={{ minWidth: "5rem", minHeight: "5rem" }}>
-                        <CldImage
+                        <Image
                           className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
                           loader={imageLoader}
                           width={80}
                           height={80}
                           alt="productImg"
                           src={item.image}
-                        ></CldImage>
+                        ></Image>
                       </TableCell>
                       <TableCell
                         sx={{

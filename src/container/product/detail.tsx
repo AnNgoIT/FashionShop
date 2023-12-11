@@ -26,7 +26,14 @@ import {
   warningMessage,
 } from "@/features/toasting";
 import { getUserCart } from "@/hooks/useAuth";
-
+import Carousel from "react-multi-carousel";
+import {
+  defaulResponsive,
+  defaulResponsive3,
+  imageLoader,
+  responsive,
+} from "@/features/img-loading";
+import Image from "next/image";
 type ProductDetailProps = {
   color: StyleValue[];
   size: StyleValue[];
@@ -34,6 +41,9 @@ type ProductDetailProps = {
   productItems: productItem[];
   productDetail: Product;
 };
+
+import Rating from "@mui/material/Rating";
+import { getUniqueProductItems } from "@/features/product";
 
 const ProductDetail = (props: ProductDetailProps) => {
   const { color, size, relatedProduct, productItems, productDetail } = props;
@@ -324,27 +334,87 @@ const ProductDetail = (props: ProductDetailProps) => {
       </main>
       <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
-          <div className="col-span-full md:col-span-5 lg:col-span-5 lg:col-start-2 outline outline-1 outline-border-color h-fit">
+          <div className="col-span-full md:col-span-5 lg:col-span-4 lg:col-start-2 h-fit">
             {showProductItem ? (
               <ImageMagnifier
                 src={productItem.image}
                 bgImg={productItem.image}
-                height={484}
+                height={400}
                 zoomLevel={2.5}
               ></ImageMagnifier>
             ) : (
               <ImageMagnifier
                 src={productDetail.image}
                 bgImg={productDetail.image}
-                height={480}
+                height={400}
                 zoomLevel={2.5}
               ></ImageMagnifier>
+            )}
+            {getUniqueProductItems(productItems).length >= 3 && (
+              <div className="mt-4">
+                <Carousel
+                  swipeable={true}
+                  draggable={false}
+                  ssr={true}
+                  responsive={defaulResponsive3}
+                  autoPlay={true}
+                  infinite={true}
+                  autoPlaySpeed={3000}
+                  keyBoardControl={true}
+                  transitionDuration={500}
+                  arrows={false}
+                  deviceType={"desktop"}
+                  // itemClass="carousel-item"
+                >
+                  {productItems &&
+                    productItems.length > 0 &&
+                    getUniqueProductItems(productItems).map(
+                      (productItem: productItem) => {
+                        return (
+                          <div
+                            className={`group px-1s`}
+                            key={productItem.productItemId}
+                          >
+                            <div className="relative border border-border-color">
+                              <Image
+                                loader={imageLoader}
+                                blurDataURL={productItem.image}
+                                placeholder="blur"
+                                alt="productItemImage"
+                                src={productItem.image}
+                                width={180}
+                                height={120}
+                              ></Image>
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                </Carousel>
+              </div>
             )}
           </div>
           <div className={`col-span-full md:col-span-7 lg:col-span-5`}>
             <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
               {productDetail && productDetail.name}
             </h3>
+            <div className="flex gap-x-4 py-2">
+              {productDetail.rating > 0 && (
+                <Rating
+                  sx={{
+                    color: "#639df1",
+                    borderRight: "1px solid #ccc",
+                    paddingRight: "0.5rem",
+                  }}
+                  name="read-only"
+                  value={productDetail.rating}
+                  readOnly
+                />
+              )}
+              <span className="text-base font-semibold">
+                Đã bán {productDetail.totalSold} sản phẩm
+              </span>
+            </div>
             {showProductItem ? (
               <h1 className="text-primary-color font-bold">
                 {productItem && FormatPrice(productItem.price)} VNĐ

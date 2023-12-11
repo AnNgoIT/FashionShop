@@ -2,13 +2,10 @@ import React from "react";
 import { imageLoader } from "@/features/img-loading";
 import Link from "next/link";
 import { FormatPrice } from "@/features/product/FilterAmount";
-import { faBagShopping, faHeart } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavigateButton from "@/components/button";
 import { Product } from "@/features/types";
 import { diffInHours } from "@/features/product/date";
-import { CldImage } from "next-cloudinary";
-
+import Image from "next/image";
 const Products = ({ products }: { products: Product[] }) => {
   const productList: Product[] = products;
 
@@ -42,7 +39,7 @@ const Products = ({ products }: { products: Product[] }) => {
                     )}
 
                     <Link href={`/product/${product.productId}`}>
-                      <CldImage
+                      <Image
                         loader={imageLoader}
                         // placeholder="blur"
                         priority
@@ -50,7 +47,7 @@ const Products = ({ products }: { products: Product[] }) => {
                         src={product.image}
                         width={500}
                         height={500}
-                      ></CldImage>
+                      ></Image>
                       <div className="relative w-full">
                         <div className="px-2 py-1">
                           <p
