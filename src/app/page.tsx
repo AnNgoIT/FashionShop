@@ -94,32 +94,29 @@ const Home = async ({
   const paramsRefreshToken = searchParams?.refreshToken;
 
   const accessToken =
-    getCookie("accessToken", { cookies }) || paramsAccessToken;
+    getCookie("accessToken", { cookies }) || paramsAccessToken!;
   let userInfo = undefined,
     cart = undefined,
     fullToken =
       paramsAccessToken && paramsRefreshToken ? searchParams : undefined;
-  if (accessToken) {
-    const [userCredentialsRes, userCartRes] = await Promise.all([
-      fetchUserCredentials(accessToken),
-      userCart(accessToken),
-    ]);
+  const [userCredentialsRes] = await Promise.all([
+    fetchUserCredentials(accessToken),
+  ]);
 
-    userInfo = userCredentialsRes.success
-      ? {
-          fullname: userCredentialsRes.result.fullname,
-          email: userCredentialsRes.result.email,
-          phone: userCredentialsRes.result.phone,
-          dob: userCredentialsRes.result.dob,
-          gender: userCredentialsRes.result.gender,
-          address: userCredentialsRes.result.address,
-          avatar: userCredentialsRes.result.avatar,
-          ewallet: userCredentialsRes.result.ewallet,
-          role: userCredentialsRes.result.role,
-        }
-      : undefined;
-    cart = userCartRes.success ? userCartRes.result.cartItems : undefined;
-  } else if (
+  userInfo = userCredentialsRes &&
+    userCredentialsRes.success && {
+      fullname: userCredentialsRes.result.fullname,
+      email: userCredentialsRes.result.email,
+      phone: userCredentialsRes.result.phone,
+      dob: userCredentialsRes.result.dob,
+      gender: userCredentialsRes.result.gender,
+      address: userCredentialsRes.result.address,
+      avatar: userCredentialsRes.result.avatar,
+      ewallet: userCredentialsRes.result.ewallet,
+      role: userCredentialsRes.result.role,
+    };
+
+  if (
     !hasCookie("accessToken", { cookies }) &&
     hasCookie("refreshToken", { cookies })
   ) {
@@ -127,9 +124,8 @@ const Home = async ({
     const refresh = await refreshLogin(refreshToken);
     if (refresh.success) {
       fullToken = refresh.result;
-      const [res, res2] = await Promise.all([
+      const [res] = await Promise.all([
         fetchUserCredentials(refresh.result.accessToken),
-        userCart(refresh.result.accessToken),
       ]);
       userInfo = res.success
         ? {
@@ -144,7 +140,6 @@ const Home = async ({
             role: res.result.role,
           }
         : undefined;
-      cart = res2.success ? res2.result.cartItems : undefined;
     }
   }
 
@@ -160,7 +155,6 @@ const Home = async ({
     <>
       <Header
         userInfo={userInfo}
-        userCart={cart}
         fullToken={fullToken}
         products={products}
       ></Header>

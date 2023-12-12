@@ -89,6 +89,7 @@ const Footer = () => {
           <article className="group my-0 mx-[5px] flex justify-center items-center">
             <Link
               href={"/"}
+              aria-label="Facebook"
               className="group-hover:bg-white transition-colors bg-[#E0E0E0] group-hover:text-black text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
             >
               <FacebookIcon />
@@ -96,6 +97,7 @@ const Footer = () => {
           </article>
           <article className="group my-0 mx-[5px]  flex justify-center items-center">
             <Link
+              aria-label="Github"
               href={"/"}
               className="group-hover:bg-white transition-colors  bg-[#E0E0E0] group-hover:text-black  text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
             >
@@ -105,6 +107,7 @@ const Footer = () => {
           <article className="group my-0 mx-[5px]  flex justify-center items-center">
             <Link
               href={"/"}
+              aria-label="Linkedin"
               className="group-hover:bg-white transition-colors  bg-[#E0E0E0] group-hover:text-black  text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
             >
               <LinkedInIcon />
@@ -113,6 +116,7 @@ const Footer = () => {
           <article className="group my-0 mx-[5px]  flex justify-center items-center">
             <Link
               href={"/"}
+              aria-label="Youtube"
               className="group-hover:bg-white transition-colors   bg-[#E0E0E0] group-hover:text-black e text-[#999999] rounded-[50%] p-[10px] h-[45px] w-[45px]"
             >
               <YouTubeIcon />

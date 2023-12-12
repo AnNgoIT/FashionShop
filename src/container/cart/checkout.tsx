@@ -2,7 +2,7 @@
 import { Total } from "@/features/cart/TotalPrice";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import Link from "next/link";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { CartContext } from "@/store";
 import usePath from "@/hooks/usePath";
@@ -12,7 +12,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import OrderInfo from "@/container/order/info";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import Button from "@mui/material/Button";
-import { makeAnOrder } from "@/hooks/useAuth";
+import { getUserCart, makeAnOrder } from "@/hooks/useAuth";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { redirect, useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ type OrderInfo = {
 const Checkout = (props: CheckOutProps) => {
   const router = useRouter();
   const { userInfo } = props;
-  const { cartItems } = useContext(CartContext);
+  const { cartItems, setCartItems } = useContext(CartContext);
   const [orderInfo, setOrderInfo] = useState<OrderInfo>({
     cartItemIds: cartItems?.map((cart) => cart.cartItemId) || [],
     fullName: userInfo?.fullname || "",
@@ -58,6 +58,11 @@ const Checkout = (props: CheckOutProps) => {
   if (cartItems.length == 0) {
     redirect("/cart");
   }
+
+  useEffect(() => {
+    router.prefetch("/cart");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]);
 
   const handleSubmitOrder = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -133,8 +138,8 @@ const Checkout = (props: CheckOutProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white relative z-0">
-        <section className="lg:container border-white bg-background py-16 md:py-28 px-8">
+      <main className="font-montserrat bg-white lg:mt-[16px] relative z-0">
+        <section className="lg:container border-white bg-background px-8 py-4 rounded-md max-md:rounded-none">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
               <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
@@ -189,10 +194,10 @@ const Checkout = (props: CheckOutProps) => {
           </div>
         </section>
       </main>
-      <section className="container grid grid-cols-12 py-4 max-md:px-4 mt-8 md:mt-12">
+      <section className="container grid grid-cols-12 max-md:px-4 py-4 mt-2">
         <div className="col-span-full grid grid-cols-12 gap-7">
           <div
-            className={`col-span-full lg:col-span-10 lg:col-start-2 outline outline-2 outline-border-color`}
+            className={`col-span-full outline outline-2 outline-border-color`}
           >
             <h1
               className="text-xl font-semibold text-secondary-color max-md:text-center flex 
@@ -209,7 +214,7 @@ const Checkout = (props: CheckOutProps) => {
             ></OrderInfo>
           </div>
           <div
-            className={`col-span-full lg:col-span-10 lg:col-start-2 outline outline-2 outline-border-color`}
+            className={`col-span-full outline outline-2 outline-border-color`}
           >
             <h1
               className="text-xl font-semibold text-secondary-color max-md:text-center flex 
@@ -270,7 +275,7 @@ const Checkout = (props: CheckOutProps) => {
             </ul>
           </div>
           <div
-            className={`col-span-full lg:col-span-10 lg:col-start-2 grid grid-cols-12 outline outline-2 outline-border-color`}
+            className={`col-span-full grid grid-cols-12 outline outline-2 outline-border-color`}
           >
             <h1 className="col-span-full text-xl font-semibold text-secondary-color max-md:text-center flex items-center max-md:justify-center border-b p-3 border-border-color">
               <LocationOnIcon

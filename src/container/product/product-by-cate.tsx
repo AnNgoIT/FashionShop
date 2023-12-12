@@ -93,7 +93,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               className="flex items-center text-lg text-text-color p-2 hover:text-secondary-color hover:cursor-pointer transition-colors"
             >
               <InventoryIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-              Product
+              Category
             </Link>
           </Breadcrumbs>
         </section>
@@ -111,53 +111,38 @@ export const ProductByCate = (props: ProductByCateProps) => {
             renderArrowNext={MyArrowNext}
             className="grid grid-flow-col col-span-full"
           >
-            <div
-              className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
-            >
-              <Link href={`/product`}>
-                <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-                  <Image
-                    loader={imageLoader}
-                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
-                    alt="productImage"
-                    src={sale_banner3}
-                    width={300}
-                    height={300}
-                  ></Image>
-                </div>
-              </Link>
+            <div className="outline-1 outline outline-border-color group-hover:outline-none h-[16rem] md:h-[24rem]">
+              <Image
+                loader={imageLoader}
+                placeholder="blur"
+                className="h-full"
+                alt="productImage"
+                src={sale_banner3}
+                width={1350}
+                height={320}
+              ></Image>
             </div>
-            <div
-              className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
-            >
-              <Link href={`/product`}>
-                <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-                  <Image
-                    loader={imageLoader}
-                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
-                    alt="productImage"
-                    src={sale_banner4}
-                    width={300}
-                    height={300}
-                  ></Image>
-                </div>
-              </Link>
+            <div className="outline-1 outline outline-border-color group-hover:outline-none h-[16rem] md:h-[24rem]">
+              <Image
+                loader={imageLoader}
+                placeholder="blur"
+                className="h-full"
+                alt="productImage"
+                src={sale_banner4}
+                width={1350}
+                height={320}
+              ></Image>
             </div>
-            <div
-              className={`group transition-all hover:cursor-pointer hover:shadow-lg`}
-            >
-              <Link href={`/product`}>
-                <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
-                  <Image
-                    loader={imageLoader}
-                    className="group-hover:shadow-lg h-[16rem] md:h-[24rem] lg:h-[20rem]"
-                    alt="productImage"
-                    src={sale_banner5}
-                    width={300}
-                    height={300}
-                  ></Image>
-                </div>
-              </Link>
+            <div className="outline-1 outline outline-border-color group-hover:outline-none h-[16rem] md:h-[24rem]">
+              <Image
+                loader={imageLoader}
+                placeholder="blur"
+                className="h-full"
+                alt="productImage"
+                src={sale_banner5}
+                width={1350}
+                height={320}
+              ></Image>
             </div>
           </Carousel>
         </div>

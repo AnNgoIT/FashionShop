@@ -1,12 +1,11 @@
 import OrderHistory from "@/container/order/history";
-import { orderItem } from "@/features/types";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getAllOrders } from "../order-tracking/page";
 import { refreshLogin } from "@/hooks/useAuth";
 
 export default async function OrderHistoryPage() {
-  const accessToken = getCookie("accessToken", { cookies }) || "";
+  const accessToken = getCookie("accessToken", { cookies })!;
 
   const res = await getAllOrders(accessToken);
 
@@ -22,10 +21,11 @@ export default async function OrderHistoryPage() {
       result = res.result;
     }
   }
-  const order = res?.success
-    ? (res.result.content as orderItem[])
-    : result
-    ? result.content
-    : undefined;
+  const order =
+    res && res.success
+      ? res.result.content
+      : result
+      ? result.content
+      : undefined;
   return <OrderHistory orders={order} />;
 }

@@ -56,7 +56,7 @@ const Products = ({ products }: { products: Product[] }) => {
                           >
                             {product.name}
                           </p>
-                          <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
+                          <div className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
                             {FormatPrice(product.promotionalPriceMin)} VNĐ
                             {product.priceMin !=
                               product.promotionalPriceMin && (
@@ -64,7 +64,7 @@ const Products = ({ products }: { products: Product[] }) => {
                                 {FormatPrice(product.priceMin)} VNĐ
                               </span>
                             )}
-                          </h3>
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -82,7 +82,7 @@ const Products = ({ products }: { products: Product[] }) => {
           <div
             className={`font-sans col-span-full flex justify-center items-center`}
           >
-            <Link href="/product">
+            <Link href="/product" prefetch={true}>
               <NavigateButton>Xem thêm</NavigateButton>
             </Link>
           </div>

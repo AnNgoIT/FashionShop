@@ -28,15 +28,15 @@ const Blogs = () => {
           </div>
 
           <div className="lg:absolute bottom-0 left-0 right-0 col-span-full sm:col-span-6 md:col-span-8 bg-primary-color text-white p-4">
-            <h5>
+            <div>
               Admin (
               {`${new Date().getDate()} ${new Date().getMonth()} ${new Date().getFullYear()} `}
               )
-            </h5>
-            <h3 className="truncate text-2xl uppercase">
+            </div>
+            <div className="truncate text-2xl uppercase">
               Lorem ipsum dolor sit amet consectetur adipisicing elit.
               Laudantium, velit totam. Facere, veritatis eius!
-            </h3>
+            </div>
             <p className="py-4">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt,
               minus?
@@ -61,15 +61,15 @@ const Blogs = () => {
             </div>
             <div className="col-span-full sm:col-span-6 md:col-span-8 lg:col-span-6 bg-secondary-color text-white">
               <div className="p-4">
-                <h5>
+                <div>
                   Admin (
                   {`${new Date().getDate()} ${new Date().getMonth()} ${new Date().getFullYear()} `}
                   )
-                </h5>
-                <h3 className="truncate text-2xl uppercase">
+                </div>
+                <div className="truncate text-2xl uppercase">
                   Lorem ipsum dolor sit amet consectetur adipisicing elit.
                   Laudantium, velit totam. Facere, veritatis eius!
-                </h3>
+                </div>
                 <p className="py-4">
                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt,
                   minus?
@@ -96,15 +96,15 @@ const Blogs = () => {
             </div>
             <div className="col-span-full sm:col-span-6 md:col-span-8 lg:col-span-6 bg-secondary-color text-white">
               <div className="p-4">
-                <h5>
+                <div>
                   Admin (
                   {`${new Date().getDate()} ${new Date().getMonth()} ${new Date().getFullYear()} `}
                   )
-                </h5>
-                <h3 className="truncate text-2xl uppercase">
+                </div>
+                <div className="truncate text-2xl uppercase">
                   Lorem ipsum dolor sit amet consectetur adipisicing elit.
                   Laudantium, velit totam. Facere, veritatis eius!
-                </h3>
+                </div>
                 <p className="py-4">
                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt,
                   minus?

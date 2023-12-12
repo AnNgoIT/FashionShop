@@ -22,14 +22,12 @@ import { toast } from "react-toastify";
 import { usePathname, useRouter } from "next/navigation";
 import { UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import NotifyDropdown from "./dropdown/notifications";
 import LoginIcon from "@mui/icons-material/Login";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import useLocal from "@/hooks/useLocalStorage";
 
 const CartTopNav = ({
   info,
@@ -44,7 +42,6 @@ const CartTopNav = ({
   const pathName = usePathname();
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
-  const cart = useLocal();
   const { cartItems, setCartItems } = useContext(CartContext);
 
   const cookies = getCookies();
@@ -68,13 +65,11 @@ const CartTopNav = ({
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.accessToken!)!,
-        maxAge: ACCESS_MAX_AGE,
       });
       setCookie("refreshToken", token.refreshToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
-        maxAge: REFRESH_MAX_AGE,
       });
     }
     setUser(
@@ -96,49 +91,32 @@ const CartTopNav = ({
   }, []);
 
   const handleLogout = async () => {
-    try {
-      const id = toast.loading("Đang đăng xuất...");
-      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
-      if (res.success) {
-        deleteCookie("accessToken");
-        deleteCookie("refreshToken");
-        cart.removeItem("cart");
-        toast.update(id, {
-          render: `Đăng xuất thành công`,
-          type: "success",
-          autoClose: 1000,
-          isLoading: false,
-        });
-        // Refresh the current route and fetch new data from the server without
-        // losing client-side browser or React state.
-        router.refresh();
-        router.push("/");
-      } else {
-        deleteCookie("accessToken");
-        deleteCookie("refreshToken");
-        cart.removeItem("cart");
-        toast.update(id, {
-          render: `Vui lòng đăng nhập`,
-          type: "warning",
-          autoClose: 1000,
-          isLoading: false,
-        });
-        router.push("/login");
-      }
-    } catch (error) {
-    } finally {
-      setUser({
-        fullname: null,
-        email: "",
-        phone: "",
-        dob: null,
-        gender: null,
-        address: null,
-        avatar: "",
-        ewallet: 0,
-        role: "GUEST",
+    const id = toast.loading("Đang đăng xuất...");
+    const res = await logout(cookies.accessToken!, cookies.refreshToken!);
+    if (res.success) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
+      toast.update(id, {
+        render: `Đăng xuất thành công`,
+        type: "success",
+        autoClose: 1000,
+        isLoading: false,
+      });
+      // Refresh the current route and fetch new data from the server without
+      // losing client-side browser or React state.
+      router.push("/");
+      router.refresh();
+    } else {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
+      toast.update(id, {
+        render: `Đang đăng xuất...`,
+        type: "warning",
+        autoClose: 1000,
+        isLoading: false,
       });
       router.push("/login");
+      router.refresh();
     }
   };
 
@@ -344,9 +322,7 @@ const CartTopNav = ({
                     Thông báo
                   </span>
                   <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {cartItems && cartItems.length == 0
-                      ? userCart && userCart.length
-                      : cartItems.length}
+                    {info && cartItems ? 0 : 0}
                   </div>
                 </div>
               }

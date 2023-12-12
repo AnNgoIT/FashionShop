@@ -1,6 +1,7 @@
+"use client";
 import Address from "@/container/profile/address";
 
-const AddressPage = async () => {
+const AddressPage = () => {
   return <Address />;
 };
 

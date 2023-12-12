@@ -68,12 +68,12 @@ const Banner = () => {
     >
       <Image
         loader={imageLoader}
-        alt="mainBanner3"
         placeholder="blur"
+        alt="mainBanner3"
         src={main_banner3}
         className="h-full w-full"
-        width={800}
-        height={400}
+        width={1519}
+        height={480}
         priority={true}
       />
       <section className="grid grid-cols-12 p-4 max-md:px-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
@@ -94,7 +94,6 @@ const Banner = () => {
                 className="rounded-lg max-h-[300px] w-full"
                 alt="banner1"
                 src={main_banner1}
-                quality={100}
                 width={485}
                 height={206}
               />
@@ -102,7 +101,6 @@ const Banner = () => {
                 className="rounded-lg max-h-[245px]"
                 width={485}
                 height={206}
-                quality={100}
                 alt="banner2"
                 src={main_banner2}
               />
@@ -112,7 +110,6 @@ const Banner = () => {
                 className="rounded-lg max-h-[245px]"
                 width={485}
                 height={206}
-                quality={100}
                 alt="banner1"
                 src={main_banner1}
               />

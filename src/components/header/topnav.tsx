@@ -76,13 +76,13 @@ type NavProps = {
   info?: UserInfo;
   userCart?: cartItem[];
   token?: { accessToken?: string; refreshToken?: string };
-  products: Product[];
+  products?: Product[];
 };
 
 const TopNav = (props: NavProps) => {
   const tokenParams = useSearchParams();
 
-  const { info, userCart, token, products } = props;
+  const { info, token, products } = props;
   const { replace } = useRouter();
   const router = useRouter();
   const pathName = usePathname();
@@ -90,27 +90,27 @@ const TopNav = (props: NavProps) => {
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [onSearch, setOnSearch] = useState(false);
-  const [isReloading, setReloading] = useState<boolean>(false);
 
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
-
   const cookies = getCookies();
 
   useEffect(() => {
-    // async function fetchUserCart() {
-    //   if (hasCookie("accessToken")) {
-    //     const res = await getUserCart(cookies.accessToken!);
-    //     if (res.success) {
-    //       setCartItems(res.result.cartItems);
-    //     }
-    //   } else {
-    //     setCartItems([]);
-    //   }
-    // }
-    // fetchUserCart();
-    setReloading(true);
+    const removeTokenParams = tokenParams.get("accessToken");
+    if (removeTokenParams) {
+      replace(`${pathName}`, { scroll: false });
+    }
+    async function fetchUserCart() {
+      if (hasCookie("accessToken")) {
+        const res = await getUserCart(getCookie("accessToken")!);
+        if (res.success) {
+          setCartItems(res.result.cartItems);
+        }
+      } else {
+        setCartItems([]);
+      }
+    }
     setUser(
       info
         ? info
@@ -126,54 +126,47 @@ const TopNav = (props: NavProps) => {
             role: "GUEST",
           }
     );
-    setCartItems(userCart || []);
-    if (token) {
+    fetchUserCart();
+    if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.accessToken!)!,
-        maxAge: ACCESS_MAX_AGE,
+        expires: decodeToken(token.accessToken)!,
       });
       setCookie("refreshToken", token.refreshToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.refreshToken!)!,
-        maxAge: REFRESH_MAX_AGE,
+        expires: decodeToken(token.refreshToken)!,
       });
     }
-
-    const removeTokenParams = tokenParams.get("accessToken");
-    if (removeTokenParams) {
-      replace(`${pathName}`);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [info, token, userCart]);
+  }, [info, token]);
 
   const handleLogout = async () => {
+    const id = toast.loading("Đang đăng xuất...");
     const res = await logout(cookies.accessToken!, cookies.refreshToken!);
     if (res.success) {
       deleteCookie("accessToken");
       deleteCookie("refreshToken");
-      successMessage("Đăng xuất thành công");
-      setUser({
-        fullname: null,
-        email: "",
-        phone: "",
-        dob: null,
-        gender: null,
-        address: null,
-        avatar: "",
-        ewallet: 0,
-        role: "GUEST",
+      toast.update(id, {
+        render: `Đăng xuất thành công`,
+        type: "success",
+        autoClose: 1000,
+        isLoading: false,
       });
-      setCartItems([]);
-      router.push("/login");
-      router.refresh();
       // Refresh the current route and fetch new data from the server without
       // losing client-side browser or React state.
-    } else if (res.statusCode == 401) {
+      router.push("/login");
+      router.refresh();
+    } else {
       deleteCookie("accessToken");
       deleteCookie("refreshToken");
+      toast.update(id, {
+        render: `Đang đăng xuất...`,
+        type: "warning",
+        autoClose: 1000,
+        isLoading: false,
+      });
       router.push("/login");
       router.refresh();
     }
@@ -230,6 +223,8 @@ const TopNav = (props: NavProps) => {
             placeholder="Tìm kiếm sản phẩm..."
           ></Input>
           <button
+            type="button"
+            name="search-button"
             onClick={handleSearchProducts}
             className="absolute right-[0.25rem] transition-opacity hover:opacity-60 bg-primary-color
              cursor-pointer text-white grid place-content-center rounded-md py-[10px] px-5"
@@ -255,6 +250,7 @@ const TopNav = (props: NavProps) => {
                   Không tìm thấy sản phẩm
                 </div>
               ) : (
+                products &&
                 products
                   .filter((product) => {
                     const value = keyword.toLowerCase();
@@ -474,9 +470,7 @@ const TopNav = (props: NavProps) => {
                     Thông báo
                   </span>
                   <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {info && cartItems && isReloading
-                      ? cartItems.length
-                      : userCart && userCart!.length}
+                    {info && cartItems && 0}
                   </div>
                 </div>
               }
@@ -498,7 +492,7 @@ const TopNav = (props: NavProps) => {
                   >
                     <CartDropdown
                       userInfo={info!}
-                      userCart={userCart!}
+                      userCart={cartItems}
                     ></CartDropdown>
                   </div>
                 </Paper>
@@ -520,9 +514,7 @@ const TopNav = (props: NavProps) => {
                     </span>
                   </div>
                   <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {info && cartItems && isReloading
-                      ? cartItems.length
-                      : userCart && userCart!.length}
+                    {info && cartItems && cartItems.length}
                   </div>
                 </Link>
               }

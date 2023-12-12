@@ -5,6 +5,7 @@ import React from "react";
 import { prefetchAllProducts } from "../../page";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
 
 const fetchStyleVluesById = async (id: string, type: string) => {

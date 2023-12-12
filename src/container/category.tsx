@@ -10,34 +10,32 @@ const CategorySection = ({ categories }: { categories: Category[] }) => {
         <div className={`col-span-full text-center mb-4 md:mb-8`}>
           <span className="product-title">Danh Mục Sản Phẩm</span>
         </div>
-        <ul className="col-span-full grid grid-cols-4 md:grid-cols-7 gap-1">
+        <ul className="col-span-full grid grid-cols-4 md:grid-cols-7">
           {categories &&
             categories.map((category) => {
               return (
-                <Link
+                <li
                   key={category.categoryId}
-                  href={`/category/${category.name}`}
+                  className=" text-text-color col-span-1 grid grid-cols-1 place-content-center
+                     hover:cursor-pointer border border-[#F2F2F2] p-4 hover:shadow-hd"
                 >
-                  <li
-                    className="bg-background text-text-color col-span-1 grid grid-cols-1 place-content-center hover:opacity-70
-                     hover:cursor-pointer outline outline-1 outline-border-color p-4"
-                  >
+                  <Link href={`/category/${category.name}`}>
                     <div className="grid place-content-center">
                       <Image
                         loader={imageLoader}
                         priority
                         width={400}
                         height={0}
-                        className="w-[3rem] h-[3rem] md:w-[4rem] md:h-[4rem]  lg:w-[6rem] lg:h-[6rem] rounded-full"
+                        className="w-[3rem] h-[3rem] md:w-[4rem] md:h-[4rem] lg:w-[6rem] lg:h-[6rem] rounded-full"
                         alt="categoryImage"
                         src={category.image}
                       ></Image>
                     </div>
-                    <p className="p-4 grid place-content-center truncate max-lg:hidden">
+                    <p className="p-4 grid place-content-center truncate max-xl:hidden">
                       {category.name}
                     </p>
-                  </li>
-                </Link>
+                  </Link>
+                </li>
               );
             })}
         </ul>

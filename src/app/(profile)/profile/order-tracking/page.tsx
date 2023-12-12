@@ -1,6 +1,5 @@
-import { HTTP_PORT, fetchUserCredentials, refreshLogin } from "@/app/page";
+import { HTTP_PORT, refreshLogin } from "@/app/page";
 import OrderTracking from "@/container/order/tracking";
-import { orderItem } from "@/features/types";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
@@ -25,7 +24,7 @@ export async function getAllOrders(accessToken: string) {
 }
 
 export default async function OrderTrackingPage() {
-  const accessToken = getCookie("accessToken", { cookies }) || "";
+  const accessToken = getCookie("accessToken", { cookies })!;
 
   const res = await getAllOrders(accessToken);
 
@@ -41,10 +40,11 @@ export default async function OrderTrackingPage() {
       result = res.result;
     }
   }
-  const order = res?.success
-    ? (res.result.content as orderItem[])
-    : result
-    ? result.content
-    : undefined;
+  const order =
+    res && res.success
+      ? res.result.content
+      : result
+      ? result.content
+      : undefined;
   return <OrderTracking orders={order} />;
 }

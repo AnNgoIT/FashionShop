@@ -7,7 +7,6 @@ import Box from "@mui/material/Box";
 import Popper from "@mui/material/Popper";
 import { bindPopper, usePopupState } from "material-ui-popup-state/hooks";
 import { styled } from "@mui/material/styles";
-import ClientOnly from "@/components/client-only";
 
 const StyledPopper = styled(Popper)(({ theme }) => ({
   // You can replace with `PopperUnstyled` for lower bundle size.

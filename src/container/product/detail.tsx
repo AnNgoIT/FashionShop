@@ -44,6 +44,7 @@ type ProductDetailProps = {
 
 import Rating from "@mui/material/Rating";
 import { getUniqueProductItems } from "@/features/product";
+import { main_product_banner } from "@/assests/images";
 
 const ProductDetail = (props: ProductDetailProps) => {
   const { color, size, relatedProduct, productItems, productDetail } = props;
@@ -216,7 +217,7 @@ const ProductDetail = (props: ProductDetailProps) => {
           if (currCart.success) {
             setCartItems(currCart.result.cartItems);
           }
-          // router.refresh();
+          router.refresh();
         } else if (res.response.data.statusCode === 401) {
           warningMessage("Cần đăng nhập để sử dụng chức năng này");
           router.push("/login");
@@ -255,7 +256,7 @@ const ProductDetail = (props: ProductDetailProps) => {
           resetProductItem();
           const currCart = await getUserCart(getCookie("accessToken")!);
           if (currCart.success) {
-            setCartItems(currCart.result.cartItems);
+            setCartItems([currCart.result.cartItems.at(-1)]);
             router.push("/cart/checkout");
           }
           // router.refresh();
@@ -276,11 +277,18 @@ const ProductDetail = (props: ProductDetailProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[76px] relative z-0">
-        <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
-          <div className={`grid grid-cols-1`}>
+      <main className="font-montserrat bg-white mt-[74px] relative z-0">
+        <section
+          className={`relative lg:container lg:border-y-[10px] border-white py-16 sm:py-20 md:py-28 lg:py-48 px-8`}
+        >
+          <Image
+            className="absolute z-[0] top-0 left-0 bottom-0 w-full h-full"
+            src={main_product_banner}
+            alt="image"
+          ></Image>
+          <div className={`relative z-[1] grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
-              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
+              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-white mb-[10px] lg:mb-0">
                 {title}
               </span>
               <ul className="flex">
@@ -293,12 +301,12 @@ const ProductDetail = (props: ProductDetailProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px]"
+                  transition-all duration-200 capitalize text-[18px] text-white"
                             href={`/${value}`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px]">/</span>
+                          <span className="px-[10px] text-white">/</span>
                         </>
                       );
                     } else if (value === "home") {
@@ -306,17 +314,19 @@ const ProductDetail = (props: ProductDetailProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px]"
+                  transition-all duration-200 capitalize text-[18px] text-white"
                             href={`/`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px]">/</span>
+                          <span className="px-[10px] text-white">/</span>
                         </>
                       );
                     } else
                       thisLink = (
-                        <span className="capitalize text-[18px]">{value}</span>
+                        <span className="capitalize text-[18px] text-white">
+                          {value}
+                        </span>
                       );
                     return (
                       <li
@@ -332,7 +342,7 @@ const ProductDetail = (props: ProductDetailProps) => {
           </div>
         </section>
       </main>
-      <section className="container grid grid-cols-12 mt-8 md:mt-12 p-4">
+      <section className="container grid grid-cols-12 mt-8 md:mt-12 max-lg:px-4">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-7 gap-y-4">
           <div className="col-span-full md:col-span-5 lg:col-span-4 lg:col-start-2 h-fit">
             {showProductItem ? (
@@ -372,11 +382,12 @@ const ProductDetail = (props: ProductDetailProps) => {
                       (productItem: productItem) => {
                         return (
                           <div
-                            className={`group px-1s`}
+                            className={`group`}
                             key={productItem.productItemId}
                           >
-                            <div className="relative border border-border-color">
+                            <div className="relative grid place-items-center">
                               <Image
+                                className="w-[98%] h-[98%] p-0.5 border-2 border-primary-color"
                                 loader={imageLoader}
                                 blurDataURL={productItem.image}
                                 placeholder="blur"
@@ -439,7 +450,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                   )}
               </h1>
             )}
-            <ul className=" border-b-[1px] border-border-color text-base py-4">
+            <ul className=" border-b border-border-color text-base py-4">
               <li className="flex items-center text-sm">
                 <FontAwesomeIcon
                   className="text-primary-color pr-1"
@@ -463,7 +474,7 @@ const ProductDetail = (props: ProductDetailProps) => {
               </li>
             </ul>
             {size && size.length > 0 && (
-              <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
+              <ul className="flex items-center gap-2 py-4 border-b border-border-color text-base">
                 <span className="text-md mr-2 min-w-[5rem]">Sizes:</span>
                 {size.map((item: StyleValue) => {
                   return (
@@ -486,7 +497,7 @@ const ProductDetail = (props: ProductDetailProps) => {
               </ul>
             )}
             {color && color.length > 0 && (
-              <ul className="flex items-center gap-2 py-4 border-b-[1px] border-border-color text-base">
+              <ul className="flex items-center gap-2 py-4 border-b border-border-color text-base">
                 <span className="text-md mr-2 min-w-[5rem]">Màu:</span>
                 {color.map((item) => {
                   return (
@@ -510,7 +521,7 @@ const ProductDetail = (props: ProductDetailProps) => {
               </ul>
             )}
             <div
-              className={`flex items-center gap-2 py-4 border-b-[1px] border-border-color`}
+              className={`flex items-center gap-2 py-4 border-b border-border-color`}
             >
               <span className="text-md mr-2 min-w-[5rem]">Số lượng:</span>
               <QuantityButton onClick={() => handleChangeQuantity(-1)}>

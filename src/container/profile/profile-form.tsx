@@ -49,6 +49,7 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
   );
 
   useEffect(() => {
+    router.prefetch("/profile");
     if (info) {
       setUser(info);
       setUserInfo({
@@ -65,7 +66,7 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
       setAvatar(info.avatar || "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [info]);
+  }, [info, router]);
 
   const handleUserInfo = (e: any) => {
     const value = e.target.value;
@@ -142,6 +143,8 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
           autoClose: 1500,
           isLoading: false,
         });
+        setAvatar("");
+        setIsUpdating(false);
         router.refresh();
       } else if (profile.statusCode == 400) {
         toast.update(id, {
@@ -150,6 +153,9 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
           autoClose: 1500,
           isLoading: false,
         });
+        setAvatar("");
+        setIsUpdating(false);
+        router.refresh();
       } else if (profile.statusCode == 409) {
         toast.update(id, {
           render: `Số điện thoại đã tồn tại`,
@@ -157,6 +163,20 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
           autoClose: 1500,
           isLoading: false,
         });
+
+        setAvatar("");
+        setIsUpdating(false);
+        router.refresh();
+      } else if (profile.statusCode == 500) {
+        toast.update(id, {
+          render: `Không thể tải ảnh nếu sử dụng tài khoản google hoặc facebook`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+
+        setAvatar("");
+        setIsUpdating(false);
         router.refresh();
       }
       if (profile.status == 500) {
@@ -166,10 +186,12 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
           autoClose: 1500,
           isLoading: false,
         });
+
+        setAvatar("");
+        setIsUpdating(false);
         router.refresh();
       }
     }
-    resetUserInfo();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

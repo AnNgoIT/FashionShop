@@ -1,6 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
-import Link from "next/link";
+import React, { useContext, useEffect, useState } from "react";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
@@ -20,7 +19,7 @@ const ForgotPasswordForm = () => {
     event.preventDefault();
     // Xử lý logic ở đây
     // Ví dụ: gửi yêu cầu đến máy chủ
-    const id = toast.loading("Please wait...");
+    const id = toast.loading("Vui lòng đợi...");
     const res = await forgotPassword({ email: email });
     if (res.success) {
       setVerifyEmail({

@@ -28,18 +28,17 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputBase from "@mui/material/InputBase";
 import { ThemeProvider, styled } from "@mui/material/styles";
-import { sale_banner2 } from "@/assests/images";
+import { main_product_banner, sale_banner2 } from "@/assests/images";
 import Box from "@mui/material/Box";
 import MenuIcon from "@mui/icons-material/Menu";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import Image from "next/image";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import { warningMessage } from "@/features/toasting";
-
+import Image from "next/image";
 export const BootstrapInput = styled(InputBase)(({ theme }) => ({
   "& .MuiInputBase-input": {
     borderRadius: 4,
@@ -239,11 +238,18 @@ const MainProduct = (props: MainProductProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[76px] relative z-0">
-        <section className="lg:container lg:border-y-[10px] border-white bg-background py-16 md:py-28 px-8">
-          <div className={`grid grid-cols-1`}>
+      <main className="font-montserrat bg-white mt-[74px] relative z-0">
+        <section
+          className={`relative lg:container lg:border-y-[10px] border-white py-16 sm:py-20 md:py-28 lg:py-48 px-8`}
+        >
+          <Image
+            className="absolute z-[0] top-0 left-0 bottom-0 w-full h-full"
+            src={main_product_banner}
+            alt="image"
+          ></Image>
+          <div className={`relative z-[1] grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
-              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
+              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-white mb-[10px] lg:mb-0">
                 {title}
               </span>
               <ul className="flex">
@@ -256,12 +262,12 @@ const MainProduct = (props: MainProductProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px]"
+                  transition-all duration-200 capitalize text-[18px] text-white"
                             href={`/${value}`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px]">/</span>
+                          <span className="px-[10px] text-white">/</span>
                         </>
                       );
                     } else if (value === "home") {
@@ -269,17 +275,19 @@ const MainProduct = (props: MainProductProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px]"
+                  transition-all duration-200 capitalize text-[18px] text-white"
                             href={`/`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px]">/</span>
+                          <span className="px-[10px] text-white">/</span>
                         </>
                       );
                     } else
                       thisLink = (
-                        <span className="capitalize text-[18px]">{value}</span>
+                        <span className="capitalize text-[18px] text-white">
+                          {value}
+                        </span>
                       );
                     return (
                       <li
@@ -572,7 +580,8 @@ const MainProduct = (props: MainProductProps) => {
                             <>
                               <Image
                                 loader={imageLoader}
-                                priority
+                                placeholder="blur"
+                                blurDataURL={product.image}
                                 alt="productImage"
                                 src={product.image}
                                 // crop="fill"

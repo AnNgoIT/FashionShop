@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import NavigateButton from "@/components/button";
 import GoogleIcon from "@mui/icons-material/Google";
@@ -10,7 +10,7 @@ import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import { login } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { decodeToken } from "@/features/jwt-decode";
 import { getUserRole } from "@/hooks/useData";
@@ -83,10 +83,8 @@ const LoginForm = () => {
           router.refresh();
         } else {
           successMessage("Đăng nhập thành công");
-          router.back();
-          setTimeout(() => {
-            router.refresh();
-          }, 100);
+          // router.back();
+          router.refresh();
         }
       }
     } else {

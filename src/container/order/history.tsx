@@ -117,7 +117,10 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
           </div>
         </Box>
       </Modal>
-      {orderList && orderList.length != 0 ? (
+      {orderList &&
+      orderList.filter(
+        (order) => order.status == "DELIVERED" || order.status == "CANCELLED"
+      ).length > 0 ? (
         <ul className="col-span-full h-[16rem] overflow-auto px-2">
           {orderList
             .filter(
@@ -188,7 +191,13 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
         </ul>
       ) : (
         <div className="col-span-full min-h-[14rem] grid place-content-center">
-          <Image alt="emptyOrder" src={empty_order}></Image>
+          <Image
+            className="w-full h-full"
+            width={200}
+            height={200}
+            alt="emptyOrder"
+            src={empty_order}
+          ></Image>
           <span className="text-center mr-4 pt-2">Lịch sử trống</span>
         </div>
       )}

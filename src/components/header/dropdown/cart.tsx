@@ -3,25 +3,22 @@ import Image from "next/image";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
-import React, { useCallback, useContext, useEffect } from "react";
-import { CartContext, UserContext } from "@/store";
+import React, { useCallback, useContext } from "react";
+import { CartContext } from "@/store";
 import { Total } from "@/features/cart/TotalPrice";
-import { onlyNumbers } from "@/features/product";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { cartItem } from "@/features/types";
 import NavigateButton from "@/components/button";
 import { imageLoader } from "@/features/img-loading";
-import useLocal from "@/hooks/useLocalStorage";
 import { updateCartItem, deleteCartItem, getUserCart } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
-import router from "next/router";
 import { CartProps } from "@/container/cart/cart";
 import { useRouter } from "next/navigation";
 import { successMessage, warningMessage } from "@/features/toasting";
 
 const CartDropdown = (props: CartProps) => {
   const router = useRouter();
-  const { userCart, userInfo } = props;
+  const { userInfo } = props;
   const { cartItems, setCartItems } = useContext(CartContext);
 
   let timeoutId: NodeJS.Timeout | null = null;

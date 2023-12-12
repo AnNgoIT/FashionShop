@@ -186,8 +186,8 @@ const Cart = (props: CartProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white relative z-0">
-        <section className="lg:container border-white bg-background py-16 md:py-28 px-8">
+      <main className="font-montserrat bg-white lg:mt-[16px] relative z-0">
+        <section className="lg:container border-white bg-background px-8 py-4 rounded-md max-md:rounded-none">
           <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
               <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
@@ -242,24 +242,11 @@ const Cart = (props: CartProps) => {
           </div>
         </section>
       </main>
-      {userCart && userCart.length == 0 && (
-        <div className="grid place-content-center h-[25rem]">
-          <Image
-            loader={imageLoader}
-            placeholder="blur"
-            alt="Empty cart"
-            className="w-full h-[18rem]"
-            width={300}
-            height={300}
-            src={empty_cart}
-          ></Image>
-          <Link href="/product" className="flex items-center justify-center">
-            <NavigateButton>Mua hàng ngay</NavigateButton>
-          </Link>
-        </div>
-      )}
+      {/* {userCart && userCart.length == 0 && (
+       
+      )} */}
       {cartItems && cartItems.length > 0 ? (
-        <section className="container grid grid-cols-12 p-4 mt-8 md:mt-12">
+        <section className="container grid grid-cols-12 max-md:px-4 py-4 mt-2">
           <div className="col-span-full grid grid-cols-12 gap-x-7 overflow-auto">
             <table className="col-span-full">
               <thead className="text-center">
@@ -410,7 +397,7 @@ const Cart = (props: CartProps) => {
               </NavigateButton>
             </Link>
           </div>
-          <div className="col-span-full grid grid-cols-12 place-items-center pt-[30px]">
+          <div className="col-span-full grid grid-cols-12 place-items-center max-lg:mt-[2rem]">
             <table className="col-span-full min-w-[400px]">
               <thead className="text-center">
                 <tr className="border border-border-color text-text-color">
@@ -465,7 +452,18 @@ const Cart = (props: CartProps) => {
           </div>
         </section>
       ) : (
-        userCart && userCart.length > 0 && <LoadingComponent />
+        <div className="grid place-content-center h-[25rem]">
+          <Image
+            alt="Empty cart"
+            className="w-full h-[16rem]"
+            width={260}
+            height={260}
+            src={empty_cart}
+          ></Image>
+          <Link href="/product" className="flex items-center justify-center">
+            <NavigateButton>Mua hàng ngay</NavigateButton>
+          </Link>
+        </div>
       )}
     </>
   );

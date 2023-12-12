@@ -4,6 +4,7 @@ import { HTTP_PORT } from "@/app/page";
 import { ProductByCate } from "@/container/product/product-by-cate";
 import { fetchAllCategories } from "../../product/page";
 
+export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
 
 const fetchAllProductByCategoryName = async (categoryName: string) => {

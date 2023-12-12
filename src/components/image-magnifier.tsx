@@ -24,7 +24,7 @@ const ImageMagnifier = ({
   return (
     // the container
     <div
-      className=" outline outline-1 outline-border-color"
+      className="outline outline-1 outline-border-color"
       style={{
         position: "relative",
         height: height,
