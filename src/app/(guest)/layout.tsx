@@ -61,13 +61,13 @@ const GuestLayout = async ({ children }: { children: ReactNode }) => {
 
   const productsRes = await prefetchAllProducts();
 
-  const products =
-    productsRes && productsRes.success && productsRes.result.content;
+  // const products =
+  //   productsRes && productsRes.success && productsRes.result.content;
   return (
     <>
       <Header
         userInfo={userInfo}
-        products={products}
+        // products={products}
         userCart={cart}
         fullToken={fullToken}
       />
