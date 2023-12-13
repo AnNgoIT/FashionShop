@@ -63,10 +63,8 @@ const CartDropdown = (props: CartProps) => {
                 : item
             )
           );
-          router.refresh();
         } else if (res.statusCode === 400) {
           warningMessage("Chỉ được phép tối đa " + res.result + " sản phẩm");
-          router.refresh();
           const currCart = await getUserCart(getCookie("accessToken")!);
           if (currCart.success) {
             setCartItems(currCart.result.cartItems);
@@ -97,7 +95,6 @@ const CartDropdown = (props: CartProps) => {
     if (res.success) {
       successMessage("Xóa thành công");
       setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
-      router.refresh();
     } else if (res.statusCode == 401) {
       warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
       router.refresh();

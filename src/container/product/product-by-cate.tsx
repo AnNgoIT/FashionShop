@@ -18,7 +18,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import { Carousel } from "react-responsive-carousel";
 import { sale_banner3, sale_banner4, sale_banner5 } from "@/assests/images";
-import { MyArrowNext, MyArrowPrev, MyIndicator } from "../banner";
+import { MyIndicator } from "../banner";
 
 type ProductByCateProps = {
   productsByCate: Product[];
@@ -103,19 +103,18 @@ export const ProductByCate = (props: ProductByCateProps) => {
           <Carousel
             showStatus={false}
             showThumbs={false}
-            transitionTime={150}
+            transitionTime={100}
             autoPlay={true}
             infiniteLoop={true}
             renderIndicator={MyIndicator}
-            renderArrowPrev={MyArrowPrev}
-            renderArrowNext={MyArrowNext}
+            showArrows={false}
             className="grid grid-flow-col col-span-full"
           >
             <div className="outline-1 outline outline-border-color group-hover:outline-none h-[16rem] md:h-[24rem]">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="h-full"
+                className="h-full w-full"
                 alt="productImage"
                 src={sale_banner3}
                 width={1350}
@@ -126,7 +125,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="h-full"
+                className="h-full w-full"
                 alt="productImage"
                 src={sale_banner4}
                 width={1350}
@@ -137,7 +136,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="h-full"
+                className="h-full w-full"
                 alt="productImage"
                 src={sale_banner5}
                 width={1350}

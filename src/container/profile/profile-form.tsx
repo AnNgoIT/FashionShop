@@ -49,7 +49,6 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
   );
 
   useEffect(() => {
-    router.prefetch("/profile");
     if (info) {
       setUser(info);
       setUserInfo({
@@ -340,7 +339,6 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
               </div>
             ) : (
               <Image
-                unoptimized={true}
                 // loader={imageLoader}
                 // blurDataURL={userInfo.avatar!}
                 // placeholder="blur"
@@ -348,6 +346,7 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
                 width={300}
                 height={0}
                 src={userInfo.avatar!}
+                priority={true}
                 alt="Uploaded Image"
               ></Image>
             )}

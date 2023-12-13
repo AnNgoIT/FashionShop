@@ -4,6 +4,10 @@ import { HTTP_PORT } from "@/app/page";
 import { ProductByCate } from "@/container/product/product-by-cate";
 import { fetchAllCategories } from "../../product/page";
 
+// const ProductByCate = dynamic(() => import("@/container/product/product-by-cate"), {
+//   ssr: false,
+// });
+
 export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
 
@@ -14,7 +18,7 @@ const fetchAllProductByCategoryName = async (categoryName: string) => {
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "no-cache",
+        cache: "force-cache",
         credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",
@@ -47,7 +51,7 @@ const ProductByCategoryPage = async ({
   return <ProductByCate productsByCate={product} />;
 };
 
-const staticParams = async () => {
+export const generateStaticParams = async () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const res = await fetchAllCategories();
 
@@ -60,8 +64,5 @@ const staticParams = async () => {
     },
   }));
 };
-
-export const generateStaticParams =
-  process.env.NODE_ENV === "production" ? staticParams : undefined;
 
 export default ProductByCategoryPage;

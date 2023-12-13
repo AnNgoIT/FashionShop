@@ -30,26 +30,21 @@ async function ShipperPage() {
 
   let refreshDeliveries = [],
     fullToken = undefined;
-  if (
-    !hasCookie("accessToken", { cookies }) &&
-    hasCookie("refershToken", { cookies })
-  ) {
-    const refreshToken = getCookie("refreshToken", { cookies })!;
-    const res = await refreshLogin(refreshToken);
+  if (delivery.statusCode == 401) {
+    const res = await refreshLogin(getCookie("refreshToken", { cookies })!);
     if (res.success) {
       fullToken = res.result;
       const newProducts = await fetchAllShipperDeliveries(
         res.result.accessToken
       );
       if (newProducts.success) {
-        refreshDeliveries = newProducts;
+        refreshDeliveries = newProducts.result.deliveryList;
       }
     }
   }
-  const result =
-    delivery && delivery.success
-      ? delivery.result.deliveryList
-      : refreshDeliveries.result.deliveryList;
+  const result = delivery?.success
+    ? delivery.result.deliveryList
+    : refreshDeliveries;
 
   return <Shipper token={fullToken} deliveries={result} />;
 }

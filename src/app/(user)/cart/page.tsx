@@ -3,10 +3,9 @@ import Cart from "@/container/cart/cart";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
-export const userCart = async (accessToken: string) => {
+const userCart = async (accessToken: string) => {
   const res = await fetch(`${HTTP_PORT}/api/v1/users/customers/carts`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
-    cache: "no-cache",
     credentials: "include", // include, *same-origin, omit
     headers: {
       "Content-Type": "application/json",

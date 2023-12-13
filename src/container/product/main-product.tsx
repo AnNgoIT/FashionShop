@@ -238,18 +238,11 @@ const MainProduct = (props: MainProductProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[74px] relative z-0">
-        <section
-          className={`relative lg:container lg:border-y-[10px] border-white py-16 sm:py-20 md:py-28 lg:py-48 px-8`}
-        >
-          <Image
-            className="absolute z-[0] top-0 left-0 bottom-0 w-full h-full"
-            src={main_product_banner}
-            alt="image"
-          ></Image>
-          <div className={`relative z-[1] grid grid-cols-1`}>
+      <main className="font-montserrat bg-white mt-[76px] md:mt-[80px] lg:mt-[96px] relative z-0">
+        <section className="lg:container border-white bg-background px-8 py-4 rounded-md max-md:rounded-none">
+          <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
-              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-white mb-[10px] lg:mb-0">
+              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
                 {title}
               </span>
               <ul className="flex">
@@ -262,12 +255,12 @@ const MainProduct = (props: MainProductProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px] text-white"
+                  transition-all duration-200 capitalize text-[18px]"
                             href={`/${value}`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px] text-white">/</span>
+                          <span className="px-[10px]">/</span>
                         </>
                       );
                     } else if (value === "home") {
@@ -275,19 +268,17 @@ const MainProduct = (props: MainProductProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px] text-white"
+                  transition-all duration-200 capitalize text-[18px]"
                             href={`/`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px] text-white">/</span>
+                          <span className="px-[10px]">/</span>
                         </>
                       );
                     } else
                       thisLink = (
-                        <span className="capitalize text-[18px] text-white">
-                          {value}
-                        </span>
+                        <span className="capitalize text-[18px]">{value}</span>
                       );
                     return (
                       <li

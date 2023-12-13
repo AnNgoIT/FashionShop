@@ -37,17 +37,6 @@ const LoginForm = () => {
     event.preventDefault();
   };
 
-  // function getUrlParameter(name: string) {
-
-  //   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-  //   var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-
-  //   var results = regex.exec(this.props.location.search);
-  //   return results === null
-  //     ? ""
-  //     : decodeURIComponent(results[1].replace(/\+/g, " "));
-  // }
-
   const handleAccountValue = (e: any) => {
     const value = e.target.value;
     setAccount({
@@ -72,19 +61,18 @@ const LoginForm = () => {
       setCookie("refreshToken", response.result.refreshToken, {
         expires: decodeToken(response.result.refreshToken)!,
       });
-
       const isAdmin = await getUserRole(response.result.accessToken);
       if (isAdmin.success) {
         if (isAdmin.result === "ADMIN") {
           router.push("/admin");
-          router.refresh();
         } else if (isAdmin.result === "SHIPPER") {
           router.push("/shipper");
-          router.refresh();
         } else {
           successMessage("Đăng nhập thành công");
-          // router.back();
-          router.refresh();
+          setTimeout(() => {
+            router.refresh();
+          }, 100);
+          router.back();
         }
       }
     } else {

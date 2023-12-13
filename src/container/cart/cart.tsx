@@ -117,7 +117,6 @@ const Cart = (props: CartProps) => {
                 : item
             )
           );
-          router.refresh();
         } else if (res.statusCode === 400) {
           warningMessage("Chỉ được phép tối đa " + res.result + " sản phẩm");
           const currCart = await getUserCart(getCookie("accessToken")!);
@@ -169,7 +168,6 @@ const Cart = (props: CartProps) => {
       setCartItemChecked(
         isCartItemChecked.filter((item) => item.cartItemId != itemId)
       );
-      router.refresh();
     }
   };
   const handleCheckout = () => {
@@ -242,9 +240,6 @@ const Cart = (props: CartProps) => {
           </div>
         </section>
       </main>
-      {/* {userCart && userCart.length == 0 && (
-       
-      )} */}
       {cartItems && cartItems.length > 0 ? (
         <section className="container grid grid-cols-12 max-md:px-4 py-4 mt-2">
           <div className="col-span-full grid grid-cols-12 gap-x-7 overflow-auto">
@@ -454,6 +449,7 @@ const Cart = (props: CartProps) => {
       ) : (
         <div className="grid place-content-center h-[25rem]">
           <Image
+            loader={imageLoader}
             alt="Empty cart"
             className="w-full h-[16rem]"
             width={260}

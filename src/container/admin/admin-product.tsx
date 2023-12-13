@@ -40,9 +40,13 @@ import { getCookie, setCookie } from "cookies-next";
 import { createData } from "@/hooks/useAdmin";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import AdminProductItem from "./admin-product-item";
+// import AdminProductItem from "./admin-product-item";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import dynamic from "next/dynamic";
+
+const AdminProductItem = dynamic(() => import("./admin-product-item"), {
+  ssr: false,
+});
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -110,13 +114,11 @@ const AdminProduct = (props: AdminProductProps) => {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.accessToken!)!,
-        maxAge: ACCESS_MAX_AGE,
       });
       setCookie("refreshToken", token.refreshToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
-        maxAge: REFRESH_MAX_AGE,
       });
     }
   }, [products, rowsPerPage, token]);

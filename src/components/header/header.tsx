@@ -1,9 +1,6 @@
 "use client";
-import { Suspense } from "react";
 import TopNav from "./topnav";
 import { Product, UserInfo, cartItem } from "@/features/types";
-import { usePathname } from "next/navigation";
-import LoadingComponent from "../loading";
 
 export type HeaderProps = {
   userInfo?: UserInfo;
