@@ -4,7 +4,7 @@ import { User } from "@/features/types";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
-async function getAllUsersByRoleName(
+export async function getAllUsersByRoleName(
   accessToken: string,
   refreshToken: string,
   roleName: string

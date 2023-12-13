@@ -88,10 +88,11 @@ const Banner = () => {
           <Carousel
             showStatus={false}
             showThumbs={false}
+            swipeable={true}
             transitionTime={150}
             autoPlay={true}
             infiniteLoop={true}
-            showArrows={false}
+            // showArrows={false}
             renderIndicator={MyIndicator}
             className="grid grid-flow-col"
           >

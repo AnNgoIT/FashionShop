@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const getRole = async (accessToken: string | undefined) => {
-  if (accessToken) return null;
+  if (!accessToken) return null;
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/role`,
     {
@@ -37,8 +37,7 @@ export async function middleware(request: NextRequest) {
     }
   }
   const userRole = await getRole(authenticatedUser?.value);
-
-  if (userRole && userRole.result == "CUSTOMER") {
+  if (userRole && userRole.success && userRole.result == "CUSTOMER") {
     if (
       userPaths.includes(url) ||
       url.startsWith("/admin") ||
@@ -50,6 +49,7 @@ export async function middleware(request: NextRequest) {
 
   if (
     userRole &&
+    userRole.success &&
     userRole.result == "ADMIN" &&
     url.includes("admin") == false
   ) {
@@ -58,6 +58,7 @@ export async function middleware(request: NextRequest) {
 
   if (
     userRole &&
+    userRole.success &&
     userRole.result == "SHIPPER" &&
     url.includes("shipper") == false
   ) {

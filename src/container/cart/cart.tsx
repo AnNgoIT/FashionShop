@@ -405,14 +405,14 @@ const Cart = (props: CartProps) => {
                 <tr>
                   <td className="w-full p-3 border border-[#dee2e6]">
                     <article className="flex justify-between items-center">
-                      <h1 className="text-text-color">Tổng tiền giỏ hàng </h1>
+                      <h1 className="text-text-color">Tiền sản phẩm </h1>
                       <span className="text-primary-color font-semibold">{`${FormatPrice(
                         Total(isCartItemChecked)
                       )} VNĐ`}</span>
                     </article>
                   </td>
                 </tr>
-                <tr>
+                {/* <tr>
                   <td className="w-full p-3 border border-[#dee2e6]">
                     <article className="flex justify-between items-center">
                       <h1 className="text-text-color">Phí vận chuyển </h1>
@@ -421,7 +421,7 @@ const Cart = (props: CartProps) => {
                       )} VNĐ`}</span>
                     </article>
                   </td>
-                </tr>
+                </tr> */}
                 <tr>
                   <td className="w-full p-3 border border-[#dee2e6]">
                     <article className="flex justify-between items-center">
@@ -437,7 +437,7 @@ const Cart = (props: CartProps) => {
             </table>
             <div className="col-span-full mt-6">
               <NavigateButton onClick={handleCheckout}>
-                Thanh toán
+                Tiếp tục
                 <FontAwesomeIcon
                   className="text-[12px] ml-1"
                   icon={faChevronRight}

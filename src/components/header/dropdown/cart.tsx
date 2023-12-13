@@ -153,9 +153,12 @@ const CartDropdown = (props: CartProps) => {
                             />
                           </button>
                         </div>
-                        <p className="font-bold mb-4">{`${FormatPrice(
+                        <p className="font-bold">{`${FormatPrice(
                           item.productPrice
                         )} VNĐ`}</p>
+                        <p className="font-bold mb-1">
+                          {item.styleValues.join("-")}
+                        </p>
                         <div className="flex items-center mb-2 text-text-light-color">
                           <label>Qty:</label>
                           <div className="inline-flex">
@@ -182,12 +185,6 @@ const CartDropdown = (props: CartProps) => {
                 );
               })}
           </ul>
-          <div className="flex justify-between text-text-light-color text-sm">
-            <span>Phí vận chuyển:</span>
-            <strong className="font-black">
-              {`${FormatPrice(45000)} VNĐ`}
-            </strong>
-          </div>
           <div className="flex justify-between text-text-light-color text-sm">
             <span>Thành tiền:</span>
             <strong className="font-black">
