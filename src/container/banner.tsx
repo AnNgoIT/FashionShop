@@ -91,6 +91,8 @@ const Banner = () => {
           >
             <article className="grid grid-flow-col gap-x-4">
               <Image
+                loader={imageLoader}
+                placeholder="blur"
                 className="rounded-lg max-h-[300px] w-full"
                 alt="banner1"
                 src={main_banner1}
@@ -98,6 +100,8 @@ const Banner = () => {
                 height={206}
               />
               <Image
+                loader={imageLoader}
+                placeholder="blur"
                 className="rounded-lg max-h-[245px]"
                 width={485}
                 height={206}

@@ -4,6 +4,11 @@ import { Product } from "@/features/types";
 import React from "react";
 import { prefetchAllProducts } from "../../page";
 import { notFound } from "next/navigation";
+// import dynamic from "next/dynamic";
+
+// const ProductDetail = dynamic(() => import("@/container/product/detail"), {
+//   ssr: false,
+// });
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
@@ -124,7 +129,7 @@ const ProductDetailPage = async ({ params }: { params: { id: string } }) => {
   );
 };
 
-const staticParams = async () => {
+export const generateStaticParams = async () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const res = await prefetchAllProducts();
 
@@ -137,8 +142,5 @@ const staticParams = async () => {
     },
   }));
 };
-
-export const generateStaticParams =
-  process.env.NODE_ENV === "production" ? staticParams : undefined;
 
 export default ProductDetailPage;

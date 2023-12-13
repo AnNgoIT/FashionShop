@@ -1,4 +1,3 @@
-"use client";
 import OTPForm from "@/container/account/otp-form";
 import React from "react";
 

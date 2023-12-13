@@ -95,13 +95,11 @@ const AdminCategory = (props: AdminCategoryProps) => {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.accessToken!)!,
-        maxAge: ACCESS_MAX_AGE,
       });
       setCookie("refreshToken", token.refreshToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
-        maxAge: REFRESH_MAX_AGE,
       });
     }
   }, [categories, rowsPerPage, token]);

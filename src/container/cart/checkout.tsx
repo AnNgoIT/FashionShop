@@ -12,7 +12,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import OrderInfo from "@/container/order/info";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import Button from "@mui/material/Button";
-import { getUserCart, makeAnOrder } from "@/hooks/useAuth";
+import { makeAnOrder } from "@/hooks/useAuth";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { redirect, useRouter } from "next/navigation";
@@ -21,7 +21,6 @@ import { getAuthenticated } from "@/hooks/useData";
 
 type CheckOutProps = {
   userInfo?: UserInfo;
-  userCart?: cartItem[];
 };
 
 type OrderInfo = {
@@ -35,7 +34,7 @@ type OrderInfo = {
 const Checkout = (props: CheckOutProps) => {
   const router = useRouter();
   const { userInfo } = props;
-  const { cartItems, setCartItems } = useContext(CartContext);
+  const { cartItems } = useContext(CartContext);
   const [orderInfo, setOrderInfo] = useState<OrderInfo>({
     cartItemIds: cartItems?.map((cart) => cart.cartItemId) || [],
     fullName: userInfo?.fullname || "",
@@ -58,11 +57,6 @@ const Checkout = (props: CheckOutProps) => {
   if (cartItems.length == 0) {
     redirect("/cart");
   }
-
-  useEffect(() => {
-    router.prefetch("/cart");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
 
   const handleSubmitOrder = async (e: { preventDefault: () => void }) => {
     e.preventDefault();

@@ -4,15 +4,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBagShopping,
   faCheck,
-  faHeart,
   faMinus,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { FormatPrice, MaxAmounts } from "@/features/product/FilterAmount";
 import { QuantityButton } from "@/components/button";
-import RelatedProduct from "@/container/product/related-product";
-import ContentSwitcher from "@/container/product/content-switcher";
+// import RelatedProduct from "@/container/product/related-product";
+// import ContentSwitcher from "@/container/product/content-switcher";
 import ImageMagnifier from "@/components/image-magnifier";
 import { addProductItemToCart } from "@/hooks/useProducts";
 import { Product, StyleValue, productItem } from "@/features/types";
@@ -27,12 +26,7 @@ import {
 } from "@/features/toasting";
 import { getUserCart } from "@/hooks/useAuth";
 import Carousel from "react-multi-carousel";
-import {
-  defaulResponsive,
-  defaulResponsive3,
-  imageLoader,
-  responsive,
-} from "@/features/img-loading";
+import { defaulResponsive3, imageLoader } from "@/features/img-loading";
 import Image from "next/image";
 type ProductDetailProps = {
   color: StyleValue[];
@@ -44,7 +38,16 @@ type ProductDetailProps = {
 
 import Rating from "@mui/material/Rating";
 import { getUniqueProductItems } from "@/features/product";
-import { main_product_banner } from "@/assests/images";
+import dynamic from "next/dynamic";
+
+const ContentSwitcher = dynamic(
+  () => import("@/container/product/content-switcher"),
+  { ssr: false }
+);
+const RelatedProduct = dynamic(
+  () => import("@/container/product/related-product"),
+  { ssr: false }
+);
 
 const ProductDetail = (props: ProductDetailProps) => {
   const { color, size, relatedProduct, productItems, productDetail } = props;
@@ -217,7 +220,6 @@ const ProductDetail = (props: ProductDetailProps) => {
           if (currCart.success) {
             setCartItems(currCart.result.cartItems);
           }
-          router.refresh();
         } else if (res.response.data.statusCode === 401) {
           warningMessage("Cần đăng nhập để sử dụng chức năng này");
           router.push("/login");
@@ -277,18 +279,11 @@ const ProductDetail = (props: ProductDetailProps) => {
 
   return (
     <>
-      <main className="font-montserrat bg-white mt-[74px] relative z-0">
-        <section
-          className={`relative lg:container lg:border-y-[10px] border-white py-16 sm:py-20 md:py-28 lg:py-48 px-8`}
-        >
-          <Image
-            className="absolute z-[0] top-0 left-0 bottom-0 w-full h-full"
-            src={main_product_banner}
-            alt="image"
-          ></Image>
-          <div className={`relative z-[1] grid grid-cols-1`}>
+      <main className="font-montserrat bg-white mt-[76px] md:mt-[80px] lg:mt-[96px] relative z-0">
+        <section className="lg:container border-white bg-background px-8 py-4 rounded-md max-md:rounded-none">
+          <div className={`grid grid-cols-1`}>
             <div className="flex items-center justify-center flex-col lg:flex-row lg:justify-between ">
-              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-white mb-[10px] lg:mb-0">
+              <span className="text-2xl leading-[30px] tracking-[1px] uppercase font-semibold text-text-color mb-[10px] lg:mb-0">
                 {title}
               </span>
               <ul className="flex">
@@ -301,12 +296,12 @@ const ProductDetail = (props: ProductDetailProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px] text-white"
+                  transition-all duration-200 capitalize text-[18px]"
                             href={`/${value}`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px] text-white">/</span>
+                          <span className="px-[10px]">/</span>
                         </>
                       );
                     } else if (value === "home") {
@@ -314,19 +309,17 @@ const ProductDetail = (props: ProductDetailProps) => {
                         <>
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
-                  transition-all duration-200 capitalize text-[18px] text-white"
+                  transition-all duration-200 capitalize text-[18px]"
                             href={`/`}
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px] text-white">/</span>
+                          <span className="px-[10px]">/</span>
                         </>
                       );
                     } else
                       thisLink = (
-                        <span className="capitalize text-[18px] text-white">
-                          {value}
-                        </span>
+                        <span className="capitalize text-[18px]">{value}</span>
                       );
                     return (
                       <li
@@ -456,7 +449,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                   className="text-primary-color pr-1"
                   icon={faCheck}
                 />
-                <p className="leading-7">Chính sách bảo hành chật lượng</p>
+                <p className="leading-7">Chính sách bảo hành chất lượng</p>
               </li>
               <li className="flex items-center text-sm">
                 <FontAwesomeIcon

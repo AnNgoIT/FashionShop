@@ -107,10 +107,10 @@ const TopNav = (props: NavProps) => {
         if (res.success) {
           setCartItems(res.result.cartItems);
         }
-      } else {
-        setCartItems([]);
       }
     }
+    fetchUserCart();
+
     setUser(
       info
         ? info
@@ -126,7 +126,6 @@ const TopNav = (props: NavProps) => {
             role: "GUEST",
           }
     );
-    fetchUserCart();
     if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
@@ -140,7 +139,7 @@ const TopNav = (props: NavProps) => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [info, token]);
+  }, [token]);
 
   const handleLogout = async () => {
     const id = toast.loading("Đang đăng xuất...");
@@ -156,6 +155,18 @@ const TopNav = (props: NavProps) => {
       });
       // Refresh the current route and fetch new data from the server without
       // losing client-side browser or React state.
+      // setUser({
+      //   fullname: null,
+      //   email: "",
+      //   phone: "",
+      //   dob: null,
+      //   gender: null,
+      //   address: null,
+      //   avatar: "",
+      //   ewallet: 0,
+      //   role: "GUEST",
+      // });
+      // setCartItems([]);
       router.push("/login");
       router.refresh();
     } else {
@@ -211,319 +222,370 @@ const TopNav = (props: NavProps) => {
             priority={true}
           ></Image>
         </Link>
-        <div className="bg-white rounded-[0.25rem] flex items-center relative col-span-6 sm:col-span-7 md:col-span-4 lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-[2.75rem]">
-          <Input
-            value={keyword}
-            onChange={(e) => handleChange(e.target.value)}
-            onFocus={() => setOnSearch(true)}
-            name="keyword"
-            autoComplete="off"
-            className="outline-none px-2 text-sm truncate flex-1"
-            type="text"
-            placeholder="Tìm kiếm sản phẩm..."
-          ></Input>
-          <button
-            type="button"
-            name="search-button"
-            onClick={handleSearchProducts}
-            className="absolute right-[0.25rem] transition-opacity hover:opacity-60 bg-primary-color
+        <div
+          className={`${
+            !pathName.includes("login") &&
+            !pathName.includes("register") &&
+            !pathName.includes("forgot-password") &&
+            !pathName.includes("profile") &&
+            "bg-white"
+          } rounded-[0.25rem] flex items-center relative col-span-6 sm:col-span-7 md:col-span-4 lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-[2.75rem]`}
+        >
+          {!pathName.includes("login") &&
+            !pathName.includes("register") &&
+            !pathName.includes("forgot-password") &&
+            !pathName.includes("profile") && (
+              <>
+                <Input
+                  value={keyword}
+                  onChange={(e) => handleChange(e.target.value)}
+                  onFocus={() => setOnSearch(true)}
+                  name="keyword"
+                  autoComplete="off"
+                  className="outline-none px-2 text-sm truncate flex-1"
+                  type="text"
+                  placeholder="Tìm kiếm sản phẩm..."
+                ></Input>
+                <button
+                  type="button"
+                  name="search-button"
+                  onClick={handleSearchProducts}
+                  className="absolute right-[0.25rem] transition-opacity hover:opacity-60 bg-primary-color
              cursor-pointer text-white grid place-content-center rounded-md py-[10px] px-5"
-          >
-            <FontAwesomeIcon className="icon" icon={faSearch}></FontAwesomeIcon>
-          </button>
-          {onSearch && keyword.length > 0 && (
-            <Listbox
-              key={"listbox"}
-              sx={{
-                width: "100%",
-                maxHeight: "14rem",
-                overflow: "auto",
-              }}
-            >
-              {products &&
-              products.filter((product) => {
-                const value = keyword.toLowerCase();
-                const name = product.name.toLowerCase();
-                return value && name.includes(value) && name !== value;
-              }).length == 0 ? (
-                <div className="w-full h-[8rem] flex justify-center items-center text-xl text-text-color">
-                  Không tìm thấy sản phẩm
-                </div>
-              ) : (
-                products &&
-                products
-                  .filter((product) => {
-                    const value = keyword.toLowerCase();
-                    const name = product.name.toLowerCase();
-                    return value && name.includes(value) && name !== value;
-                  })
-                  .map((product) => {
-                    return (
-                      <Link
-                        key={product.productId}
-                        href={`/product/${product.productId}`}
-                      >
-                        <li
-                          className="flex item-center p-3 max-h-max gap-x-2
+                >
+                  <FontAwesomeIcon
+                    className="icon"
+                    icon={faSearch}
+                  ></FontAwesomeIcon>
+                </button>
+                {onSearch && keyword.length > 0 && (
+                  <Listbox
+                    key={"listbox"}
+                    sx={{
+                      width: "100%",
+                      maxHeight: "14rem",
+                      overflow: "auto",
+                    }}
+                  >
+                    {products &&
+                    products.filter((product) => {
+                      const value = keyword.toLowerCase();
+                      const name = product.name.toLowerCase();
+                      return value && name.includes(value) && name !== value;
+                    }).length == 0 ? (
+                      <div className="w-full h-[8rem] flex justify-center items-center text-xl text-text-color">
+                        Không tìm thấy sản phẩm
+                      </div>
+                    ) : (
+                      products &&
+                      products
+                        .filter((product) => {
+                          const value = keyword.toLowerCase();
+                          const name = product.name.toLowerCase();
+                          return (
+                            value && name.includes(value) && name !== value
+                          );
+                        })
+                        .map((product) => {
+                          return (
+                            <Link
+                              key={product.productId}
+                              href={`/product/${product.productId}`}
+                            >
+                              <li
+                                className="flex item-center p-3 max-h-max gap-x-2
                         hover:bg-primary-color hover:text-white cursor-pointer border-b border-border-color"
-                        >
-                          <div className="border border-border-color max-w-[5rem] h-max">
-                            <Image
-                              loader={imageLoader}
-                              blurDataURL={product.image}
-                              placeholder="blur"
-                              className="group-hover:shadow-sd"
-                              alt="autocompleImg"
-                              src={product.image}
-                              width={120}
-                              height={40}
-                              priority
-                            ></Image>
-                          </div>
-                          <span
-                            key={product.productId}
-                            className="cursor-pointer text-left"
-                          >
-                            {product.name}
-                          </span>
-                        </li>
-                      </Link>
-                    );
-                  })
-              )}
-            </Listbox>
-          )}
+                              >
+                                <div className="border border-border-color max-w-[5rem] h-max">
+                                  <Image
+                                    loader={imageLoader}
+                                    blurDataURL={product.image}
+                                    placeholder="blur"
+                                    className="group-hover:shadow-sd"
+                                    alt="autocompleImg"
+                                    src={product.image}
+                                    width={120}
+                                    height={40}
+                                    priority
+                                  ></Image>
+                                </div>
+                                <span
+                                  key={product.productId}
+                                  className="cursor-pointer text-left"
+                                >
+                                  {product.name}
+                                </span>
+                              </li>
+                            </Link>
+                          );
+                        })
+                    )}
+                  </Listbox>
+                )}
+              </>
+            )}
         </div>
         <ul
           className={`justify-end items-center md:col-span-5 xl:col-span-4 max-md:hidden flex`}
         >
-          <li>
-            {!info && (
-              <Menu
-                dropdownContent={
-                  <Paper
-                    sx={{
-                      zIndex: "3",
-                    }}
-                  >
-                    <Link href="/register" className="w-full h-full">
-                      <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
-                        <LockOpenIcon />
-                        <span className="truncate px-2">Đăng ký</span>
-                      </div>
-                    </Link>
-                    <Link href="/login" className="w-full h-full" as={"/login"}>
-                      <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
-                        <LoginIcon />
-                        <span className="truncate px-2">Đăng nhập</span>
-                      </div>
-                    </Link>
-                  </Paper>
-                }
-                buttonChildren={
-                  <Link href="/login" as={"/login"}>
-                    <div className="relative flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
-                      <FontAwesomeIcon
-                        className="text-white"
-                        icon={faUser}
-                      ></FontAwesomeIcon>
-                      <span className="text-white text-sm whitespace-nowrap">
-                        Tài khoản
-                      </span>
-                    </div>
-                  </Link>
-                }
-              ></Menu>
-            )}
-            {info && user.email !== "" && (
-              <Menu
-                arrowPos="70px"
-                dropdownContent={
-                  <Paper
-                    sx={{
-                      transform: {
-                        xs: "translateX(-2rem)",
-                        md: "translateX(-4.5rem)",
-                      },
-                      minWidth: "10.75rem",
-                    }}
-                  >
-                    <Link className="w-full h-full" href="/profile">
-                      <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
-                        <AccountCircleIcon />
-                        <span className="truncate pl-2">Tài khoản của tôi</span>
-                      </div>
-                    </Link>
-                    <Link
-                      className="w-full h-full"
-                      href="profile/order-tracking"
-                    >
-                      <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
-                        <HistoryIcon />
-                        <span className="truncate px-2">Đơn mua</span>
-                      </div>
-                    </Link>
-                    <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
-                      <button onClick={handleLogout}>
-                        <LogoutIcon />
-                        <span className="truncate px-2">Đăng xuất</span>
-                      </button>
-                    </div>
-                  </Paper>
-                }
-                buttonChildren={
-                  <Link
-                    className="flex justify-center items-center gap-x-2"
-                    href={"/profile"}
-                  >
-                    <Avatar
-                      alt="avatar"
-                      src={user.avatar ? user.avatar : user_img2.src}
-                    ></Avatar>
-                    <span className="capitalize text-white text-sm max-md:hidden truncate">
-                      {user.fullname}
-                    </span>
-                  </Link>
-                }
-              ></Menu>
-            )}
-            {info && user.email === "" && (
-              <Menu
-                arrowPos="70px"
-                dropdownContent={
-                  <Paper
-                    sx={{
-                      transform: {
-                        xs: "translateX(-2rem)",
-                        md: "translateX(-4.5rem)",
-                      },
+          {!pathName.includes("login") &&
+            !pathName.includes("register") &&
+            !pathName.includes("forgot-password") && (
+              <>
+                <li>
+                  {!info && (
+                    <Menu
+                      dropdownContent={
+                        <Paper
+                          sx={{
+                            zIndex: "3",
+                          }}
+                        >
+                          <Link href="/register" className="w-full h-full">
+                            <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                              <LockOpenIcon />
+                              <span className="truncate px-2">Đăng ký</span>
+                            </div>
+                          </Link>
+                          <Link
+                            href="/login"
+                            className="w-full h-full"
+                            as={"/login"}
+                          >
+                            <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                              <LoginIcon />
+                              <span className="truncate px-2">Đăng nhập</span>
+                            </div>
+                          </Link>
+                        </Paper>
+                      }
+                      buttonChildren={
+                        <Link href="/login" as={"/login"}>
+                          <div className="relative flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
+                            <FontAwesomeIcon
+                              className="text-white"
+                              icon={faUser}
+                            ></FontAwesomeIcon>
+                            <span className="text-white text-sm whitespace-nowrap">
+                              Tài khoản
+                            </span>
+                          </div>
+                        </Link>
+                      }
+                    ></Menu>
+                  )}
+                  {info && user.email !== "" && (
+                    <Menu
+                      arrowPos="70px"
+                      dropdownContent={
+                        <Paper
+                          sx={{
+                            transform: {
+                              xs: "translateX(-2rem)",
+                              md: "translateX(-4.5rem)",
+                            },
+                            minWidth: "10.75rem",
+                          }}
+                        >
+                          <Link className="w-full h-full" href="/profile">
+                            <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                              <AccountCircleIcon />
+                              <span className="truncate pl-2">
+                                Tài khoản của tôi
+                              </span>
+                            </div>
+                          </Link>
+                          <Link
+                            className="w-full h-full"
+                            href="/profile/order-tracking"
+                          >
+                            <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                              <HistoryIcon />
+                              <span className="truncate px-2">Đơn mua</span>
+                            </div>
+                          </Link>
+                          <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                            <button
+                              className="w-full h-full flex justify-start"
+                              onClick={handleLogout}
+                            >
+                              <LogoutIcon />
+                              <span className="truncate px-2">Đăng xuất</span>
+                            </button>
+                          </div>
+                        </Paper>
+                      }
+                      buttonChildren={
+                        <Link
+                          className="flex justify-center items-center gap-x-2"
+                          href={"/profile"}
+                        >
+                          <Avatar
+                            alt="avatar"
+                            src={user.avatar ? user.avatar : user_img2.src}
+                          ></Avatar>
+                          <span className="capitalize text-white text-sm max-md:hidden truncate">
+                            {user.fullname}
+                          </span>
+                        </Link>
+                      }
+                    ></Menu>
+                  )}
+                  {info && user.email === "" && (
+                    <Menu
+                      arrowPos="70px"
+                      dropdownContent={
+                        <Paper
+                          sx={{
+                            transform: {
+                              xs: "translateX(-2rem)",
+                              md: "translateX(-4.5rem)",
+                            },
 
-                      minWidth: "180px",
-                    }}
-                  >
-                    <Link className="w-full h-full" href="/profile">
-                      <div className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors">
-                        <AccountCircleIcon />
-                        <span className="truncate px-2">Tài khoản của tôi</span>
-                      </div>
-                    </Link>
-                    <Link
-                      className="w-full h-full"
-                      href="profile/order-tracking"
-                    >
-                      <div className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors">
-                        <HistoryIcon />
-                        <span className="truncate px-2">Đơn mua</span>
-                      </div>
-                    </Link>
-                    <div className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors">
-                      <button onClick={handleLogout}>
-                        <LogoutIcon />
-                        <span className="truncate px-2">Đăng xuất</span>
-                      </button>
-                    </div>
-                  </Paper>
-                }
-                buttonChildren={
-                  <Link
-                    className="flex justify-center items-center gap-x-2"
-                    href={"/profile"}
-                  >
-                    <Avatar
-                      sizes="50vw"
-                      alt="avatar"
-                      src={info.avatar ? info.avatar : user_img2.src}
-                    ></Avatar>
-                    <span className=" text-white text-sm max-md:hidden">
-                      {info.fullname}
-                    </span>
-                  </Link>
-                }
-              ></Menu>
-            )}
-          </li>
-          <li>
-            <Menu
-              dropdownContent={
-                <Paper
-                  sx={{
-                    p: 0.5,
-                    transform: "translateX(-190px)",
-                    minWidth: "320px",
-                  }}
-                >
-                  <div
-                    className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
+                            minWidth: "180px",
+                          }}
+                        >
+                          <Link className="w-full h-full" href="/profile">
+                            <div className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors">
+                              <AccountCircleIcon />
+                              <span className="truncate px-2">
+                                Tài khoản của tôi
+                              </span>
+                            </div>
+                          </Link>
+                          <Link
+                            className="w-full h-full"
+                            href="/profile/order-tracking"
+                          >
+                            <div className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors">
+                              <HistoryIcon />
+                              <span className="truncate px-2">Đơn mua</span>
+                            </div>
+                          </Link>
+                          <div className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors">
+                            <button onClick={handleLogout}>
+                              <LogoutIcon />
+                              <span className="truncate px-2">Đăng xuất</span>
+                            </button>
+                          </div>
+                        </Paper>
+                      }
+                      buttonChildren={
+                        <Link
+                          className="flex justify-center items-center gap-x-2"
+                          href={"/profile"}
+                        >
+                          <Avatar
+                            sizes="50vw"
+                            alt="avatar"
+                            src={info.avatar ? info.avatar : user_img2.src}
+                          ></Avatar>
+                          <span className=" text-white text-sm max-md:hidden">
+                            {info.fullname}
+                          </span>
+                        </Link>
+                      }
+                    ></Menu>
+                  )}
+                </li>
+                <li>
+                  <Menu
+                    dropdownContent={
+                      <Paper
+                        sx={{
+                          p: 0.5,
+                          transform: "translateX(-190px)",
+                          minWidth: "320px",
+                        }}
+                      >
+                        <div
+                          className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
                               max-h-[460px] overflow-auto"
-                  >
-                    <NotifyDropdown />
-                  </div>
-                </Paper>
-              }
-              buttonChildren={
-                <div className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
-                  <FontAwesomeIcon
-                    className="relative text-white"
-                    icon={faBell}
-                  ></FontAwesomeIcon>
-                  <span className="text-white text-sm whitespace-nowrap">
-                    Thông báo
-                  </span>
-                  <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {info && cartItems && 0}
-                  </div>
-                </div>
-              }
-            ></Menu>
-          </li>
-          <li>
-            <Menu
-              dropdownContent={
-                <Paper
-                  sx={{
-                    p: 0.5,
-                    transform: "translateX(-190px)",
-                    minWidth: "320px",
-                  }}
-                >
-                  <div
-                    className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
+                        >
+                          <NotifyDropdown />
+                        </div>
+                      </Paper>
+                    }
+                    buttonChildren={
+                      <div className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
+                        <FontAwesomeIcon
+                          className="relative text-white"
+                          icon={faBell}
+                        ></FontAwesomeIcon>
+                        <span className="text-white text-sm whitespace-nowrap">
+                          Thông báo
+                        </span>
+                        <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
+                          {info &&
+                            cartItems &&
+                            cartItems.length > 0 &&
+                            cartItems.length}
+                        </div>
+                      </div>
+                    }
+                  ></Menu>
+                </li>
+                <li>
+                  <Menu
+                    dropdownContent={
+                      <Paper
+                        sx={{
+                          p: 0.5,
+                          transform: "translateX(-190px)",
+                          minWidth: "320px",
+                        }}
+                      >
+                        <div
+                          className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
                                 max-h-[420px] overflow-y-auto"
-                  >
-                    <CartDropdown
-                      userInfo={info!}
-                      userCart={cartItems}
-                    ></CartDropdown>
-                  </div>
-                </Paper>
-              }
-              buttonChildren={
-                <Link href="/cart">
-                  <div
-                    onClick={() => {
-                      if (!info) warningMessage("Vui lòng đăng nhập");
-                    }}
-                    className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
-                  >
-                    <FontAwesomeIcon
-                      className="relative text-white"
-                      icon={faCartShopping}
-                    ></FontAwesomeIcon>
-                    <span className="text-white text-sm whitespace-nowrap">
-                      Giỏ hàng
-                    </span>
-                  </div>
-                  <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {info && cartItems && cartItems.length}
-                  </div>
-                </Link>
-              }
-            ></Menu>
-          </li>
+                        >
+                          <CartDropdown
+                            userInfo={info!}
+                            userCart={cartItems}
+                          ></CartDropdown>
+                        </div>
+                      </Paper>
+                    }
+                    buttonChildren={
+                      <Link href="/cart">
+                        <div
+                          onClick={(e: any) => {
+                            if (!info) {
+                              e.preventDefault();
+                              router.push("/login");
+                              warningMessage("Vui lòng đăng nhập");
+                            }
+                          }}
+                          className="flex flex-col gap-y-1 hover:opacity-60 transition-opacity"
+                        >
+                          <FontAwesomeIcon
+                            className="relative text-white"
+                            icon={faCartShopping}
+                          ></FontAwesomeIcon>
+                          <span className="text-white text-sm whitespace-nowrap">
+                            Giỏ hàng
+                          </span>
+                        </div>
+                        <div className="absolute -top-0.5 right-[12px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
+                          {info &&
+                            cartItems &&
+                            cartItems.length > 0 &&
+                            cartItems.length}
+                        </div>
+                      </Link>
+                    }
+                  ></Menu>
+                </li>
+              </>
+            )}
         </ul>
-        <div className="md:hidden block">
-          <SwipeableTemporaryDrawer />
-        </div>
+        {!pathName.includes("login") &&
+          !pathName.includes("register") &&
+          !pathName.includes("forgot-password") && (
+            <div className="md:hidden block">
+              <SwipeableTemporaryDrawer />
+            </div>
+          )}
       </div>
     </nav>
   );

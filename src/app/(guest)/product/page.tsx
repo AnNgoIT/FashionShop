@@ -1,17 +1,25 @@
-import MainProduct from "@/container/product/main-product";
+// import MainProduct from "@/container/product/main-product";
 import { HTTP_PORT } from "@/app/page";
+import LoadingComponent from "@/components/loading";
+import dynamic from "next/dynamic";
+
+const MainProduct = dynamic(() => import("@/container/product/main-product"), {
+  ssr: false,
+  loading: () => <LoadingComponent />,
+});
 
 export const prefetchAllProducts = async () => {
   try {
     const res = await fetch(`${HTTP_PORT}/api/v1/products`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "no-cache",
+      // cache: "force-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
         // 'Content-Type': 'application/x-www-form-urlencoded',
       },
+      next: { revalidate: 100 },
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
@@ -49,12 +57,13 @@ export const fetchAllCategories = async () => {
     const res = await fetch(`${HTTP_PORT}/api/v1/categories`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "force-cache",
+      // cache: "force-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
         // 'Content-Type': 'application/x-www-form-urlencoded',
       },
+      next: { revalidate: 100 },
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
@@ -71,12 +80,13 @@ export const fetchAllBrands = async () => {
     const res = await fetch(`${HTTP_PORT}/api/v1/brands`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       mode: "same-origin", // no-cors, *cors, same-origin
-      cache: "force-cache",
+      // cache: "force-cache",
       credentials: "include", // include, *same-origin, omit
       headers: {
         "Content-Type": "application/json",
         // 'Content-Type': 'application/x-www-form-urlencoded',
       },
+      next: { revalidate: 100 },
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });

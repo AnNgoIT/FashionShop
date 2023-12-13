@@ -1,25 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const getRole = async (accessToken: string | undefined) => {
-  try {
-    if (!accessToken) return null;
+  if (accessToken) return null;
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/role`,
+    {
+      method: "GET",
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/role`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
 
-    return res.json();
-  } catch (error: any) {
-    console.error(error);
-    return null;
-  }
+  return res.json();
 };
 
 const authPaths = ["/cart", "/cart/checkout", "/wishlist"];

@@ -79,11 +79,9 @@ const defaultTheme = createTheme();
 
 export default function Dashboard({
   children,
-  token,
 }: // title,
 {
   children: ReactNode;
-  token?: { accessToken?: string; refreshToken?: string };
 }) {
   const router = useRouter();
   const { setUser } = useContext(UserContext);
@@ -92,24 +90,6 @@ export default function Dashboard({
   const toggleDrawer = () => {
     setOpen(!open);
   };
-
-  useEffect(() => {
-    if (token) {
-      setCookie("accessToken", token.accessToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.accessToken!)!,
-        maxAge: ACCESS_MAX_AGE,
-      });
-      setCookie("refreshToken", token.refreshToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.refreshToken!)!,
-        maxAge: REFRESH_MAX_AGE,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
 
   const handleLogout = async () => {
     const cookies = getCookies();

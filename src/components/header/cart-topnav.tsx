@@ -32,11 +32,9 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 const CartTopNav = ({
   info,
   token,
-  userCart,
 }: {
   info?: UserInfo;
   token?: { accessToken?: string; refreshToken?: string };
-  userCart?: cartItem[];
 }) => {
   const router = useRouter();
   const pathName = usePathname();
@@ -53,24 +51,10 @@ const CartTopNav = ({
         if (res.success) {
           setCartItems(res.result.cartItems);
         }
-      } else {
-        setCartItems([]);
       }
     }
     if (pathName !== "/cart/checkout") {
       fetchUserCart();
-    }
-    if (token) {
-      setCookie("accessToken", token.accessToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.accessToken!)!,
-      });
-      setCookie("refreshToken", token.refreshToken, {
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.refreshToken!)!,
-      });
     }
     setUser(
       info
@@ -87,8 +71,20 @@ const CartTopNav = ({
             role: "GUEST",
           }
     );
+    if (token && token.accessToken && token.refreshToken) {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+      });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [info]);
 
   const handleLogout = async () => {
     const id = toast.loading("Đang đăng xuất...");
@@ -150,21 +146,13 @@ const CartTopNav = ({
                       zIndex: "3",
                     }}
                   >
-                    <Link
-                      href="/register"
-                      prefetch={false}
-                      className="w-full h-full"
-                    >
+                    <Link href="/register" className="w-full h-full">
                       <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                         <LockOpenIcon />
                         <span className="truncate px-2">Đăng ký</span>
                       </div>
                     </Link>
-                    <Link
-                      href="/login"
-                      prefetch={false}
-                      className="w-full h-full"
-                    >
+                    <Link href="/login" className="w-full h-full" as={"/login"}>
                       <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                         <LoginIcon />
                         <span className="truncate px-2">Đăng nhập</span>
@@ -173,7 +161,7 @@ const CartTopNav = ({
                   </Paper>
                 }
                 buttonChildren={
-                  <Link href="/login" prefetch={false}>
+                  <Link href="/login" as={"/login"}>
                     <div className="relative flex flex-col gap-y-1 hover:opacity-60 transition-opacity">
                       <FontAwesomeIcon
                         className="text-white"
@@ -208,15 +196,18 @@ const CartTopNav = ({
                     </Link>
                     <Link
                       className="w-full h-full"
-                      href="profile/order-tracking"
+                      href="/profile/order-tracking"
                     >
-                      <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                      <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
                         <HistoryIcon />
                         <span className="truncate px-2">Đơn mua</span>
                       </div>
                     </Link>
-                    <div className="group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
-                      <button onClick={handleLogout}>
+                    <div className="w-full h-full group p-2 text-left hover:bg-primary-color hover:text-white cursor-pointer transition-colors">
+                      <button
+                        className="w-full h-full flex justify-start"
+                        onClick={handleLogout}
+                      >
                         <LogoutIcon />
                         <span className="truncate px-2">Đăng xuất</span>
                       </button>
@@ -232,7 +223,7 @@ const CartTopNav = ({
                       alt="avatar"
                       src={user.avatar ? user.avatar : user_img2.src}
                     ></Avatar>
-                    <span className="cap text-white text-sm max-md:hidden truncate">
+                    <span className="capitalize text-white text-sm max-md:hidden truncate">
                       {user.fullname}
                     </span>
                   </Link>
@@ -261,7 +252,7 @@ const CartTopNav = ({
                     </Link>
                     <Link
                       className="w-full h-full"
-                      href="profile/order-tracking"
+                      href="/profile/order-tracking"
                     >
                       <div className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors">
                         <HistoryIcon />
@@ -286,7 +277,7 @@ const CartTopNav = ({
                       alt="avatar"
                       src={info.avatar ? info.avatar : user_img2.src}
                     ></Avatar>
-                    <span className="text-white text-sm max-md:hidden">
+                    <span className=" text-white text-sm max-md:hidden">
                       {info.fullname}
                     </span>
                   </Link>
@@ -322,33 +313,15 @@ const CartTopNav = ({
                     Thông báo
                   </span>
                   <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
-                    {info && cartItems ? 0 : 0}
+                    {info &&
+                      cartItems &&
+                      cartItems.length > 0 &&
+                      cartItems.length}
                   </div>
                 </div>
               }
             ></Menu>
           </li>
-          {/* <li>
-            <Menu
-              dropdownContent={
-                <Paper
-                  sx={{
-                    p: 0.5,
-                    transform: "translateX(-190px)",
-                    minWidth: "320px",
-                  }}
-                >
-                  <div
-                    className="group p-2 text-left hover:text-primary-color cursor-pointer transition-colors
-                                max-h-[420px] overflow-y-auto"
-                  >
-                    <CartDropdown userCart={userCart!}></CartDropdown>
-                  </div>
-                </Paper>
-              }
-              buttonChildren={undefined}
-            ></Menu>
-          </li> */}
         </ul>
       </div>
     </nav>
