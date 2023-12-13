@@ -5,7 +5,11 @@ import empty_cart from "../assests/empty-cart.png";
 import main_banner1 from "../assests/banner/main_banner1.jpg";
 import main_banner2 from "../assests/banner/main_banner2.jpg";
 import main_banner3 from "../assests/banner/main_banner3.jpg";
+import main_banner_chinh from "../assests/banner/main_banner_chinh.jpg";
 import main_product_banner from "../assests/banner/main_product_banner.jpg";
+import banner_thoi_trang_nam from "../assests/banner/banner_thoi_trang_nam.png";
+import banner_thoi_trang_nu from "../assests/banner/banner_thoi_trang_nu.jpg";
+import banner_thoi_trang_nu_2 from "../assests/banner/banner_thoi_trang_nu_2.jpeg";
 import sale_banner1 from "../assests/banner/sale_banner1.png";
 import sale_banner2 from "../assests/banner/banner-thoi-trang-men.jpg";
 import sale_banner3 from "../assests/banner/sale_banner3.png";
@@ -32,7 +36,11 @@ export {
   main_banner1,
   main_banner2,
   main_banner3,
+  main_banner_chinh,
   main_product_banner,
+  banner_thoi_trang_nam,
+  banner_thoi_trang_nu,
+  banner_thoi_trang_nu_2,
   sale_banner1,
   sale_banner2,
   sale_banner3,

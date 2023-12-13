@@ -2,7 +2,7 @@ import React from "react";
 
 const Newsletter = () => {
   return (
-    <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 mb-16 md:mt-12">
+    <section className="container grid grid-cols-12 p-4 max-md:px-4">
       <div className="col-span-full grid grid-cols-12 place-content-center bg-background md:py-[6.25rem] p-6">
         <span
           className="col-span-full text-[1.5rem] md:text-[2rem] text-center font-extrabold px-4 uppercase text-[#333]

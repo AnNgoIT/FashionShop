@@ -57,7 +57,7 @@ type AdminCategoryProps = {
 type UpdateCategory = {
   name: string;
   parentId: number | null;
-  icon: string;
+  imageFile: string;
 };
 const AdminCategory = (props: AdminCategoryProps) => {
   const { categories, styles, token } = props;
@@ -90,7 +90,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
           .sort((a, b) => b.categoryId - a.categoryId)
           .slice(0, rowsPerPage)
       );
-    if (token) {
+    if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
@@ -237,34 +237,48 @@ const AdminCategory = (props: AdminCategoryProps) => {
       parentId:
         categories.find(
           (category) => category.name === updateCategory?.parentName
-        )?.categoryId || -1,
-      icon: category.image !== "" ? category.image : updateCategory?.image!,
+        )?.categoryId || null,
+      imageFile: image,
     };
-    console.log(updatePayload);
 
-    // const update = await putData(
-    //   `/api/v1/users/admin/categories/${updateCategory?.categoryId}`,
-    //   getCookie("accessToken")!,
-    //   updatePayload
-    // );
-    // if (update.success) {
-    //   successMessage("Đổi danh mục thành công");
-    //   // setOrderList((prevOrderItems) =>
-    //   //   prevOrderItems.map((item) =>
-    //   //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
-    //   //   )
-    //   // );
-    //   router.refresh();
-    //   handleClose();
-    // } else if (update.statusCode == 401) {
-    //   warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
-    //   router.refresh();
-    // } else if (update.status == 500) {
-    //   errorMessage("Lỗi hệ thống");
-    //   router.refresh();
-    // } else if (update.status == 404) {
-    //   errorMessage("Không tìm thấy danh mục này");
-    // } else errorMessage("Lỗi sai dữ liệu truyền");
+    const formData = new FormData();
+    formData.append("name", updatePayload.name);
+    updatePayload.parentId &&
+      formData.append("parentId", updatePayload.parentId.toString());
+    if (image instanceof File) {
+      formData.append("imageFile", updatePayload.imageFile);
+    }
+    const update = await patchData(
+      `/api/v1/users/admin/categories/${updateCategory?.categoryId}`,
+      getCookie("accessToken")!,
+      updatePayload,
+      "multipart/form-data"
+    );
+    if (update.success) {
+      successMessage("Đổi danh mục thành công");
+      // setOrderList((prevOrderItems) =>
+      //   prevOrderItems.map((item) =>
+      //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
+      //   )
+      // );
+      router.refresh();
+      resetCategory();
+      setUpdateCategory(null);
+      handleClose();
+    } else if (update.statusCode == 401) {
+      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
+      router.refresh();
+    } else if (update.status == 500) {
+      errorMessage("Lỗi hệ thống");
+      resetCategory();
+      setUpdateCategory(null);
+      handleClose();
+      router.refresh();
+    } else if (update.status == 404) {
+      errorMessage("Không tìm thấy danh mục này");
+      router.refresh();
+    } else
+      errorMessage("Tên danh mục và danh mục cha mới phải khác với các tên cũ");
 
     // resetCategory();
     // setUpdateCategory(null);
@@ -318,34 +332,34 @@ const AdminCategory = (props: AdminCategoryProps) => {
     }
   }
 
-  async function handleChangeCategoryActive(item: Category) {
-    console.log(item);
-    const newActiveStatus = item.isActive ? false : true;
-    const changeCategoryActive = await patchData(
-      `/api/v1/users/admin/categories/${item.categoryId}`,
-      getCookie("accessToken")!,
-      { isActive: newActiveStatus }
-    );
+  // async function handleChangeCategoryActive(item: Category) {
+  //   console.log(item);
+  //   const newActiveStatus = item.isActive ? false : true;
+  //   const changeCategoryActive = await patchData(
+  //     `/api/v1/users/admin/categories/${item.categoryId}`,
+  //     getCookie("accessToken")!,
+  //     { isActive: newActiveStatus }
+  //   );
 
-    if (changeCategoryActive.success) {
-      successMessage("Đổi trạng thái danh mục thành công");
-      setCategoryList(
-        categories
-          .filter((category) => category.categoryId !== item.categoryId)
-          .sort((a, b) => b.categoryId - a.categoryId)
-          .slice(0, rowsPerPage)
-      );
-      router.refresh();
-    } else if (changeCategoryActive.status == 401) {
-      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
-      router.refresh();
-    } else if (changeCategoryActive.status == 500) {
-      errorMessage("Lỗi hệ thống");
-      router.refresh();
-    } else if (changeCategoryActive.status == 404) {
-      errorMessage("Không tìm thấy danh mục này");
-    } else errorMessage("Lỗi sai dữ liệu truyền");
-  }
+  //   if (changeCategoryActive.success) {
+  //     successMessage("Đổi trạng thái danh mục thành công");
+  //     setCategoryList(
+  //       categories
+  //         .filter((category) => category.categoryId !== item.categoryId)
+  //         .sort((a, b) => b.categoryId - a.categoryId)
+  //         .slice(0, rowsPerPage)
+  //     );
+  //     router.refresh();
+  //   } else if (changeCategoryActive.status == 401) {
+  //     warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
+  //     router.refresh();
+  //   } else if (changeCategoryActive.status == 500) {
+  //     errorMessage("Lỗi hệ thống");
+  //     router.refresh();
+  //   } else if (changeCategoryActive.status == 404) {
+  //     errorMessage("Không tìm thấy danh mục này");
+  //   } else errorMessage("Lỗi sai dữ liệu truyền");
+  // }
 
   return (
     <Box
@@ -442,7 +456,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                     labelId="parentName"
                     id="parent-name"
                     name="parentName"
-                    value={updateCategory.parentName}
+                    value={updateCategory.parentName || ""}
                     label="Tên danh mục cha"
                     onChange={handleUpdateCategoryParentName}
                   >
@@ -648,7 +662,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                           >
                             <UpdateIcon />
                           </Button>
-                          <Button
+                          {/* <Button
                             onClick={() => handleChangeCategoryActive(item)}
                             sx={{
                               "&:hover": {
@@ -659,7 +673,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                             }}
                           >
                             {item.isActive && "Ẩn hoạt động"}
-                          </Button>
+                          </Button> */}
                         </div>
                       </TableCell>
                     </TableRow>

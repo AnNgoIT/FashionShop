@@ -25,20 +25,28 @@ import AddIcon from "@mui/icons-material/Add";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
-import { createData } from "@/hooks/useAdmin";
+import { createData, patchData } from "@/hooks/useAdmin";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import {
+  errorMessage,
+  successMessage,
+  warningMessage,
+} from "@/features/toasting";
 
 type AdminStyleValueProps = {
   styleValues: StyleValue[];
   styles: Style[];
   token?: { accessToken?: string; refreshToken?: string };
 };
+type UpdateStyleValue = {
+  name: string | null;
+};
+
 const AdminStyleValue = (props: AdminStyleValueProps) => {
   const { styleValues, styles, token } = props;
   const router = useRouter();
@@ -111,9 +119,12 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
     });
   };
 
-  const openUpdateModal = (id: number) => {
+  const openUpdateModal = (styleValue: StyleValue) => {
     // const category = categoryList.find((category) => category.styleId == id);
-    // setUpdateId(id);
+    setUpdateId(styleValue.styleValueId);
+    setStyleValue(styleValue);
+    setUpdate(true);
+    handleOpen();
     // setName(category?.name!);
     // setImage(category?.image!);
     // setUpdatedAt(category?.updatedAt!);
@@ -158,32 +169,43 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
     setPage(0);
   };
 
-  // function handleUpdateStyle(
-  //   event: React.FormEvent<HTMLFormElement>,
-  //   id: number
-  // ) {
-  //   event.preventDefault();
-  //   const newCategoryList = categoryList.map((item: Category) => {
-  //     if (item.styleId == id) {
-  //       item = {
-  //         styleId: id,
-  //         name,
-  //         parentName: undefined,
-  //         image,
-  //         createdAt,
-  //         updatedAt,
-  //         isActive: true,
-  //         styleNames: [],
-  //       };
-  //     }
-  //     return item;
-  //   });
-  //   setCategoryList(newCategoryList);
-
-  //   resetStyle();
-  //   setUpdateId(-1);
-  //   handleClose();
-  // }
+  async function handleUpdateStyleValue(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+    const updatePayload: UpdateStyleValue = {
+      name: styleValue ? styleValue.name : null,
+    };
+    const update = await patchData(
+      `/api/v1/users/admin/styleValues/${updateId}`,
+      getCookie("accessToken")!,
+      updatePayload
+    );
+    if (update.success) {
+      successMessage("Đổi giá trị thành công");
+      // setOrderList((prevOrderItems) =>
+      //   prevOrderItems.map((item) =>
+      //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
+      //   )
+      // );
+      router.refresh();
+      resetStyleValue();
+      setUpdateId(-1);
+      handleClose();
+    } else if (update.statusCode == 401) {
+      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
+      router.refresh();
+    } else if (update.status == 500) {
+      errorMessage("Lỗi hệ thống");
+      resetStyleValue();
+      setUpdateId(-1);
+      handleClose();
+      router.refresh();
+    } else if (update.status == 404) {
+      errorMessage("Không tìm thấy giá trị này");
+      router.refresh();
+    } else errorMessage("Tên giá trị mới phải khác với các tên giá trị cũ");
+  }
   async function handleCreateStyleValue(e: { preventDefault: () => void }) {
     e.preventDefault();
 
@@ -254,12 +276,12 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Style ID: ${updateId}` : "Tạo mới"}
+            {isUpdate ? `Cập nhật giá trị mới` : "Tạo mới"}
           </h2>
           <form
             onSubmit={
               isUpdate
-                ? (event) => {} //handleUpdateCategory(event, updateId)
+                ? (event) => handleUpdateStyleValue(event)
                 : (event) => handleCreateStyleValue(event)
             }
             className="col-span-full grid grid-flow-col grid-cols-12 "
@@ -270,6 +292,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
                   Tên
                 </InputLabel>
                 <OutlinedInput
+                  required
                   autoComplete="off"
                   fullWidth
                   name="name"
@@ -280,31 +303,35 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
                 />
               </FormControl>
             </div>
-            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-              <FormControl className="col-span-full">
-                <InputLabel className="mb-2" htmlFor="styleId">
-                  Kiểu
-                </InputLabel>
-                <Select
-                  labelId="styleId"
-                  id="style-id"
-                  name="styleName"
-                  value={styleValue.styleName}
-                  label="Kiểu"
-                  onChange={handleStyleValue}
-                >
-                  {styles &&
-                    styles.length > 0 &&
-                    styles.map((style) => {
-                      return (
-                        <MenuItem key={style.styleId} value={style.styleId}>
-                          {style.name}
-                        </MenuItem>
-                      );
-                    })}
-                </Select>
-              </FormControl>
-            </div>
+            {!isUpdate && (
+              <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+                <FormControl className="col-span-full">
+                  <InputLabel className="mb-2" htmlFor="styleId">
+                    Kiểu
+                  </InputLabel>
+                  <Select
+                    required
+                    labelId="styleId"
+                    id="style-id"
+                    name="styleName"
+                    value={styleValue.styleName}
+                    label="Kiểu"
+                    onChange={handleStyleValue}
+                  >
+                    {styles &&
+                      styles.length > 0 &&
+                      styles.map((style) => {
+                        return (
+                          <MenuItem key={style.styleId} value={style.styleId}>
+                            {style.name}
+                          </MenuItem>
+                        );
+                      })}
+                  </Select>
+                </FormControl>
+              </div>
+            )}
+
             <div className="col-span-full">
               <button
                 className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
@@ -400,7 +427,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
                       </TableCell>
                       <TableCell sx={{ minWidth: "18rem" }}>
                         <Button
-                          onClick={() => openUpdateModal(item.styleValueId)}
+                          onClick={() => openUpdateModal(item)}
                           sx={{
                             "&:hover": {
                               backgroundColor: "transparent",

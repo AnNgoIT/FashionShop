@@ -63,7 +63,7 @@ const AdminOrders = ({
 
   useEffect(() => {
     orders && orders.length > 0 && setOrderList(orders.slice(0, rowsPerPage));
-    if (token) {
+    if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
@@ -74,7 +74,9 @@ const AdminOrders = ({
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
-    }
+    } 
+
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, rowsPerPage, token]);
 
@@ -166,9 +168,9 @@ const AdminOrders = ({
       } else errorMessage("Lỗi sai dữ liệu truyền");
     } else if (newStatus == "SHIPPING") {
       const changeOrderStatusToShipping = await patchData(
-        `/api/v1/users/admin/orders/toShipping/${order.orderId}?address=${
-          order.address.split("-")[1]
-        }`,
+        `/api/v1/users/admin/orders/toShipping/${
+          order.orderId
+        }?address=${order.address.split("-")[1].trim()}`,
         getCookie("accessToken")!,
         {}
       );
@@ -193,6 +195,7 @@ const AdminOrders = ({
         router.refresh();
       } else if (changeOrderStatusToShipping.status == 404) {
         errorMessage("Không tìm thấy đơn hàng này");
+        router.refresh();
       } else errorMessage("Lỗi sai dữ liệu truyền");
     }
 

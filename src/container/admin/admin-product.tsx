@@ -185,7 +185,6 @@ const AdminProduct = (props: AdminProductProps) => {
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
   };
   const handleStyleList = (e: any) => {
-    console.log(e.target.value);
     const value = e.target.value;
     setStyleList({
       ...styleList,
