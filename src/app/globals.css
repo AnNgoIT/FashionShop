@@ -35,11 +35,11 @@
     @apply opacity-100 animate-shine;
   }
   .product-title {
-    @apply text-[1.5rem] md:text-[2rem] font-extrabold px-4 uppercase text-[#333]
+    @apply text-[1.25rem] md:text-[1.5rem] font-extrabold px-4 uppercase text-[#333]
       relative max-md:before:hidden max-md:after:hidden before:bg-primary-color 
-      before:absolute before:top-6 before:w-24 before:right-full
+      before:absolute before:top-4 before:w-24 before:right-full
       before:h-0.5 after:bg-primary-color after:absolute 
-      after:top-6 after:w-24 after:left-full after:h-0.5;
+      after:top-4 after:w-24 after:left-full after:h-0.5;
   }
   .product-detail-tags {
     @apply px-5 py-[10px] rounded-none transition-all duration-200 hover:text-primary-color hover:cursor-pointer
@@ -104,7 +104,16 @@ div {
   min-height: 2.75rem !important;
   max-height: 2.75rem !important;
 }
-
+.carousel.carousel-slider {
+  z-index: 0 !important;
+}
+.react-multi-carousel-track {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.react-multiple-carousel__arrow {
+  z-index: 0 !important;
+}
 /* Reset CSS */
 * {
   margin: 0;

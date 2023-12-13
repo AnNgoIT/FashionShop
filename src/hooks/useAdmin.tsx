@@ -29,11 +29,12 @@ export const createData = async (
 export const patchData = async (
   url: string,
   accessToken: string,
-  payload: any
+  payload: any,
+  contentType: string = "application/json"
 ) => {
   const config: any = {
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": contentType,
       Authorization: `Bearer ${accessToken}`,
     },
   };

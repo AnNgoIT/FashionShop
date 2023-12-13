@@ -51,6 +51,21 @@ export const defaulResponsive3 = {
     items: 3,
   },
 };
+export const defaulResponsive8 = {
+  desktop: {
+    breakpoint: { max: 3000, min: 1230 },
+    items: 8,
+  },
+  tablet: {
+    breakpoint: { max: 1229, min: 768 },
+    items: 4,
+  },
+  mobile: {
+    breakpoint: { max: 768, min: 500 },
+    items: 3,
+  },
+};
+
 export const defaulResponsive = {
   desktop: {
     breakpoint: { max: 3000, min: 1230 },

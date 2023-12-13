@@ -31,11 +31,6 @@ export const refreshLogin = async (refreshToken: string) => {
     referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     body: JSON.stringify({ refreshToken: refreshToken }), // body data type must match "Content-Type" header
   });
-  if (!res.ok) {
-    // console.log(res);
-    // This will activate the closest `error.js` Error Boundary
-    // throw new Error("Failed to refreshToken");
-  }
 
   // The return value is *not* serialized
   // You can return Date, Map, Set, etc.

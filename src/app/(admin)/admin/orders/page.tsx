@@ -1,10 +1,11 @@
 import { HTTP_PORT, refreshLogin } from "@/app/page";
 import AdminOrders from "@/container/admin/admin-order";
-import { getCookie, hasCookie } from "cookies-next";
+import { orderItem } from "@/features/types";
+import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
-async function fetchAllOrdersAdmin(accessToken: string) {
-  if (!accessToken || accessToken.length == 0) {
+async function fetchAllOrdersAdmin(accessToken: string, refreshToken: string) {
+  if (accessToken || refreshToken) {
     const res = await fetch(`${HTTP_PORT}/api/v1/users/admin/orders`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.
       cache: "no-cache",
@@ -18,6 +19,11 @@ async function fetchAllOrdersAdmin(accessToken: string) {
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
+    if (res.status == 401) {
+      const res2 = await refreshLogin(refreshToken);
+      if (res2.success) return res2;
+      else return undefined;
+    }
     return res.json(); // parses JSON response into native JavaScript objects
   }
   // The return value is *not* serialized
@@ -25,29 +31,29 @@ async function fetchAllOrdersAdmin(accessToken: string) {
 }
 
 const AdminOrderPage = async () => {
-  const res = await fetchAllOrdersAdmin(getCookie("accessToken", { cookies })!);
+  const accessToken = getCookie("accessToken", { cookies })!;
 
-  let refreshedOrders = [],
+  const refreshToken = getCookie("refreshToken", { cookies })!;
+
+  const res = await fetchAllOrdersAdmin(accessToken, refreshToken);
+
+  let refreshedOrders: orderItem[] = [],
     fullToken = undefined;
-  if (
-    (!res && hasCookie("refreshToken", { cookies })) ||
-    (!hasCookie("accessToken", { cookies }) &&
-      hasCookie("refreshToken", { cookies }))
-  ) {
-    const refreshToken = getCookie("refreshToken", { cookies })!;
-    const refershProducts = await refreshLogin(refreshToken);
-    if (refershProducts.success) {
-      fullToken = refershProducts.result;
-      const newOrders = await fetchAllOrdersAdmin(
-        refershProducts.result.accessToken
-      );
-      if (newOrders.success) {
-        refreshedOrders = newOrders.result.content;
-      }
-    }
-  }
 
-  const order = res && res.success ? res.result.content : refreshedOrders;
-  return <AdminOrders token={fullToken} orders={order} />;
+  const handleOrdersResponse = async (res: any) => {
+    if (accessToken) {
+      refreshedOrders = res?.success && res.result.content;
+    } else {
+      fullToken = res?.success && res.result;
+      const newOrders = await fetchAllOrdersAdmin(
+        fullToken?.accessToken!,
+        fullToken?.refreshToken!
+      );
+      refreshedOrders = newOrders?.success && newOrders.result.content;
+    }
+  };
+  await handleOrdersResponse(res);
+
+  return <AdminOrders token={fullToken} orders={refreshedOrders} />;
 };
 export default AdminOrderPage;

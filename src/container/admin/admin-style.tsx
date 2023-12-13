@@ -24,16 +24,25 @@ import AddIcon from "@mui/icons-material/Add";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
-import { createData } from "@/hooks/useAdmin";
+import { createData, patchData } from "@/hooks/useAdmin";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import UpdateIcon from "@mui/icons-material/Update";
 import { decodeToken } from "@/features/jwt-decode";
+import {
+  errorMessage,
+  successMessage,
+  warningMessage,
+} from "@/features/toasting";
 
 type AdminStyleProps = {
   styles: Style[];
   token?: { accessToken?: string; refreshToken?: string };
+};
+
+type UpdateStyle = {
+  name: string | null;
 };
 const AdminStyle = (props: AdminStyleProps) => {
   const { styles, token } = props;
@@ -101,9 +110,12 @@ const AdminStyle = (props: AdminStyleProps) => {
     });
   };
 
-  const openUpdateModal = (id: number) => {
+  const openUpdateModal = (style: Style) => {
     // const category = categoryList.find((category) => category.styleId == id);
-    // setUpdateId(id);
+    setUpdateId(style.styleId);
+    setStyle(style);
+    setUpdate(true);
+    handleOpen();
     // setName(category?.name!);
     // setImage(category?.image!);
     // setUpdatedAt(category?.updatedAt!);
@@ -143,32 +155,41 @@ const AdminStyle = (props: AdminStyleProps) => {
     setPage(0);
   };
 
-  // function handleUpdateStyle(
-  //   event: React.FormEvent<HTMLFormElement>,
-  //   id: number
-  // ) {
-  //   event.preventDefault();
-  //   const newCategoryList = categoryList.map((item: Category) => {
-  //     if (item.styleId == id) {
-  //       item = {
-  //         styleId: id,
-  //         name,
-  //         parentName: undefined,
-  //         image,
-  //         createdAt,
-  //         updatedAt,
-  //         isActive: true,
-  //         styleNames: [],
-  //       };
-  //     }
-  //     return item;
-  //   });
-  //   setCategoryList(newCategoryList);
-
-  //   resetStyle();
-  //   setUpdateId(-1);
-  //   handleClose();
-  // }
+  async function handleUpdateStyle(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const updatePayload: UpdateStyle = {
+      name: style ? style.name : null,
+    };
+    const update = await patchData(
+      `/api/v1/users/admin/styles/${updateId}`,
+      getCookie("accessToken")!,
+      updatePayload
+    );
+    if (update.success) {
+      successMessage("Đổi kiểu cách thành công");
+      // setOrderList((prevOrderItems) =>
+      //   prevOrderItems.map((item) =>
+      //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
+      //   )
+      // );
+      router.refresh();
+      resetStyle();
+      setUpdateId(-1);
+      handleClose();
+    } else if (update.statusCode == 401) {
+      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
+      router.refresh();
+    } else if (update.status == 500) {
+      errorMessage("Lỗi hệ thống");
+      resetStyle();
+      setUpdateId(-1);
+      handleClose();
+      router.refresh();
+    } else if (update.status == 404) {
+      errorMessage("Không tìm thấy kiểu cách này");
+      router.refresh();
+    } else errorMessage("Tên kiểu cách mới phải khác với các tên kiểu cách cũ");
+  }
   async function handleCreateStyle(e: { preventDefault: () => void }) {
     e.preventDefault();
 
@@ -238,12 +259,12 @@ const AdminStyle = (props: AdminStyleProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Style ID: ${updateId}` : "Tạo kiểu mới"}
+            {isUpdate ? `Cập nhật kiểu cách` : "Tạo kiểu mới"}
           </h2>
           <form
             onSubmit={
               isUpdate
-                ? (event) => {} //handleUpdateCategory(event, updateId)
+                ? (event) => handleUpdateStyle(event)
                 : (event) => handleCreateStyle(event)
             }
             className="col-span-full grid grid-flow-col grid-cols-12 "
@@ -350,8 +371,8 @@ const AdminStyle = (props: AdminStyleProps) => {
                         <span className="text-center">{item.name}</span>
                       </TableCell>
                       <TableCell sx={{ minWidth: "18rem" }}>
-                        {/* <Button
-                          onClick={() => openUpdateModal(item.styleId)}
+                        <Button
+                          onClick={() => openUpdateModal(item)}
                           sx={{
                             "&:hover": {
                               backgroundColor: "transparent",
@@ -361,7 +382,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                           }}
                         >
                           <UpdateIcon />
-                        </Button> */}
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

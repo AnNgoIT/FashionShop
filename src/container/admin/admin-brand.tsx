@@ -25,7 +25,7 @@ import AddIcon from "@mui/icons-material/Add";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
-import { createData } from "@/hooks/useAdmin";
+import { createData, patchData } from "@/hooks/useAdmin";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -33,12 +33,21 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemText from "@mui/material/ListItemText";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
+import {
+  successMessage,
+  warningMessage,
+  errorMessage,
+} from "@/features/toasting";
 
 type AdminBrandProps = {
   brands: Brand[];
   token?: { accessToken?: string; refreshToken?: string };
 };
+type UpdateBrand = {
+  name: string | null;
+  nation: string | null;
+};
+
 const AdminBrand = (props: AdminBrandProps) => {
   const { brands, token } = props;
   const router = useRouter();
@@ -52,7 +61,7 @@ const AdminBrand = (props: AdminBrandProps) => {
   const [isUpdate, setUpdate] = useState<boolean>(false);
 
   const [open, setOpen] = useState<boolean>(false);
-  const [updateId, setUpdateId] = useState<number>(-1);
+  const [updateBrand, setUpdateBrand] = useState<Brand | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -107,7 +116,11 @@ const AdminBrand = (props: AdminBrandProps) => {
     });
   };
 
-  const openUpdateModal = (id: number) => {
+  const openUpdateModal = (brand: Brand) => {
+    setUpdateBrand(brand);
+    setBrand(brand);
+    setUpdate(true);
+    handleOpen();
     // const category = categoryList.find((category) => category.brandId == id);
     // setUpdateId(id);
     // setName(category?.name!);
@@ -149,32 +162,45 @@ const AdminBrand = (props: AdminBrandProps) => {
     setPage(0);
   };
 
-  // function handleUpdateBrand(
-  //   event: React.FormEvent<HTMLFormElement>,
-  //   id: number
-  // ) {
-  //   event.preventDefault();
-  //   const newCategoryList = categoryList.map((item: Category) => {
-  //     if (item.brandId == id) {
-  //       item = {
-  //         brandId: id,
-  //         name,
-  //         parentName: undefined,
-  //         image,
-  //         createdAt,
-  //         updatedAt,
-  //         isActive: true,
-  //         styleNames: [],
-  //       };
-  //     }
-  //     return item;
-  //   });
-  //   setCategoryList(newCategoryList);
-
-  //   resetBrand();
-  //   setUpdateId(-1);
-  //   handleClose();
-  // }
+  async function handleUpdateBrand(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const updatePayload: UpdateBrand = {
+      name: updateBrand ? brand.name : null,
+      nation: updateBrand ? brand.nation : null,
+    };
+    const update = await patchData(
+      `/api/v1/users/admin/brands/${updateBrand?.brandId}`,
+      getCookie("accessToken")!,
+      updatePayload
+    );
+    if (update.success) {
+      successMessage("Đổi thương hiệu thành công");
+      // setOrderList((prevOrderItems) =>
+      //   prevOrderItems.map((item) =>
+      //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
+      //   )
+      // );
+      router.refresh();
+      resetBrand();
+      setUpdateBrand(null);
+      handleClose();
+    } else if (update.statusCode == 401) {
+      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
+      router.refresh();
+    } else if (update.status == 500) {
+      errorMessage("Lỗi hệ thống");
+      resetBrand();
+      setUpdateBrand(null);
+      handleClose();
+      router.refresh();
+    } else if (update.status == 404) {
+      errorMessage("Không tìm thấy thương hiệu này");
+      router.refresh();
+    } else
+      errorMessage(
+        "Tên thương hiệu và quốc gia mới phải khác với các tên thương hiệu và quốc gia cũ"
+      );
+  }
   async function handleCreateBrand(e: { preventDefault: () => void }) {
     e.preventDefault();
 
@@ -245,12 +271,12 @@ const AdminBrand = (props: AdminBrandProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Category ID: ${updateId}` : "Create Category"}
+            {isUpdate ? `Cập nhật thương hiệu` : "Tạo thương hiệu mới"}
           </h2>
           <form
             onSubmit={
               isUpdate
-                ? (event) => {} //handleUpdateCategory(event, updateId)
+                ? (event) => handleUpdateBrand(event)
                 : (event) => handleCreateBrand(event)
             }
             className="col-span-full grid grid-flow-col grid-cols-12 "
@@ -261,6 +287,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                   Tên
                 </InputLabel>
                 <OutlinedInput
+                  required
                   autoComplete="off"
                   fullWidth
                   name="name"
@@ -277,6 +304,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                   Quốc gia
                 </InputLabel>
                 <Select
+                  required
                   id="nation"
                   name="nation"
                   value={brand.nation}
@@ -382,7 +410,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                       <TableCell>{item.nation || "Không xác định"}</TableCell>
                       <TableCell sx={{ minWidth: "18rem" }}>
                         <Button
-                          onClick={() => openUpdateModal(item.brandId)}
+                          onClick={() => openUpdateModal(item)}
                           sx={{
                             "&:hover": {
                               backgroundColor: "transparent",

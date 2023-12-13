@@ -4,7 +4,17 @@ import {
   faChevronRight,
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
-import { main_banner1, main_banner2, main_banner3 } from "@/assests/images";
+import {
+  banner_thoi_trang_nam,
+  banner_thoi_trang_nu,
+  banner_thoi_trang_nu_2,
+  main_banner1,
+  main_banner2,
+  main_banner3,
+  main_banner_chinh,
+  sale_banner1,
+  sale_banner2,
+} from "@/assests/images";
 import Box from "@mui/material/Box";
 import { imageLoader } from "@/features/img-loading";
 import Image from "next/image";
@@ -38,6 +48,24 @@ export const MyArrowPrev = (clickHandler: () => void, hasPrev: boolean) => {
     </div>
   );
 };
+
+export const CustomArrowNext = (clickHandler: () => void, hasNext: boolean) => {
+  return (
+    <div
+      onClick={clickHandler}
+      className={`${hasNext ? "group hover:bg-primary-color" : ""}`}
+    ></div>
+  );
+};
+export const CustomArrowPrev = (clickHandler: () => void, hasPrev: boolean) => {
+  return (
+    <div
+      onClick={clickHandler}
+      className={`${hasPrev ? "group hover:bg-primary-color" : ""} `}
+    ></div>
+  );
+};
+
 export const MyIndicator = (
   clickHandler: (e: React.MouseEvent | React.KeyboardEvent) => void,
   isSelected: boolean,
@@ -47,119 +75,70 @@ export const MyIndicator = (
     <div
       className={`${
         isSelected ? "bg-primary-color" : "bg-white"
-      } rounded-full w-[15px] h-[15px] cursor-pointer block md:hidden shadow-[0_0_5px_rgba(0,0,0,0.3)]`}
+      } rounded-full w-[15px] h-[15px] cursor-pointer shadow-[0_0_5px_rgba(0,0,0,0.3)]`}
       onClick={clickHandler}
     ></div>
   );
 };
 const Banner = () => {
   return (
-    <Box
-      sx={{
-        maxHeight: {
-          xs: 280,
-          sm: 350,
-          md: 450,
-          lg: 550,
-        },
-        height: 480,
-        width: "100%",
-      }}
-    >
-      <Image
-        loader={imageLoader}
-        placeholder="blur"
-        alt="mainBanner3"
-        src={main_banner3}
-        className="h-full w-full"
-        width={1519}
-        height={480}
-        priority={true}
-      />
-      <section className="grid grid-cols-12 p-4 max-md:px-4 gap-4 ssm:-translate-y-14 sm:-translate-y-20 md:-translate-y-28 xl:-translate-y-40">
-        <div className="col-span-full md:col-span-8 md:col-start-3">
+    <section className="container grid grid-cols-12 p-4 max-md:px-4 gap-4 mt-[96px]">
+      <div className="grid grid-cols-1 md:grid-cols-12 col-span-full gap-4">
+        <div className="col-span-full lg:col-span-8 rounded-sm">
           <Carousel
             showStatus={false}
             showThumbs={false}
             transitionTime={150}
             autoPlay={true}
             infiniteLoop={true}
+            showArrows={false}
             renderIndicator={MyIndicator}
-            renderArrowPrev={MyArrowPrev}
-            renderArrowNext={MyArrowNext}
-            className="hidden lg:grid grid-flow-col"
+            className="grid grid-flow-col"
           >
             <article className="grid grid-flow-col gap-x-4">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="rounded-lg max-h-[300px] w-full"
-                alt="banner1"
-                src={main_banner1}
-                width={485}
-                height={206}
-              />
-              <Image
-                loader={imageLoader}
-                placeholder="blur"
-                className="rounded-lg max-h-[245px]"
-                width={485}
-                height={206}
-                alt="banner2"
-                src={main_banner2}
-              />
-            </article>
-            <article className="grid grid-flow-col gap-x-4">
-              <Image
-                className="rounded-lg max-h-[245px]"
-                width={485}
-                height={206}
-                alt="banner1"
-                src={main_banner1}
-              />
-              <Image
-                className="rounded-lg max-h-[245px]"
+                className="h-[200px] md:h-[310px]"
+                alt="banner_thoi_trang_nu"
+                src={banner_thoi_trang_nu_2}
                 width={485}
                 height={206}
                 quality={100}
-                alt="banner2"
-                src={main_banner2}
-              />
-            </article>
-          </Carousel>
-          <Carousel
-            showStatus={false}
-            showThumbs={false}
-            transitionTime={150}
-            autoPlay={true}
-            infiniteLoop={true}
-            renderIndicator={MyIndicator}
-            renderArrowPrev={MyArrowPrev}
-            renderArrowNext={MyArrowNext}
-            className=" hidden max-lg:grid grid-flow-col"
-          >
-            <article className="grid grid-flow-col gap-x-4">
-              <Image
-                loader={imageLoader}
-                placeholder="blur"
-                className="rounded-lg max-h-[245px]"
-                alt="banner1"
-                src={main_banner1}
               />
             </article>
             <article className="grid grid-flow-col gap-x-4">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="rounded-lg max-h-[245px]"
-                alt="banner2"
-                src={main_banner2}
+                className="h-[200px] md:h-[310px]"
+                alt="banner_thoi_trang_nu"
+                src={sale_banner2}
+                width={485}
+                height={206}
+                quality={100}
               />
             </article>
           </Carousel>
         </div>
-      </section>
-    </Box>
+        <div className="max-lg:hidden col-span-full grid grid-cols-12 gap-y-2 md:col-span-4">
+          <div className="col-span-full bg-red-500 rounded-sm">
+            <Image
+              alt="banner"
+              className="w-full h-full"
+              src={banner_thoi_trang_nam}
+            ></Image>
+          </div>
+          <div className="col-span-full bg-red-500 rounded-sm">
+            <Image
+              alt="banner"
+              className="w-full h-full"
+              src={banner_thoi_trang_nu}
+            ></Image>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

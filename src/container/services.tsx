@@ -8,7 +8,7 @@ import React from "react";
 
 const Services = () => {
   return (
-    <section className="container grid grid-cols-12 p-4 max-md:px-4 mt-8 md:mt-12">
+    <section className="container grid grid-cols-12 p-4 max-md:px-4">
       <div className="col-span-full grid grid-flow-col place-content-center grid-cols-1 md:grid-cols-3 gap-4">
         <div
           className="group col-span-full lg:col-span-1 bg-background grid grid-flow-col place-content-center

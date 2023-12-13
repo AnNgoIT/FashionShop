@@ -1,9 +1,15 @@
 import { fetchAllCategories, fetchAllBrands } from "@/app/(guest)/product/page";
 import { HTTP_PORT, refreshLogin } from "@/app/page";
-import AdminProduct from "@/container/admin/admin-product";
+import LoadingComponent from "@/components/loading";
+// import AdminProduct from "@/container/admin/admin-product";
 import { getCookie, hasCookie } from "cookies-next";
+import dynamic from "next/dynamic";
 import { cookies } from "next/headers";
 
+const AdminProduct = dynamic(() => import("@/container/admin/admin-product"), {
+  ssr: false,
+  loading: () => <LoadingComponent />,
+});
 export const fetchAllStyleValues = async () => {
   try {
     const res = await fetch(`${HTTP_PORT}/api/v1/styleValues`, {
