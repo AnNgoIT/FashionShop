@@ -1,9 +1,5 @@
 "use client";
-import {
-  VisuallyHiddenInput,
-  imageLoader,
-  modalOrderDetailStyle,
-} from "@/features/img-loading";
+import { imageLoader } from "@/features/img-loading";
 import Title from "@/components/dashboard/Title";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
@@ -16,10 +12,10 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { User } from "@/features/types";
-import { user_img1 } from "@/assests/users";
+import { user_img1, user_img2 } from "@/assests/users";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
@@ -34,8 +30,16 @@ import { onlyNumbers } from "@/features/product";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import dayjs from "dayjs";
+import { decodeToken } from "@/features/jwt-decode";
+import { setCookie } from "cookies-next";
 
-const AdminUser = ({ users }: { users: User[] }) => {
+const AdminUser = ({
+  users,
+  token,
+}: {
+  users: User[];
+  token?: { accessToken?: string; refreshToken?: string };
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fullname, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -57,6 +61,23 @@ const AdminUser = ({ users }: { users: User[] }) => {
     resetUser();
     setOpen(false);
   };
+
+  useEffect(() => {
+    users && users.length > 0 && setUserList(users.slice(0, rowsPerPage));
+    if (token && token.accessToken && token.refreshToken) {
+      setCookie("accessToken", token.accessToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.accessToken!)!,
+      });
+      setCookie("refreshToken", token.refreshToken, {
+        // httpOnly: true,
+        // secure: process.env.NODE_ENV === "production",
+        expires: decodeToken(token.refreshToken!)!,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userList, rowsPerPage, token]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -174,7 +195,7 @@ const AdminUser = ({ users }: { users: User[] }) => {
       }}
     >
       <Toolbar />
-      <Modal
+      {/* <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
@@ -326,7 +347,7 @@ const AdminUser = ({ users }: { users: User[] }) => {
             </div>
           </form>
         </Box>
-      </Modal>
+      </Modal> */}
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* Categories */}
         <Grid item xs={12} md={4} lg={3}>
@@ -365,7 +386,7 @@ const AdminUser = ({ users }: { users: User[] }) => {
                         className="flex justify-between items-center px-3 py-2 border-b border-border-color"
                       >
                         <Image
-                          loader={imageLoader}
+                          // loader={imageLoader}
                           key={`product-img-${option.userId}`}
                           // placeholder="blur"
                           className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
@@ -373,10 +394,13 @@ const AdminUser = ({ users }: { users: User[] }) => {
                           height={120}
                           alt="productImg"
                           src={
-                            option.avatar == "" ? user_img1.src : option.avatar!
+                            option.avatar == "" || option.avatar == null
+                              ? user_img2.src
+                              : option.avatar
                           }
                           priority
                         ></Image>
+
                         <span key={`product-name-${option.userId}`}>
                           {option.email}
                         </span>
@@ -413,6 +437,7 @@ const AdminUser = ({ users }: { users: User[] }) => {
               </TableHead>
               <TableBody>
                 {userList &&
+                  userList.length > 0 &&
                   userList.map((item) => (
                     <TableRow key={item.userId}>
                       <TableCell
@@ -429,16 +454,23 @@ const AdminUser = ({ users }: { users: User[] }) => {
                         }}
                         align="center"
                       >
-                        <Image
-                          loader={imageLoader}
-                          // placeholder="blur"
-                          className="w-[6.25rem] h-[6.25rem]"
-                          width={120}
-                          height={120}
-                          alt="productImg"
-                          src={item.avatar == "" ? user_img1.src : item.avatar!}
-                          priority
-                        ></Image>
+                        {
+                          <Image
+                            // loader={imageLoader}
+                            //   placeholder="blur"
+                            //   blurDataURL={item.avatar}
+                            className="w-[6.25rem] h-[6.25rem]"
+                            width={120}
+                            height={120}
+                            alt="productImg"
+                            src={
+                              item.avatar == "" || item.avatar == null
+                                ? user_img2.src
+                                : item.avatar
+                            }
+                            priority
+                          ></Image>
+                        }
                       </TableCell>
                       <TableCell align="center">{item.email}</TableCell>
                       <TableCell align="center">{item.phone}</TableCell>

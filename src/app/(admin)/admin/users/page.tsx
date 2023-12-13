@@ -5,9 +5,9 @@ import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
 async function getAllUsersByRoleName(
-  roleName: string,
   accessToken: string,
-  refreshToken: string
+  refreshToken: string,
+  roleName: string
 ) {
   if ((accessToken || refreshToken) && roleName) {
     const res = await fetch(
@@ -19,6 +19,7 @@ async function getAllUsersByRoleName(
         credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         redirect: "follow", // manual, *follow, error
         referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -35,8 +36,8 @@ async function getAllUsersByRoleName(
 }
 
 export default async function Page() {
-  const accessToken = getCookie("acessToken", { cookies })!;
-  const refreshToken = getCookie("acessToken", { cookies })!;
+  const accessToken = getCookie("accessToken", { cookies })!;
+  const refreshToken = getCookie("refreshToken", { cookies })!;
 
   let fullToken =
       accessToken && refreshToken
@@ -51,10 +52,9 @@ export default async function Page() {
     refreshToken,
     "CUSTOMER"
   );
-
   const handleUsersResponse = async (res: any) => {
     if (accessToken) {
-      refreshUsers = res?.success && res.result.content;
+      refreshUsers = res?.success && res.result.userList;
     } else {
       fullToken = res?.success && res.result;
       const newOrders = await getAllUsersByRoleName(
@@ -62,10 +62,10 @@ export default async function Page() {
         fullToken?.refreshToken!,
         "CUSTOMER"
       );
-      refreshUsers = newOrders?.success && newOrders.result.content;
+      refreshUsers = newOrders?.success && newOrders.result.userList;
     }
   };
   await handleUsersResponse(res);
 
-  return <AdminUser users={refreshUsers} />;
+  return <AdminUser users={refreshUsers} token={fullToken} />;
 }
