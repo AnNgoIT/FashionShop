@@ -515,12 +515,12 @@ const TopNav = (props: NavProps) => {
                         <span className="text-white text-sm whitespace-nowrap">
                           Thông báo
                         </span>
-                        <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
+                        {/* <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
                           {info &&
                             cartItems &&
                             cartItems.length > 0 &&
                             cartItems.length}
-                        </div>
+                        </div> */}
                       </div>
                     }
                   ></Menu>

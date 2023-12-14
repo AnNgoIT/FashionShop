@@ -1,5 +1,5 @@
 import {
-  defaulResponsive3,
+  // defaulResponsive3,
   defaulResponsive8,
   imageLoader,
 } from "@/features/img-loading";
@@ -27,8 +27,9 @@ const CategorySection = ({ categories }: { categories: Category[] }) => {
         keyBoardControl={true}
         transitionDuration={500}
         arrows={true}
-        // deviceType={"desktop"}
-        // itemClass="carousel-item"
+        deviceType={"desktop"}
+        containerClass="carousel-container"
+        itemClass="carousel-item"
       >
         {categories &&
           categories.map((category) => {

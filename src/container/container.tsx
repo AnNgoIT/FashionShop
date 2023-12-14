@@ -46,7 +46,7 @@ const Container = ({
       <CategorySection categories={categories} />
       <Products products={products} />
       <Services />
-      <Blogs />
+      {/* <Blogs /> */}
       <StoreAddress />
       <Newsletter />
     </>

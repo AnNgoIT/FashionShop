@@ -107,12 +107,16 @@ div {
 .carousel.carousel-slider {
   z-index: 0 !important;
 }
-.react-multi-carousel-track {
+/* .react-multi-carousel-track {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-}
+} */
 .react-multiple-carousel__arrow {
   z-index: 0 !important;
+}
+
+.carousel-container {
+  width: 100%;
 }
 /* Reset CSS */
 * {
