@@ -116,7 +116,7 @@ const Address = () => {
     const res = await updateProfile(getCookie("accessToken")!, formData);
     if (res.success) {
       toast.update(id, {
-        render: `Tạo địa chỉ mới thành công`,
+        render: `Thành công`,
         type: "success",
         autoClose: 1500,
         isLoading: false,
@@ -151,7 +151,6 @@ const Address = () => {
     const newAddressList = addressList.filter(
       (_address, index) => index !== deleteId
     );
-    console.log(newAddressList);
     await handleAddress(newAddressList);
     setAddressList(newAddressList);
     setDeleteId(-1);
