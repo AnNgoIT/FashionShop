@@ -344,7 +344,7 @@ const Checkout = (props: CheckOutProps) => {
                     </td>
                     <td className="w-fit">
                       <span className="text-secondary-color font-semibold text-lg">{`${FormatPrice(
-                        Total(cartItems) + 45000
+                        Total(cartItems)
                       )} VNĐ `}</span>
                     </td>
                   </tr>
