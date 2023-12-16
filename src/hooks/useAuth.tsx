@@ -234,7 +234,7 @@ export const getUserCart = async (accessToken: string) => {
     const data = res && res.data ? res.data : {};
     return data;
   } catch (error: any) {
-    return error.data;
+    return error.response.data;
   }
 };
 

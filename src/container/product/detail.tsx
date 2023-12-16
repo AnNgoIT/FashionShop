@@ -286,6 +286,7 @@ const ProductDetail = (props: ProductDetailProps) => {
           getCookie("accessToken")!,
           payload
         );
+        console.log(res);
         if (res.success) {
           successMessage("Thêm vào giỏ hàng thành công");
           setSelected(false);
@@ -294,12 +295,12 @@ const ProductDetail = (props: ProductDetailProps) => {
           if (currCart.success) {
             setCartItems(currCart.result.cartItems);
           }
-        } else if (res.response.data.statusCode === 401) {
+        } else if (res.statusCode === 401) {
           warningMessage("Cần đăng nhập để sử dụng chức năng này");
           router.push("/login");
-          return;
         } else {
-          errorMessage("Lỗi hệ thống");
+          warningMessage("Cần đăng nhập để sử dụng chức năng này");
+          router.push("/login");
           router.refresh();
         }
       } else {
