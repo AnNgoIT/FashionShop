@@ -323,11 +323,6 @@ const Checkout = (props: CheckOutProps) => {
                     </td>
                   </tr>
                   <tr className="w-full border border-[#dee2e6]">
-                    <td className="p-3">
-                      <h1 className="text-text-color font-bold">
-                        Phí vận chuyển :
-                      </h1>
-                    </td>
                     <td className="w-fit">
                       <span>{`${FormatPrice(45000)} VNĐ`}</span>
                     </td>

@@ -7,7 +7,7 @@ import { user_img2 } from "@/assests/users";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Rating from "@mui/material/Rating";
-const StyledRating = styled(Rating)({
+export const StyledRating = styled(Rating)({
   "& .MuiRating-iconFilled": {
     color: "#ff6d75",
   },
@@ -51,7 +51,7 @@ const Like = () => {
           sx={{ padding: 0, textTransform: "capitalize" }}
           onClick={handleReply}
         >
-          Reply
+          Phản hồi
         </Button>
       </Box>
       {isReplying && (

@@ -1,6 +1,6 @@
 "use client";
 import Title from "@/components/dashboard/Title";
-import UpdateIcon from "@mui/icons-material/Update";
+import EditIcon from "@mui/icons-material/Edit";
 import Toolbar from "@mui/material/Toolbar";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
@@ -387,7 +387,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                 />
                 <NavigateButton onClick={handleOpen}>
                   <AddIcon sx={{ marginRight: "0.25rem" }} />
-                  Tạo thương hiệu mới
+                  Tạo mới
                 </NavigateButton>
               </div>
             </Title>
@@ -419,7 +419,7 @@ const AdminBrand = (props: AdminBrandProps) => {
                             color: "#639df1",
                           }}
                         >
-                          <UpdateIcon />
+                          <EditIcon />
                         </Button>
                       </TableCell>
                     </TableRow>

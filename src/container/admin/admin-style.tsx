@@ -28,7 +28,7 @@ import { createData, patchData } from "@/hooks/useAdmin";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import UpdateIcon from "@mui/icons-material/Update";
+import EditIcon from "@mui/icons-material/Edit";
 import { decodeToken } from "@/features/jwt-decode";
 import {
   errorMessage,
@@ -381,7 +381,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                             color: "#639df1",
                           }}
                         >
-                          <UpdateIcon />
+                          <EditIcon />
                         </Button>
                       </TableCell>
                     </TableRow>

@@ -23,6 +23,7 @@ import { UserContext } from "@/store";
 import { decodeToken } from "@/features/jwt-decode";
 import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { successMessage } from "@/features/toasting";
+import Avatar from "@mui/material/Avatar";
 
 const drawerWidth: number = 240;
 
@@ -118,6 +119,8 @@ export default function Dashboard({
           <Toolbar
             sx={{
               pr: "24px", // keep right padding when drawer closed
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
             <IconButton
@@ -132,13 +135,10 @@ export default function Dashboard({
             >
               <MenuIcon />
             </IconButton>
-            <Typography
-              component="p"
-              variant="h6"
-              color="inherit"
-              noWrap
-              sx={{ flexGrow: 1, textTransform: "capitalize" }}
-            ></Typography>
+            <div className="flex items-center gap-x-2">
+              <Avatar alt="Admin">Ad</Avatar>
+              <p>Admin</p>
+            </div>
             <Typography
               onClick={handleLogout}
               component="button"

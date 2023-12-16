@@ -74,8 +74,7 @@ const AdminOrders = ({
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
-    } 
-
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, rowsPerPage, token]);
@@ -341,7 +340,7 @@ const AdminOrders = ({
                   options={orders}
                   getOptionLabel={(option) => option.orderId.toString()}
                   renderInput={(params) => (
-                    <TextField {...params} label="Orders" />
+                    <TextField {...params} label="Đơn hàng" />
                   )}
                   renderOption={(props, option) => {
                     return (
@@ -371,40 +370,54 @@ const AdminOrders = ({
             <Table size="medium">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center">Tên khách hàng</TableCell>
-                  <TableCell align="center">Ngày đặt hàng</TableCell>
-                  <TableCell align="center">Địa chỉ</TableCell>
-                  <TableCell align="center">Phương thức thanh toán</TableCell>
-                  <TableCell align="center">Tổng tiền</TableCell>
-                  <TableCell align="center">Trạng thái</TableCell>
-                  <TableCell align="center"></TableCell>
+                  <TableCell sx={{ minWidth: "8rem" }} align="left">
+                    Tên
+                  </TableCell>
+                  <TableCell sx={{ minWidth: "7rem" }} align="left">
+                    Ngày đặt
+                  </TableCell>
+                  <TableCell sx={{ minWidth: "11rem" }} align="left">
+                    Địa chỉ
+                  </TableCell>
+                  <TableCell sx={{ minWidth: "12rem" }} align="left">
+                    Phương thức thanh toán
+                  </TableCell>
+                  <TableCell sx={{ minWidth: "7.5rem" }} align="left">
+                    Tổng tiền
+                  </TableCell>
+                  <TableCell align="left">Trạng thái</TableCell>
+                  <TableCell align="left"></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {orderList &&
                   orderList.map((item) => (
                     <TableRow key={item.orderId}>
-                      <TableCell align="center">{item.fullName}</TableCell>
-                      <TableCell align="center">
+                      <TableCell align="left">{item.fullName}</TableCell>
+                      <TableCell align="left">
                         {dayjs(new Date(item.createdAt!)).format("DD/MM/YYYY")}
                       </TableCell>
-                      <TableCell sx={{ width: "12rem" }} align="center">
-                        {item.address}
+                      <TableCell align="left">
+                        {item.address.split("-").length == 1
+                          ? `${item.address}`
+                          : `${item.address.split("-")[1]}, ${
+                              item.address.split("-")[2]
+                            }`}
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell align="left">
                         {item.paymentMethod === "COD"
                           ? "Thanh toán khi nhận"
                           : "Ví điện tử VNPay"}
                       </TableCell>
                       <TableCell
                         sx={{ width: "10rem" }}
-                        align="center"
+                        align="left"
                       >{`${FormatPrice(item.totalAmount)} VNĐ`}</TableCell>
-                      <TableCell sx={{ width: "10rem" }} align="center">
+                      <TableCell sx={{ width: "10rem" }} align="left">
                         <FormControl sx={{ minWidth: "10rem" }}>
                           <div
                             className={`
-                            p-2 text-white text-lg font-bold rounded-md ${
+                            p-2 text-white text-sm font-bold rounded-md ${
                               item.status == "NOT_PROCESSED"
                                 ? "bg-text-light-color"
                                 : item.status == "PROCESSING"
@@ -431,7 +444,7 @@ const AdminOrders = ({
                           </div>
                         </FormControl>
                       </TableCell>
-                      <TableCell sx={{ minWidth: "12.5rem" }} align="center">
+                      <TableCell sx={{ minWidth: "12.5rem" }} align="left">
                         <div className="flex justify-between items-center gap-x-2">
                           <Button
                             onClick={() => openInfoModal(item)}
@@ -456,6 +469,7 @@ const AdminOrders = ({
                                     background: "white",
                                   },
                                   color: "#639df1",
+                                  textTransform: "capitalize",
                                 }}
                               >
                                 Xác nhận

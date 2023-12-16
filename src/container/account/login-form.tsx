@@ -18,6 +18,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
 import { successMessage } from "@/features/toasting";
 import { FACEBOOK_AUTH_URL, GOOGLE_AUTH_URL } from "@/constants";
+import useLocal from "@/hooks/useLocalStorage";
 
 type Login = {
   email: string;
@@ -26,6 +27,7 @@ type Login = {
 
 const LoginForm = () => {
   const router = useRouter();
+  const local = useLocal();
   const [account, setAccount] = useState<Login>({ email: "", password: "" });
   const [errors] = useState<Login>({ email: "", password: "" });
   const [error, setError] = useState<string>("");
@@ -68,6 +70,7 @@ const LoginForm = () => {
         } else if (isAdmin.result === "SHIPPER") {
           router.push("/shipper");
         } else {
+          local.setItem("viewedProducts", JSON.stringify([]));
           successMessage("Đăng nhập thành công");
           setTimeout(() => {
             router.refresh();

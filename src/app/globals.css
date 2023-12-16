@@ -42,8 +42,7 @@
       after:top-4 after:w-24 after:left-full after:h-0.5;
   }
   .product-detail-tags {
-    @apply px-5 py-[10px] rounded-none transition-all duration-200 hover:text-primary-color hover:cursor-pointer
-    hover:border-b-[1px] hover:border-primary-color;
+    @apply p-2 rounded-lg text-2xl text-primary-color font-bold;
   }
   .product-detail-tags-active {
     @apply text-primary-color cursor-pointer
@@ -118,6 +117,10 @@ div {
 .carousel-container {
   width: 100%;
 }
+.MuiGrid-item {
+  padding: 0.75rem !important;
+}
+
 /* Reset CSS */
 * {
   margin: 0;

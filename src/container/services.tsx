@@ -9,6 +9,9 @@ import React from "react";
 const Services = () => {
   return (
     <section className="container grid grid-cols-12 p-4 max-md:px-4">
+      <div className={`col-span-full text-center mb-4 md:mb-8`}>
+        <span className="product-title">Về dịch vụ của chúng tôi</span>
+      </div>
       <div className="col-span-full grid grid-flow-col place-content-center grid-cols-1 md:grid-cols-3 gap-4">
         <div
           className="group col-span-full lg:col-span-1 bg-background grid grid-flow-col place-content-center

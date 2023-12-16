@@ -1,10 +1,10 @@
-import OrderHistory from "@/container/order/history";
+import OrderFeedback from "@/container/order/feedback";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getAllOrders } from "../order-tracking/page";
 import { refreshLogin } from "@/hooks/useAuth";
 
-export default async function OrderHistoryPage() {
+async function OrderFeedbackPage() {
   const accessToken = getCookie("accessToken", { cookies })!;
 
   const res = await getAllOrders(accessToken);
@@ -27,5 +27,6 @@ export default async function OrderHistoryPage() {
       : result
       ? result.content
       : undefined;
-  return <OrderHistory orders={order} />;
+  return <OrderFeedback orders={order} />;
 }
+export default OrderFeedbackPage;

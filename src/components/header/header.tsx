@@ -1,6 +1,6 @@
 "use client";
 import TopNav from "./topnav";
-import { Product, UserInfo, cartItem } from "@/features/types";
+import { Category, Product, UserInfo, cartItem } from "@/features/types";
 
 export type HeaderProps = {
   userInfo?: UserInfo;
@@ -10,9 +10,10 @@ export type HeaderProps = {
   };
   userCart?: cartItem[];
   products?: Product[];
+  categories?: Category[];
 };
 const Header = (props: HeaderProps) => {
-  const { userInfo, fullToken, userCart, products } = props;
+  const { userInfo, fullToken, userCart, products, categories } = props;
   return (
     <header className="font-sans">
       <div
@@ -23,6 +24,7 @@ const Header = (props: HeaderProps) => {
           <TopNav
             userCart={userCart}
             products={products}
+            categories={categories}
             info={userInfo}
             token={fullToken}
           ></TopNav>

@@ -377,3 +377,17 @@ export const cancelOrder = async (orderId: number, accessToken: string) => {
     return error.response.data;
   }
 };
+export const followProduct = async (url: string, accessToken: string) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+  try {
+    const res = await axios.patch(`${HTTP_PORT}` + url, {}, config);
+    const data = res && res.data ? res.data : {};
+    return data;
+  } catch (error: any) {
+    return error.response.data;
+  }
+};

@@ -43,8 +43,8 @@ import {
   successMessage,
   warningMessage,
 } from "@/features/toasting";
-import LoadingComponent from "@/components/loading";
 import { toast } from "react-toastify";
+import { LoadingComponent } from "@/components/loading";
 
 type AdminProductItemProps = {
   productId: number;

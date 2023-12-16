@@ -84,10 +84,14 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
                 {userInfo.fullname === "" ? (
                   <Skeleton variant="circular" width={40} height={40} />
                 ) : (
-                  <Avatar
-                    alt="avatar"
-                    src={userInfo.avatar ? userInfo.avatar : user_img2.src}
-                  ></Avatar>
+                  userInfo.avatar && (
+                    <Avatar
+                      alt="avatar"
+                      src={
+                        userInfo.avatar !== "" ? userInfo.avatar : user_img2.src
+                      }
+                    ></Avatar>
+                  )
                 )}
 
                 {userInfo.fullname === "" ? (
@@ -203,7 +207,7 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
           </Link>
           <Link
             className="col-span-1 lg:col-span-full"
-            href="/profile/order-history"
+            href="/profile/order-feedback"
           >
             <ListItemButton
               sx={{
@@ -229,7 +233,7 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
                     lg: "block",
                   },
                 }}
-                primary="Lịch sử giao dịch"
+                primary="Đánh giá đơn mua"
               />
             </ListItemButton>
           </Link>

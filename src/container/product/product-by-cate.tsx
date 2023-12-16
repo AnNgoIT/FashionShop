@@ -16,9 +16,6 @@ import Skeleton from "@mui/material/Skeleton";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import HomeIcon from "@mui/icons-material/Home";
 import InventoryIcon from "@mui/icons-material/Inventory";
-import { Carousel } from "react-responsive-carousel";
-import { sale_banner3, sale_banner4, sale_banner5 } from "@/assests/images";
-import { MyIndicator } from "../banner";
 
 type ProductByCateProps = {
   productsByCate: Product[];
@@ -98,7 +95,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
           </Breadcrumbs>
         </section>
       </main>
-      <div className="container grid grid-cols-12 max-md:px-4  my-8">
+      {/* <div className="container grid grid-cols-12 max-md:px-4  my-8">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12">
           <Carousel
             showStatus={false}
@@ -145,8 +142,8 @@ export const ProductByCate = (props: ProductByCateProps) => {
             </div>
           </Carousel>
         </div>
-      </div>
-      <section className="container grid grid-cols-12 max-md:px-4">
+      </div> */}
+      <section className="container grid grid-cols-12 max-md:px-4 my-8">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-[30px]">
           <ul className="col-span-full md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-[30px] h-fit">
             <div

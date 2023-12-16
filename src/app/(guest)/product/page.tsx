@@ -1,11 +1,11 @@
 // import MainProduct from "@/container/product/main-product";
 import { HTTP_PORT } from "@/app/page";
-import LoadingComponent from "@/components/loading";
+import { MainProductLoading } from "@/components/loading";
 import dynamic from "next/dynamic";
 
 const MainProduct = dynamic(() => import("@/container/product/main-product"), {
   ssr: false,
-  loading: () => <LoadingComponent />,
+  loading: () => <MainProductLoading />,
 });
 
 export const prefetchAllProducts = async () => {

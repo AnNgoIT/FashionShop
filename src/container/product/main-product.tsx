@@ -320,7 +320,7 @@ const MainProduct = (props: MainProductProps) => {
               />
             </Box>
           </div>
-          <div className="col-span-full lg:col-span-3 grid gap-y-[30px] mb-5">
+          <div className="col-span-full lg:col-span-3 grid gap-y-[30px] mb-5 h-fit">
             <div className="bg-[#f5f5f5] p-3 shadow-md">
               <div className="flex gap-x-1 items-center border-b-2 border-text-light-color py-2">
                 <FilterAltIcon sx={{ fontSize: "2rem" }} />
@@ -545,7 +545,7 @@ const MainProduct = (props: MainProductProps) => {
             )}
             {filterProductList && filterProductList.length > 0 ? (
               filterProductList
-                .slice((page - 1) * 5, (page - 1) * 5 + 5)
+                .slice((page - 1) * 9, (page - 1) * 9 + 9)
                 .map((product: Product) => {
                   return (
                     <li
@@ -625,7 +625,7 @@ const MainProduct = (props: MainProductProps) => {
               <div className="col-span-full bg-background-color p-4 outline-none grid place-items-center">
                 <Pagination
                   shape="rounded"
-                  count={Math.ceil(filterProductList.length / 5)}
+                  count={Math.ceil(filterProductList.length / 9)}
                   page={page}
                   onChange={handleChangePage}
                   variant="outlined"

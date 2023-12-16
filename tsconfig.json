@@ -39,7 +39,7 @@
     ".next/types/**/*.ts",
     "middleware.ts",
     "src/features/loader.js"
-  ],
+, "src/components/dashboard/Chart.tsx"  ],
   "exclude": [
     "node_modules"
   ]

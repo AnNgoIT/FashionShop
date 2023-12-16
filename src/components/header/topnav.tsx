@@ -25,9 +25,8 @@ import {
   setCookie,
 } from "cookies-next";
 import { toast } from "react-toastify";
-import { Product, UserInfo, cartItem } from "@/features/types";
+import { Category, Product, UserInfo, cartItem } from "@/features/types";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { styled } from "@mui/material/styles";
 import { imageLoader } from "@/features/img-loading";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -43,6 +42,8 @@ import {
   successMessage,
   warningMessage,
 } from "@/features/toasting";
+import useLocal from "@/hooks/useLocalStorage";
+import CategoryIcon from "@mui/icons-material/Category";
 const Input = styled("input")(({ theme }) => ({
   width: 200,
   backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
@@ -77,12 +78,13 @@ type NavProps = {
   userCart?: cartItem[];
   token?: { accessToken?: string; refreshToken?: string };
   products?: Product[];
+  categories?: Category[];
 };
 
 const TopNav = (props: NavProps) => {
   const tokenParams = useSearchParams();
 
-  const { info, token, products } = props;
+  const { info, token, products, categories } = props;
   const { replace } = useRouter();
   const router = useRouter();
   const pathName = usePathname();
@@ -90,7 +92,7 @@ const TopNav = (props: NavProps) => {
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [onSearch, setOnSearch] = useState(false);
-
+  const local = useLocal();
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
@@ -153,6 +155,7 @@ const TopNav = (props: NavProps) => {
         autoClose: 1000,
         isLoading: false,
       });
+      local.removeItem("viewedProducts");
       // Refresh the current route and fetch new data from the server without
       // losing client-side browser or React state.
       // setUser({
@@ -222,27 +225,72 @@ const TopNav = (props: NavProps) => {
             priority={true}
           ></Image>
         </Link>
+
         <div
           className={`${
             !pathName.includes("login") &&
             !pathName.includes("register") &&
             !pathName.includes("forgot-password") &&
             !pathName.includes("profile") &&
-            "bg-white"
-          } rounded-[0.25rem] flex items-center relative col-span-6 sm:col-span-7 md:col-span-4 lg:col-span-5 xl:col-span-5 2xl:col-span-5 h-[2.75rem]`}
+            ""
+          } rounded-[0.25rem] flex items-center relative col-span-6 sm:col-span-7 md:col-span-4 lg:col-span-5 h-[2.75rem]`}
         >
           {!pathName.includes("login") &&
             !pathName.includes("register") &&
             !pathName.includes("forgot-password") &&
             !pathName.includes("profile") && (
               <>
+                <Menu
+                  dropdownContent={
+                    <Paper
+                      sx={{
+                        p: 0.5,
+                        transform: "translateX(-68px)",
+                        minWidth: "400px",
+                        width: "max-content",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <ul className="group p-2 grid grid-cols-3 md:grid-cols-4 gap-x-2">
+                        <p className="col-span-full p-4 pt-0 text-3xl text-primary-color text-left">
+                          Danh mục sản phẩm
+                        </p>
+                        {categories &&
+                          categories.map((category) => {
+                            return (
+                              <div
+                                key={category.categoryId}
+                                className=" text-text-color col-span-1 grid grid-cols-1 
+                                place-items-start text-left px-2"
+                              >
+                                <Link href={`/category/${category.name}`}>
+                                  <p
+                                    className="py-1 px-2 grid place-content-center truncate hover:text-primary-color 
+                                  transition-colors cursor-pointer"
+                                  >
+                                    {category.name}
+                                  </p>
+                                </Link>
+                              </div>
+                            );
+                          })}
+                      </ul>
+                    </Paper>
+                  }
+                  buttonChildren={
+                    <div className="flex flex-col">
+                      <CategoryIcon sx={{ fontSize: "2rem", color: "white" }} />
+                    </div>
+                  }
+                  arrowPos="104px"
+                ></Menu>
                 <Input
                   value={keyword}
                   onChange={(e) => handleChange(e.target.value)}
                   onFocus={() => setOnSearch(true)}
                   name="keyword"
                   autoComplete="off"
-                  className="outline-none px-2 text-sm truncate flex-1"
+                  className="outline-none px-4 py-3 text-sm truncate flex-1 rounded-lg"
                   type="text"
                   placeholder="Tìm kiếm sản phẩm..."
                 ></Input>
@@ -582,7 +630,7 @@ const TopNav = (props: NavProps) => {
         {!pathName.includes("login") &&
           !pathName.includes("register") &&
           !pathName.includes("forgot-password") && (
-            <div className="md:hidden block">
+            <div className="md:hidden col-span-2 grid place-items-end">
               <SwipeableTemporaryDrawer />
             </div>
           )}

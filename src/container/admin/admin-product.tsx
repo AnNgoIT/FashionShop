@@ -18,7 +18,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import React, { useEffect, useState } from "react";
-import UpdateIcon from "@mui/icons-material/Update";
+import EditIcon from "@mui/icons-material/Edit";
 import { Brand, Category, Product, StyleValue } from "@/features/types";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
@@ -681,9 +681,8 @@ const AdminProduct = (props: AdminProductProps) => {
                   <TableCell>Tên</TableCell>
                   <TableCell>Hình ảnh</TableCell>
                   <TableCell>Mô tả</TableCell>
-                  <TableCell>Tổng số lượng</TableCell>
-                  <TableCell>Trạng thái</TableCell>
                   <TableCell>Giá</TableCell>
+                  <TableCell>Tổng số lượng</TableCell>
                   <TableCell>Đã bán</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
@@ -693,12 +692,12 @@ const AdminProduct = (props: AdminProductProps) => {
                   productList.length > 0 &&
                   productList.map((item) => (
                     <TableRow key={item.productId}>
-                      <TableCell sx={{ minWidth: "14rem", maxWidth: "16rem" }}>
+                      <TableCell sx={{ minWidth: "16rem", maxWidth: "19rem" }}>
                         <span>{item.name}</span>
                       </TableCell>
                       <TableCell sx={{ minWidth: "5rem", minHeight: "5rem" }}>
                         <Image
-                          className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
+                          className="w-[4rem] h-[4rem] outline outline-1 outline-border-color p-1"
                           loader={imageLoader}
                           width={80}
                           height={80}
@@ -717,15 +716,12 @@ const AdminProduct = (props: AdminProductProps) => {
                       >
                         <p className="truncate w-full">{item.description}</p>
                       </TableCell>
-                      <TableCell>{item.totalQuantity}</TableCell>
-                      <TableCell>{`${
-                        item.isSelling ? "Available" : "Sold out"
-                      }`}</TableCell>
                       <TableCell>
                         <span className="max-md:block max-md:w-max">
                           {FormatPrice(item.priceMin)} VNĐ
                         </span>
                       </TableCell>
+                      <TableCell>{item.totalQuantity}</TableCell>
                       <TableCell>{item.totalSold}</TableCell>
                       <TableCell>
                         <Button
@@ -740,7 +736,7 @@ const AdminProduct = (props: AdminProductProps) => {
                             color: "#639df1",
                           }}
                         >
-                          <UpdateIcon />
+                          <EditIcon />
                         </Button>
                       </TableCell>
                     </TableRow>

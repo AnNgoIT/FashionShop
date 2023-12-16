@@ -1,6 +1,6 @@
 "use client";
 import Title from "@/components/dashboard/Title";
-import UpdateIcon from "@mui/icons-material/Update";
+import EditIcon from "@mui/icons-material/Edit";
 import Toolbar from "@mui/material/Toolbar";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
@@ -46,7 +46,6 @@ import {
   errorMessage,
 } from "@/features/toasting";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 
 type AdminCategoryProps = {
   categories: Category[];
@@ -510,9 +509,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
             <div className="col-span-full grid text-sm text-[#999] font-medium mb-4  place-items-center">
               {category && category.image ? (
                 <Image
-                  blurDataURL={category.image}
                   loader={imageLoader}
-                  placeholder="blur"
                   className="w-[6.25rem] h-[6.25rem] rounded-md"
                   width={300}
                   height={300}
@@ -590,6 +587,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                         <Image
                           loader={imageLoader}
                           placeholder="blur"
+                          blurDataURL={option.image}
                           key={`cate-img-${option.categoryId}`}
                           className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
                           width={120}
@@ -639,8 +637,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                       <TableCell>
                         <Image
                           loader={imageLoader}
-                          // placeholder="blur"
-                          className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
+                          className="w-[4rem] h-[4rem] outline outline-1 outline-border-color p-1"
                           width={80}
                           height={80}
                           alt="productImg"
@@ -660,7 +657,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
                               color: "#639df1",
                             }}
                           >
-                            <UpdateIcon />
+                            <EditIcon />
                           </Button>
                           {/* <Button
                             onClick={() => handleChangeCategoryActive(item)}

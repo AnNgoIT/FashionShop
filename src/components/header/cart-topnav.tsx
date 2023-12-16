@@ -28,6 +28,7 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HistoryIcon from "@mui/icons-material/History";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import useLocal from "@/hooks/useLocalStorage";
 
 const CartTopNav = ({
   info,
@@ -41,7 +42,7 @@ const CartTopNav = ({
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
-
+  const local = useLocal();
   const cookies = getCookies();
 
   useEffect(() => {

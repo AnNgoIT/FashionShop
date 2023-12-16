@@ -123,17 +123,27 @@ const Banner = () => {
           </Carousel>
         </div>
         <div className="max-lg:hidden col-span-full grid grid-cols-12 gap-y-2 md:col-span-4">
-          <div className="col-span-full bg-red-500 rounded-sm">
+          <div className="col-span-full rounded-sm">
             <Image
-              alt="banner"
+              alt="banner_thoi_trang_nam"
+              loader={imageLoader}
+              placeholder="blur"
+              width={430}
+              height={152}
               className="w-full h-full"
+              quality={100}
               src={banner_thoi_trang_nam}
             ></Image>
           </div>
-          <div className="col-span-full bg-red-500 rounded-sm">
+          <div className="col-span-full rounded-sm">
             <Image
-              alt="banner"
+              alt="banner_thoi_trang_nu"
+              loader={imageLoader}
+              placeholder="blur"
+              width={430}
+              height={151}
               className="w-full h-full"
+              quality={100}
               src={banner_thoi_trang_nu}
             ></Image>
           </div>

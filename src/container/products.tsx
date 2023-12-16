@@ -6,19 +6,25 @@ import NavigateButton from "@/components/button";
 import { Product } from "@/features/types";
 import { diffInHours } from "@/features/product/date";
 import Image from "next/image";
-const Products = ({ products }: { products: Product[] }) => {
+const Products = ({
+  products,
+  title,
+}: {
+  products: Product[];
+  title: string;
+}) => {
   const productList: Product[] = products;
 
   return (
     <section className="container grid grid-cols-12 p-4 max-md:px-4">
       <div className="col-span-full grid grid-cols-12">
         <div className={`col-span-full text-center mb-4 md:mb-8`}>
-          <span className="product-title">Sản Phẩm Bán Chạy</span>
+          <span className="product-title">{title}</span>
         </div>
 
         <ul className="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 pb-6">
-          {productList && productList.length ? (
-            productList.slice(0, 4).map((product: Product) => {
+          {productList && productList.length > 0 ? (
+            productList.slice(0, 8).map((product: Product) => {
               return (
                 <li
                   className={`group transition-all hover:cursor-pointer hover:shadow-hd`}

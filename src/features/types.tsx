@@ -189,3 +189,13 @@ export type deliveryItem = orderItem & {
   shipperId: UUID;
   checkoutStatus: boolean;
 };
+export type RatingType = {
+  fulname: string;
+  image: string | null;
+  createdAt?: Date;
+  styleValueByStyles: {
+    [x: string]: string;
+  };
+  content: string;
+  star: number;
+};

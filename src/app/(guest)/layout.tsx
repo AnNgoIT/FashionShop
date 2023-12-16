@@ -4,7 +4,7 @@ import { getCookie } from "cookies-next";
 import { fetchUserCredentials } from "../page";
 import { cookies } from "next/headers";
 import { ReactNode } from "react";
-import { prefetchAllProducts } from "./product/page";
+import { fetchAllCategories, prefetchAllProducts } from "./product/page";
 
 const GuestLayout = async ({ children }: { children: ReactNode }) => {
   const accessToken = getCookie("accessToken", { cookies })!;
@@ -20,8 +20,9 @@ const GuestLayout = async ({ children }: { children: ReactNode }) => {
           }
         : undefined;
 
-  const [userCredentialsRes, productsRes] = await Promise.all([
+  const [userCredentialsRes, cateRes, productsRes] = await Promise.all([
     fetchUserCredentials(accessToken, refreshToken),
+    fetchAllCategories(),
     prefetchAllProducts(),
   ]);
 
@@ -60,9 +61,16 @@ const GuestLayout = async ({ children }: { children: ReactNode }) => {
   await handleUserCredentialsResponse(userCredentialsRes);
 
   const products = productsRes?.success ? productsRes.result.content : [];
+  const categories = cateRes?.success ? cateRes.result.content : [];
+
   return (
     <>
-      <Header userInfo={userInfo} products={products} fullToken={fullToken} />
+      <Header
+        userInfo={userInfo}
+        products={products}
+        fullToken={fullToken}
+        categories={categories}
+      />
       {children}
       <Footer />
     </>

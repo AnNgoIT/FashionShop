@@ -2,39 +2,19 @@ import React from "react";
 import Image from "next/image";
 import { user_img2 } from "@/assests/users";
 import Like from "./rating";
+import { RatingType } from "@/features/types";
+import Rating from "@mui/material/Rating";
+import Avatar from "@mui/material/Avatar";
+import dayjs from "dayjs";
 
-const Review = () => {
-  const userCommentList = [
-    {
-      commentId: 1,
-      userId: 1,
-      userName: "Nguyễn Thắng",
-      datePosted: "14/05/2023",
-      userComment: "Sản phẩm này rất tốt, tôi rất hài lòng về nó!",
-    },
-    {
-      commentId: 2,
-      userId: 2,
-      userName: "Minh Nam",
-      datePosted: "12/06/2021",
-      userComment:
-        "Sản phẩm này có chất lượng cao, tôi đã mua nó để tặng bạn bè!",
-    },
-    {
-      commentId: 3,
-      userId: 3,
-      userName: "Trần Tâm",
-      datePosted: "10/03/2022",
-      userComment:
-        "Khi tôi nhận sản phẩm thì nó đã bị rách, tôi cần cửa hàng phản hồi giúp tôi!",
-    },
-  ];
+const Review = ({ rating }: { rating: RatingType[] }) => {
+  const ratingList: RatingType[] = typeof rating === "string" ? [] : rating;
   return (
-    <article>
-      <h3 className="text-[22px] leading-[30px] font-semibold mb-5">
-        03 bình luận
+    <article className="max-h-[24rem] overflow-auto">
+      <h3 className="px-2 text-lg leading-[30px] font-semibold ">
+        {ratingList.length} đánh giá
       </h3>
-      <form action="/comments" method="post" className="flex">
+      {/* <form action="/comments" method="post" className="flex">
         <div className="w-fit mr-1">
           <Image
             className="rounded-full w-[50px] h-[50px]"
@@ -52,14 +32,14 @@ const Review = () => {
           ></input>
           <div className="peer-focus:block float-right hidden">
             <button
-              className="bg-primary-color text-[16px] mt-4 mr-4
+              className="bg-primary-color text-base mt-4 mr-4
             text-center text-white py-[5px] px-[30px] rounded-3xl transition-all duration-200 hover:bg-text-color"
               type="reset"
             >
               Hủy
             </button>
             <button
-              className="bg-primary-color text-[16px] mt-4
+              className="bg-primary-color text-base mt-4
             text-center text-white py-[5px] px-[30px] rounded-3xl transition-all duration-200 hover:bg-text-color"
               type="submit"
             >
@@ -67,37 +47,52 @@ const Review = () => {
             </button>
           </div>
         </div>
-      </form>
+      </form> */}
       <ul>
-        {userCommentList &&
-          userCommentList.map((user) => {
+        {ratingList && ratingList.length > 0 ? (
+          ratingList.map((item, index) => {
             return (
               <li
-                key={user.commentId}
-                className="flex items-start py-4 px-[10px]"
+                key={index}
+                className={`flex items-start py-4 px-2 ${
+                  index < rating.length - 1 && "border-b border-border-color"
+                }`}
               >
                 <div className=" w-fit mr-[16px]">
-                  <Image
-                    className="rounded-full w-[50px] h-[50px]"
-                    src={user_img2}
-                    alt="profileImage"
-                  ></Image>
+                  {item.image && (
+                    <Avatar
+                      alt="user-avatar"
+                      src={item.image || user_img2.src}
+                    />
+                  )}
                 </div>
                 <article className="flex-1 w-fit">
-                  <h4 className="py-1">
-                    <span className="font-semibold mr-1 text-[16px]">
-                      {user.userName}
-                    </span>
-                    ({user.datePosted})
-                  </h4>
-                  <p className="text-[16px] text-text-color font-medium">
-                    {user.userComment}
+                  <div className="py-1 flex flex-col text-sm">
+                    <span className="font-semibold mr-1">{item.fulname}</span>
+                    <Rating
+                      sx={{
+                        paddingRight: "0.5rem",
+                        // marginBottom: "0.25rem",
+                      }}
+                      name="read-only-review-start"
+                      value={item.star}
+                      readOnly
+                    />
+                    ({dayjs(new Date(item.createdAt!)).format("DD/MM/YYYY")})
+                  </div>
+                  <p className="text-base text-text-color font-medium">
+                    {item.content}
                   </p>
-                  <Like></Like>
+                  {/* <Like></Like> */}
                 </article>
               </li>
             );
-          })}
+          })
+        ) : (
+          <div className="min-h-[4rem] w-full grid place-content-center text-xl font-bold">
+            Không có đánh giá nào
+          </div>
+        )}
       </ul>
     </article>
   );

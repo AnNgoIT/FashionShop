@@ -7,7 +7,12 @@ interface TitleProps {
 
 export default function Title(props: TitleProps) {
   return (
-    <Typography component="h2" variant="h6" color="primary" gutterBottom>
+    <Typography
+      className="flex justify-center items-center text-3xl font-bold gap-x-2"
+      component="h2"
+      variant="h6"
+      gutterBottom
+    >
       {props.children}
     </Typography>
   );

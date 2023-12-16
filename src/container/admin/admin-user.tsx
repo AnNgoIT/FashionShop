@@ -15,23 +15,14 @@ import TablePagination from "@mui/material/TablePagination";
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { User } from "@/features/types";
-import { user_img1, user_img2 } from "@/assests/users";
+import { user_img2 } from "@/assests/users";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
-import NavigateButton from "@/components/button";
-import AddIcon from "@mui/icons-material/Add";
-import Button from "@mui/material/Button";
-import Modal from "@mui/material/Modal";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import { onlyNumbers } from "@/features/product";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import dayjs from "dayjs";
 import { decodeToken } from "@/features/jwt-decode";
 import { setCookie } from "cookies-next";
+import Avatar from "@mui/material/Avatar";
+import dayjs from "dayjs";
 
 const AdminUser = ({
   users,
@@ -430,10 +421,12 @@ const AdminUser = ({
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center">Tên</TableCell>
-                  <TableCell align="center">Ảnh</TableCell>
-                  <TableCell align="center">Email</TableCell>
-                  <TableCell align="center">Điện thoại</TableCell>
+                  <TableCell align="left">Tên</TableCell>
+                  <TableCell align="left">Ảnh đại diện</TableCell>
+                  <TableCell align="left">Email</TableCell>
+                  <TableCell align="left">Điện thoại</TableCell>
+                  <TableCell align="left">Ngày sinh</TableCell>
+                  <TableCell align="left">Thời gian tạo tài khoản</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -441,45 +434,33 @@ const AdminUser = ({
                   userList.length > 0 &&
                   userList.map((item) => (
                     <TableRow key={item.userId}>
-                      <TableCell
-                        sx={{ minWidth: "max-content" }}
-                        align="center"
-                      >
+                      <TableCell sx={{ minWidth: "max-content" }} align="left">
                         {item.fullname}
                       </TableCell>
-                      <TableCell
-                        sx={{
-                          display: "grid",
-                          placeContent: "center",
-                          minWidth: "8rem",
-                        }}
-                        align="center"
-                      >
+                      <TableCell align="left">
                         {
-                          <Image
-                            loader={imageLoader}
+                          <Avatar
                             // placeholder="blur"
                             // blurDataURL={item.avatar}
-                            className="w-[6.25rem] h-[6.25rem]"
-                            width={120}
-                            height={120}
-                            alt="img-notfound"
-                            src={
-                              item.avatar == "" || item.avatar == null
-                                ? user_img2.src
-                                : item.avatar
-                            }
-                            priority
-                          ></Image>
+                            alt="avatar-img"
+                            src={item.avatar!}
+                          ></Avatar>
                         }
                       </TableCell>
-                      <TableCell align="center">{item.email}</TableCell>
-                      <TableCell align="center">
+                      <TableCell align="left">{item.email}</TableCell>
+                      <TableCell align="left">
                         {item?.phone?.length == 13
                           ? item.phone.slice(3, 13)
+                          : !item.phone
+                          ? "Không có"
                           : item.phone}
                       </TableCell>
-                      <TableCell align="center">{item.role}</TableCell>
+                      <TableCell align="left">
+                        {dayjs(new Date(item.dob!)).format("DD/MM/YYYY")}
+                      </TableCell>
+                      <TableCell align="left">
+                        {dayjs(new Date(item.createdAt!)).format("DD/MM/YYYY")}
+                      </TableCell>
                     </TableRow>
                   ))}
               </TableBody>

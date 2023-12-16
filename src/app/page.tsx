@@ -9,7 +9,6 @@ import {
   prefetchAllProducts,
 } from "./(guest)/product/page";
 import dynamic from "next/dynamic";
-import LoadingComponent from "@/components/loading";
 
 // const Container = dynamic(() => import("@/container/container"), {
 //   ssr: false,
@@ -174,6 +173,7 @@ const Home = async ({
   return (
     <>
       <Header
+        categories={categories}
         userInfo={userInfo}
         fullToken={fullToken}
         products={products}

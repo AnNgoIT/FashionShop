@@ -25,6 +25,7 @@ import isLeapYear from "dayjs/plugin/isLeapYear"; // import plugin
 import "dayjs/locale/en"; // import locale
 import Skeleton from "@mui/material/Skeleton";
 import MuiPhoneNumber from "mui-phone-number";
+import { user_img2 } from "@/assests/users";
 
 dayjs.extend(isLeapYear); // use plugin
 dayjs.locale("en"); // use locale
@@ -338,17 +339,19 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
                 Không có ảnh đại diện nào
               </div>
             ) : (
-              <Image
-                // loader={imageLoader}
-                // blurDataURL={userInfo.avatar!}
-                // placeholder="blur"
-                className="rounded-full w-[7rem] h-[7rem]"
-                width={300}
-                height={0}
-                src={userInfo.avatar!}
-                priority={true}
-                alt="Uploaded Image"
-              ></Image>
+              userInfo.avatar && (
+                <Image
+                  // loader={imageLoader}
+                  // blurDataURL={userInfo.avatar!}
+                  // placeholder="blur"
+                  className="rounded-full w-[7rem] h-[7rem]"
+                  width={300}
+                  height={0}
+                  src={userInfo.avatar !== "" ? userInfo.avatar : user_img2}
+                  priority={true}
+                  alt="Uploaded Image"
+                ></Image>
+              )
             )}
             <Button
               sx={{ marginTop: "1rem", background: "#639df1" }}

@@ -325,7 +325,7 @@ const AdminShipper = ({
             <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
               <FormControl className="col-span-full">
                 <InputLabel className="mb-2" htmlFor="confirmPassword">
-                  Đặt lại Mật khẩu
+                  Xác nhận mật khẩu
                 </InputLabel>
                 <OutlinedInput
                   type="password"
@@ -337,7 +337,7 @@ const AdminShipper = ({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   // placeholder="Type your Password"
-                  label="Đặt lại Mật khẩu"
+                  label="Xác nhận Mật khẩu"
                 />
               </FormControl>
             </div>
@@ -438,10 +438,10 @@ const AdminShipper = ({
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center">Tên</TableCell>
-                  <TableCell align="center">Email</TableCell>
-                  <TableCell align="center">Điện thoại</TableCell>
-                  <TableCell align="center">Khu vực giao hàng</TableCell>
+                  <TableCell align="left">Tên</TableCell>
+                  <TableCell align="left">Email</TableCell>
+                  <TableCell align="left">Điện thoại</TableCell>
+                  <TableCell align="left">Khu vực giao hàng</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -449,29 +449,17 @@ const AdminShipper = ({
                   userList.length > 0 &&
                   userList.map((item) => (
                     <TableRow key={item.userId}>
-                      <TableCell
-                        sx={{ minWidth: "max-content" }}
-                        align="center"
-                      >
+                      <TableCell sx={{ minWidth: "max-content" }} align="left">
                         {item.fullname}
                       </TableCell>
 
-                      <TableCell align="center">{item.email}</TableCell>
-                      <TableCell align="center">
+                      <TableCell align="left">{item.email}</TableCell>
+                      <TableCell align="left">
                         {item?.phone?.length == 13
                           ? item.phone.slice(3, 13)
                           : item.phone}
                       </TableCell>
-                      <TableCell
-                        sx={{
-                          display: "grid",
-                          placeContent: "center",
-                          minWidth: "8rem",
-                        }}
-                        align="center"
-                      >
-                        {item.address}
-                      </TableCell>
+                      <TableCell align="left">{item.address}</TableCell>
                     </TableRow>
                   ))}
               </TableBody>

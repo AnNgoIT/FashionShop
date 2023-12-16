@@ -10,47 +10,76 @@ import {
 import Link from "next/link";
 import { FormatPrice, MaxAmounts } from "@/features/product/FilterAmount";
 import { QuantityButton } from "@/components/button";
-// import RelatedProduct from "@/container/product/related-product";
-// import ContentSwitcher from "@/container/product/content-switcher";
+
 import ImageMagnifier from "@/components/image-magnifier";
 import { addProductItemToCart } from "@/hooks/useProducts";
-import { Product, StyleValue, productItem } from "@/features/types";
+import { Product, RatingType, StyleValue, productItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
-import { CartContext } from "@/store";
+import { CartContext, UserContext } from "@/store";
 import {
   errorMessage,
   successMessage,
   warningMessage,
 } from "@/features/toasting";
-import { getUserCart } from "@/hooks/useAuth";
+import { followProduct, getUserCart } from "@/hooks/useAuth";
 import Carousel from "react-multi-carousel";
 import { defaulResponsive3, imageLoader } from "@/features/img-loading";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import Image from "next/image";
 type ProductDetailProps = {
   color: StyleValue[];
   size: StyleValue[];
+  rating: RatingType[];
   relatedProduct: Product[];
   productItems: productItem[];
   productDetail: Product;
+  follows: number;
 };
 
 import Rating from "@mui/material/Rating";
 import { getUniqueProductItems } from "@/features/product";
 import dynamic from "next/dynamic";
+// import ViewedProducts from "./viewed-products";
+import Review from "./review";
+import DetailContent from "./detail-content";
+import { getAuthenticated } from "@/hooks/useData";
 
-const ContentSwitcher = dynamic(
-  () => import("@/container/product/content-switcher"),
-  { ssr: false }
-);
+// const DetailContent = dynamic(
+//   () => import("@/container/product/detail-content"),
+//   {
+//     ssr: false,
+//     loading: () => (
+//       <div className="col-span-full grid place-items-center">
+//         <CircularProgress />
+//       </div>
+//     ),
+//   }
+// );
 const RelatedProduct = dynamic(
   () => import("@/container/product/related-product"),
-  { ssr: false }
+  {
+    ssr: false,
+  }
 );
 
+const ViewedProducts = dynamic(() => import("./viewed-products"), {
+  ssr: false,
+  // loading: () => <RelatedProductLoading title={"Sản phẩm đã xem"} />,
+});
+
 const ProductDetail = (props: ProductDetailProps) => {
-  const { color, size, relatedProduct, productItems, productDetail } = props;
+  const {
+    color,
+    size,
+    rating,
+    relatedProduct,
+    productItems,
+    productDetail,
+    follows,
+  } = props;
 
   const router = useRouter();
 
@@ -64,7 +93,8 @@ const ProductDetail = (props: ProductDetailProps) => {
   const [isColorActive, setColorActive] = useState<string[]>([]);
   const [isSelected, setSelected] = useState<boolean>(false);
   const [showProductItem, setShowProductItem] = useState(false);
-
+  const [likeValue, setLikeValue] = useState<number>(follows);
+  const [checkFollow, setCheckFollow] = useState<boolean>(false);
   const [productItem, setProductItem] = useState<productItem>({
     productItemId: 0,
     parentId: 0,
@@ -77,7 +107,8 @@ const ProductDetail = (props: ProductDetailProps) => {
     styleValueNames: [],
     sku: "",
   });
-  const { cartItems, setCartItems } = useContext(CartContext);
+  const { user } = useContext(UserContext);
+  const { setCartItems } = useContext(CartContext);
 
   function resetProductItem() {
     setProductItem({
@@ -121,7 +152,50 @@ const ProductDetail = (props: ProductDetailProps) => {
     } else {
       setShowProductItem(false); // Nếu không có size hoặc color active, ẩn ảnh
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isColorActive, isSizeActive, productItems]);
+
+  useEffect(() => {
+    // Lấy danh sách sản phẩm đã xem từ local storage
+    const viewedProductsJSON = localStorage.getItem("viewedProducts");
+    const currViewedProducts = viewedProductsJSON
+      ? JSON.parse(viewedProductsJSON)
+      : [];
+
+    // Kiểm tra xem sản phẩm hiện tại đã tồn tại trong danh sách đã xem chưa
+    const viewedProductExisted = currViewedProducts.find(
+      (product: Product) => product.productId === productDetail.productId
+    );
+
+    // Nếu sản phẩm chưa tồn tại, thêm nó vào danh sách đã xem và lưu vào local storage
+    if (!viewedProductExisted && hasCookie("accessToken")) {
+      const updatedViewedProducts = [...currViewedProducts, productDetail];
+      localStorage.setItem(
+        "viewedProducts",
+        JSON.stringify(updatedViewedProducts)
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productDetail]); // Thêm productDetail vào dependency array để useEffect chạy khi productDetail thay đổi
+
+  useEffect(() => {
+    async function checkUserFollow() {
+      if (user.email !== "") {
+        const checkFollow = await getAuthenticated(
+          `/api/v1/users/customers/products/check-follow/${productDetail.productId}`,
+          getCookie("accessToken")!
+        );
+        if (checkFollow.success) {
+          setCheckFollow(checkFollow.result);
+        } else {
+          setCheckFollow(false);
+          router.refresh();
+        }
+      }
+    }
+    checkUserFollow();
+  }, [user.email, follows, productDetail.productId, router]);
 
   function handleSizeList(size: string) {
     let newSize: string[] = [];
@@ -277,6 +351,46 @@ const ProductDetail = (props: ProductDetailProps) => {
     } else setSelected(true);
   };
 
+  const handleFollowProduct = async (newValue: number) => {
+    setLikeValue(newValue);
+    setCheckFollow(!checkFollow);
+    if (hasCookie("accessToken")) {
+      if (!checkFollow) {
+        const followingProduct = await followProduct(
+          `/api/v1/users/customers/products/follow-product/${productDetail.productId}`,
+          getCookie("accessToken")!
+        );
+        if (followingProduct.success) {
+          router.refresh();
+        } else if (followingProduct.statusCode == 401) {
+          warningMessage("Hết phiên đăng nhập, đang tạo phiên mới");
+          router.refresh();
+        } else if (followingProduct.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (followingProduct.statusCode == 400) {
+          errorMessage("Gặp vấn đề dữ liệu khi theo dõi sản phẩm");
+        }
+      } else {
+        const unFollowingProduct = await followProduct(
+          `/api/v1/users/customers/products/unfollow-product/${productDetail.productId}`,
+          getCookie("accessToken")!
+        );
+        if (unFollowingProduct.success) {
+          router.refresh();
+        } else if (unFollowingProduct.statusCode == 401) {
+          warningMessage("Hết phiên đăng nhập, đang tạo phiên mới");
+          router.refresh();
+        } else if (unFollowingProduct.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (unFollowingProduct.statusCode == 400) {
+          errorMessage("Gặp vấn đề dữ liệu khi theo dõi sản phẩm");
+        }
+      }
+    }
+  };
+
   return (
     <>
       <main className="font-montserrat bg-white mt-[76px] md:mt-[80px] lg:mt-[96px] relative z-0">
@@ -402,22 +516,59 @@ const ProductDetail = (props: ProductDetailProps) => {
             <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
               {productDetail && productDetail.name}
             </h3>
-            <div className="flex gap-x-4 py-2">
+            <div className="flex gap-x-4 py-2 text-base font-semibold items-center">
               {productDetail.rating > 0 && (
-                <Rating
-                  sx={{
-                    color: "#639df1",
-                    borderRight: "1px solid #ccc",
-                    paddingRight: "0.5rem",
-                  }}
-                  name="read-only"
-                  value={productDetail.rating}
-                  readOnly
-                />
+                <div className="flex items-center gap-x-2">
+                  <Rating
+                    precision={0.1}
+                    name="read-only"
+                    value={productDetail.rating}
+                    readOnly
+                  />{" "}
+                  <p className="border-r border-border-color pr-2">
+                    {" "}
+                    {`(${productDetail.rating} sao)`}
+                  </p>
+                </div>
               )}
-              <span className="text-base font-semibold">
+              <span className="">
                 Đã bán {productDetail.totalSold} sản phẩm
               </span>
+              {user.email == "" && (
+                <div className="flex gap-x-2 items-center">
+                  <FavoriteBorderIcon
+                    sx={{
+                      fontSize: "24px",
+                      color: "#ccc",
+                    }}
+                  />{" "}
+                  <p>Đã yêu thích ({likeValue})</p>
+                </div>
+              )}
+              {user.email !== "" && !checkFollow ? (
+                <div className="flex gap-x-2 items-center">
+                  <FavoriteBorderIcon
+                    onClick={() => handleFollowProduct(likeValue + 1)}
+                    sx={{ fontSize: "24px", cursor: "pointer", color: "#ccc" }}
+                  />
+                  <p>Đã yêu thích ({likeValue})</p>
+                </div>
+              ) : (
+                user.email !== "" &&
+                checkFollow && (
+                  <div className="flex gap-x-2 items-center">
+                    <FavoriteIcon
+                      onClick={() => handleFollowProduct(likeValue - 1)}
+                      sx={{
+                        fontSize: "24px",
+                        cursor: "pointer",
+                        color: "#ff6d75",
+                      }}
+                    />{" "}
+                    <p>Đã yêu thích ({likeValue})</p>
+                  </div>
+                )
+              )}
             </div>
             {showProductItem ? (
               <h1 className="text-primary-color font-bold">
@@ -582,19 +733,38 @@ const ProductDetail = (props: ProductDetailProps) => {
           </div>
         </div>
         <div
-          className={`col-span-full lg:col-span-10 lg:col-start-2 grid grid-cols-12 gap-x-[30px] py-16`}
+          className={`col-span-full lg:col-span-10 lg:col-start-2 grid grid-cols-12 gap-x-[30px] py-8`}
         >
-          <ContentSwitcher
-            description={productDetail.description}
-          ></ContentSwitcher>
+          <DetailContent
+            description={"Mô tả"}
+            content={
+              <p className="text-[#999] text-base">
+                {productDetail.description}
+              </p>
+            }
+          ></DetailContent>
         </div>
-        {relatedProduct && relatedProduct.length > 0 && (
-          <div
-            className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px]`}
-          >
-            <RelatedProduct relatedProduct={relatedProduct}></RelatedProduct>
+
+        <div
+          className={`col-span-full lg:col-span-10 lg:col-start-2 grid grid-cols-12 gap-x-[30px] pb-8`}
+        >
+          <div className="shadow-[0_0_20px_rgba(0,0,0,0.1)] col-span-full">
+            <DetailContent
+              description={"Đánh giá"}
+              content={<Review rating={rating} />}
+            ></DetailContent>
           </div>
-        )}
+        </div>
+        <div
+          className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px]`}
+        >
+          <RelatedProduct relatedProduct={relatedProduct}></RelatedProduct>
+        </div>
+        <div
+          className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 gap-x-[30px]`}
+        >
+          <ViewedProducts />
+        </div>
       </section>
     </>
   );

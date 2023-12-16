@@ -17,7 +17,7 @@ import dayjs from "dayjs";
 import { warningMessage } from "@/features/toasting";
 import { useRouter } from "next/navigation";
 
-const OrderHistory = ({ orders }: { orders: orderItem[] }) => {
+const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
   const router = useRouter();
   const [orderDetail, setOrderDetail] = useState<productItemInOrder[] | null>(
     null
@@ -55,7 +55,7 @@ const OrderHistory = ({ orders }: { orders: orderItem[] }) => {
 bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
     >
       <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center pb-4 border-b-[0] lg:border-b border-border-color">
-        Lịch sử đơn mua
+        Đánh giá đơn mua
       </h2>
       <Modal
         open={open}
@@ -198,11 +198,11 @@ bg-white p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1`}
             alt="emptyOrder"
             src={empty_order}
           ></Image>
-          <span className="text-center mr-4 pt-2">Lịch sử trống</span>
+          <span className="text-center mr-4 pt-2">Đơn hàng trống</span>
         </div>
       )}
     </div>
   );
 };
 
-export default OrderHistory;
+export default OrderFeedback;

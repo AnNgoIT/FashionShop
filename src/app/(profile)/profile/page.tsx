@@ -1,14 +1,13 @@
 import { fetchUserCredentials } from "@/app/page";
-import LoadingComponent from "@/components/loading";
-// import ProfileForm from "@/container/profile/profile-form";
+import ProfileForm from "@/container/profile/profile-form";
 import { getCookie } from "cookies-next";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 import { cookies } from "next/headers";
 
-const ProfileForm = dynamic(() => import("@/container/profile/profile-form"), {
-  ssr: false,
-  loading: () => <LoadingComponent />,
-});
+// const ProfileForm = dynamic(() => import("@/container/profile/profile-form"), {
+//   ssr: false,
+//   loading: () => <LoadingComponent />,
+// });
 
 const ProfilePage = async () => {
   const accessToken = getCookie("accessToken", { cookies })!;
@@ -56,8 +55,6 @@ const ProfilePage = async () => {
   };
 
   await handleUserCredentialsResponse(userCredentialsRes);
-
-  // console.log("This is userInfo from profile:", userInfo);
 
   return <ProfileForm info={userInfo} />;
 };

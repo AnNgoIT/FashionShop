@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Carousel from "react-multi-carousel";
@@ -12,22 +12,28 @@ import {
 } from "@/features/img-loading";
 import { Product } from "@/features/types";
 import { diffInHours } from "@/features/product/date";
+import useLocal from "@/hooks/useLocalStorage";
+import { product_1 } from "@/assests/images";
 
-type RelateProductProps = {
-  relatedProduct: Product[];
-};
-
-const RelatedProduct = (props: RelateProductProps) => {
-  const productList: Product[] = props.relatedProduct;
-
+const ViewedProducts = () => {
+  const [productList, setProductList] = useState<Product[]>([]);
+  const local = useLocal();
+  useEffect(() => {
+    if (local.getItem("viewedProducts")) {
+      const viewedProducts: Product[] =
+        JSON.parse(local.getItem("viewedProducts")) || [];
+      setProductList(viewedProducts);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <>
       {productList && productList.length > 0 && (
         <>
-          <div className={`col-span-full text-center mb-4 md:mb-8`}>
-            <span className="product-title">Sản phẩm liên quan</span>
+          <div className={`col-span-full text-center mb-4`}>
+            <span className="product-title">Sản phẩm đã xem</span>
           </div>
-          <div className="col-span-full">
+          <div className="col-span-full mb-8">
             <Carousel
               swipeable={true}
               draggable={false}
@@ -72,7 +78,6 @@ const RelatedProduct = (props: RelateProductProps) => {
                             placeholder="blur"
                             alt="productImage"
                             src={product.image}
-                            className="h-full w-full"
                             width={500}
                             height={500}
                           ></Image>
@@ -111,4 +116,4 @@ const RelatedProduct = (props: RelateProductProps) => {
   );
 };
 
-export default RelatedProduct;
+export default ViewedProducts;
