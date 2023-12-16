@@ -1,6 +1,5 @@
 "use client";
 import { Chart, NewUsersChart } from "@/components/dashboard/Chart";
-import Revenue from "@/components/dashboard/Revenue";
 import { decodeToken } from "@/features/jwt-decode";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -11,13 +10,14 @@ import Typography from "@mui/material/Typography";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import NewUsers from "@/components/dashboard/NewUser";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { getAuthenticated } from "@/hooks/useData";
+import Revenue from "@/components/dashboard/Revenue";
+import NewUsers from "@/components/dashboard/NewUser";
 type DashBoardProps = {
   token?: { accessToken?: string; refreshToken?: string };
   revenues: number;

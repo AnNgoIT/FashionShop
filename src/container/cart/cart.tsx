@@ -27,7 +27,6 @@ import usePath from "@/hooks/usePath";
 import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
-import LoadingComponent from "@/components/loading";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import { successMessage, warningMessage } from "@/features/toasting";

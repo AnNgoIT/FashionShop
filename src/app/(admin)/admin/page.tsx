@@ -4,7 +4,7 @@ import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import React from "react";
 
-export async function fetchStatictics(
+async function fetchStatictics(
   url: string,
   accessToken: string,
   refreshToken: string
