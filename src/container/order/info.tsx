@@ -5,7 +5,13 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import TextField from "@mui/material/TextField";
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { provinces as provincesData } from "@/store/provinces";
 import Modal from "@mui/material/Modal";
 import { modalStyle } from "@/features/img-loading";
@@ -15,9 +21,12 @@ import RadioGroup from "@mui/material/RadioGroup";
 import Radio from "@mui/material/Radio";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { updateProfile } from "@/hooks/useAuth";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { warningMessage } from "@/features/toasting";
+import { getData } from "@/hooks/useData";
+import Paper from "@mui/material/Paper";
 
 type OrderInfoProps = {
   info?: UserInfo;
@@ -27,10 +36,11 @@ const OrderInfo = (props: OrderInfoProps) => {
   const router = useRouter();
   const { user, setUser } = useContext(UserContext);
   const { info, ...rest } = props;
-
+  const result: any[] = provincesData;
   const [address, setAddress] = useState<string | null>(
     info?.address?.split(",")[0]!
   );
+  const [addressSuggest, setAddressSuggest] = useState<any[]>([]);
   const [newAddress, setNewAddress] = useState<string>("");
   const [provinces, setProvinces] = useState<string>("");
   const [districts, setDistricts] = useState<string>("");
@@ -38,15 +48,114 @@ const OrderInfo = (props: OrderInfoProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [addressList, setAddressList] = useState<string[]>([]);
   const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [isHidden, setIsHidden] = useState(true);
+  const ref = useRef<any>(null);
+  const handleBlur = () => {
+    // Logic để ẩn thẻ khi focus ra khỏi input
+    setIsHidden(true);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsHidden(true);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
+
+  const handleFocus = () => {
+    // Logic khi focus vào input, có thể làm gì đó tại đây nếu cần
+    setIsHidden(false);
+  };
+
+  let timeoutId: NodeJS.Timeout | null = null;
 
   useEffect(() => {
     if (user && user.address) setAddressList(user.address!.split(","));
   }, [user]);
 
-  function resetAddress() {
+  const debounce = (func: Function, delay: number) => {
+    return (...args: any[]) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
+
+  const checkAddressExisted = (
+    fullAddress: string,
+    numberAddress: string,
+    province: string,
+    district: string,
+    ward: string
+  ) => {
+    // Tách chuỗi địa chỉ thành các thành phần
+    const addressComponents = fullAddress.split(" - ");
+
+    // Kiểm tra xem địa chỉ có đúng số lượng thành phần
+    if (addressComponents.length !== 4) {
+      return false;
+    }
+
+    // Kiểm tra từng thành phần với các thông tin tương ứng
+    const [address, city, dist, wardInfo] = addressComponents;
+
+    if (address !== numberAddress) {
+      return false;
+    }
+
+    if (city !== province) {
+      return false;
+    }
+
+    if (dist !== district) {
+      return false;
+    }
+
+    if (wardInfo !== ward) {
+      return false;
+    }
+    return true;
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handlChangeAddressDebounced = useCallback(
+    debounce(async function handleGetAddressSuggest(value: string) {
+      if (value.trim() !== "") {
+        const result = await getData(
+          `https://rsapi.goong.io/Place/AutoComplete?api_key=${process.env.NEXT_PUBLIC_MAP_API_KEY}&location=21.013715429594125,%20105.79829597455202&input=${value}&more_compound=true`
+        );
+
+        setAddressSuggest(result.predictions);
+      } else setAddressSuggest([]);
+    }, 500),
+    []
+  );
+
+  const handleModifyAddress = (e: any) => {
+    setNewAddress(e.target.value);
     setProvinces("");
     setDistricts("");
     setWards("");
+    handlChangeAddressDebounced(e.target.value);
+  };
+
+  function resetAddress() {
+    setNewAddress("");
+    setProvinces("");
+    setDistricts("");
+    setWards("");
+    setAddressSuggest([]);
     setIsAdding(false);
   }
 
@@ -57,8 +166,6 @@ const OrderInfo = (props: OrderInfoProps) => {
     resetAddress();
     setOpen(false);
   };
-
-  const result: any[] = provincesData;
 
   const provinceList: string[] =
     result && result.map((item: any) => (item = item.name));
@@ -85,10 +192,21 @@ const OrderInfo = (props: OrderInfoProps) => {
   };
 
   const handleAddress = async (newAddressList: string[]) => {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const formData = new FormData();
     formData.append("address", newAddressList.join(","));
 
-    const id = toast.loading("Đang cập nhật...");
+    const id = toast.loading("Đang tạo mới...");
     const res = await updateProfile(getCookie("accessToken")!, formData);
     if (res.success) {
       toast.update(id, {
@@ -97,6 +215,7 @@ const OrderInfo = (props: OrderInfoProps) => {
         autoClose: 1500,
         isLoading: false,
       });
+      // router.refresh();
     } else if (res.statusCode == 500) {
       toast.update(id, {
         render: `Lỗi hệ thống`,
@@ -124,10 +243,28 @@ const OrderInfo = (props: OrderInfoProps) => {
     }
     setUser({ ...user, address: newAddressList.join(",") });
   };
-
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const result: string = `${newAddress!} ${
+    let check = false;
+    addressList.forEach((item) => {
+      const result = checkAddressExisted(
+        item,
+        newAddress?.trim()!,
+        provinces,
+        districts,
+        wards
+      );
+      if (result == true) {
+        check = true;
+      }
+    });
+    if (check) {
+      warningMessage("Bạn đã sở hữu địa chỉ này");
+      resetAddress();
+      // handleClose();
+      return;
+    }
+    const result: string = `${newAddress.trim()!} ${
       provinces.length != 0 ? "- " + provinces : provinces
     } ${districts.length != 0 ? "- " + districts : districts} ${
       wards.length != 0 ? "- " + wards : wards
@@ -138,6 +275,34 @@ const OrderInfo = (props: OrderInfoProps) => {
     await handleAddress(newAddressList);
     resetAddress();
     // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
+  };
+
+  const handleGetDetail = (compound: any) => {
+    const newProvince = provinceList.find((item) =>
+      item.includes(compound.province)
+    );
+    const districtList =
+      newProvince !== "" &&
+      result
+        .find((item: any) => item.name == newProvince)
+        .districts.map((item: any) => (item = item.name));
+    const newDistrict = districtList.find((item: any) =>
+      item.includes(compound.district)
+    );
+    const newWardList: string[] =
+      newProvince != "" &&
+      newDistrict != "" &&
+      result
+        .find((item: any) => item.name == newProvince)
+        .districts.find((item: any) => item.name == newDistrict)
+        .wards.map((item: any) => (item = item.name));
+    const newWard = newWardList.find((item: any) =>
+      item.includes(compound.commune)
+    );
+    setProvinces(newProvince || "");
+    setDistricts(newDistrict || "");
+    setWards(newWard || "");
+    setAddressSuggest([]);
   };
 
   return (
@@ -171,10 +336,35 @@ const OrderInfo = (props: OrderInfoProps) => {
                     required
                     id="NewAddress"
                     value={newAddress}
-                    onChange={(event) => setNewAddress(event.target.value)}
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
+                    onChange={handleModifyAddress}
                     label="Địa chỉ"
                   />
                 </FormControl>
+                <Paper className="absolute top-[132px] left-[7%] right-[7%] z-[2] col-span-full flex flex-col shadow-hd rounded-lg">
+                  <div className="max-h-[10.5rem] overflow-auto">
+                    {!isHidden &&
+                      addressSuggest &&
+                      addressSuggest.length > 0 &&
+                      addressSuggest.map((address, index) => {
+                        return (
+                          <div
+                            onMouseDown={() => {
+                              setNewAddress(
+                                address.structured_formatting.main_text
+                              );
+                              handleGetDetail(address.compound);
+                            }}
+                            className="p-3 text-sm hover:bg-primary-color hover:cursor-pointer hover:text-white outline outline-1 outline-border-color"
+                            key={index}
+                          >
+                            {address.description}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </Paper>
               </div>
               <div className="col-span-full grid grid-cols-12 gap-4">
                 <div className="col-span-full">
@@ -188,10 +378,12 @@ const OrderInfo = (props: OrderInfoProps) => {
                     value={provinces}
                     onChange={(_event, newProvinces) => {
                       setProvinces(newProvinces || "");
+                      setDistricts("");
+                      setWards("");
                     }}
                     options={provinceList}
                     renderInput={(params) => (
-                      <TextField {...params} label="TPhố/Tỉnh" />
+                      <TextField required {...params} label="Thành phố/vịnh" />
                     )}
                     renderOption={(props, option) => {
                       return (
@@ -219,6 +411,7 @@ const OrderInfo = (props: OrderInfoProps) => {
                     value={districts}
                     onChange={(_event, newDistricts) => {
                       setDistricts(newDistricts || "");
+                      setWards("");
                     }}
                     isOptionEqualToValue={(option, value) =>
                       value === undefined || value === "" || option === value
@@ -226,7 +419,7 @@ const OrderInfo = (props: OrderInfoProps) => {
                     disabled={provinces == ""}
                     options={[...districtList, ""]}
                     renderInput={(params) => (
-                      <TextField {...params} label="Quận" />
+                      <TextField required {...params} label="Quận/huyện" />
                     )}
                     renderOption={(props, option) => {
                       return (
@@ -261,7 +454,7 @@ const OrderInfo = (props: OrderInfoProps) => {
                     }
                     options={wardList}
                     renderInput={(params) => (
-                      <TextField {...params} label="Xã" />
+                      <TextField required {...params} label="Phường/xã" />
                     )}
                     renderOption={(props, option) => {
                       return (

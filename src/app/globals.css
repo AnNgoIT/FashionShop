@@ -113,7 +113,10 @@ div {
 .react-multiple-carousel__arrow {
   z-index: 0 !important;
 }
-
+.slider.animated,
+.slider-wrapper.axis-horizontal {
+  height: 100%;
+}
 .carousel-container {
   width: 100%;
 }

@@ -171,7 +171,7 @@ const ProductDetailLoading = () => {
           </div>
         </div>
         <div
-          className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 place-items-center`}
+          className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 place-items-center p-4`}
         >
           <CircularProgress />
         </div>

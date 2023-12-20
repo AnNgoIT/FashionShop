@@ -35,7 +35,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import dayjs from "dayjs";
 import { decodeToken } from "@/features/jwt-decode";
-import { getCookie, setCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie, setCookie } from "cookies-next";
 import { createData } from "@/hooks/useAdmin";
 import { useRouter } from "next/navigation";
 import {
@@ -110,6 +110,9 @@ const AdminShipper = ({
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shippers, rowsPerPage, token]);
@@ -136,6 +139,17 @@ const AdminShipper = ({
 
   async function handleCreateUser(e: { preventDefault: () => void }) {
     e.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const result = {
       fullname: shipper.fullname,
       email: shipper.email,

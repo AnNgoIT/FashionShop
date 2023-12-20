@@ -2,7 +2,7 @@
 import { Total } from "@/features/cart/TotalPrice";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import Link from "next/link";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { CartContext } from "@/store";
 import usePath from "@/hooks/usePath";
@@ -13,11 +13,11 @@ import OrderInfo from "@/container/order/info";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import Button from "@mui/material/Button";
 import { makeAnOrder } from "@/hooks/useAuth";
-import { getCookie, setCookie } from "cookies-next";
+import { getCookie, hasCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { redirect, useRouter } from "next/navigation";
 import { warningMessage } from "@/features/toasting";
-import { getAuthenticated } from "@/hooks/useData";
+import { getAuthenticated, getData } from "@/hooks/useData";
 
 type CheckOutProps = {
   userInfo?: UserInfo;
@@ -42,10 +42,58 @@ const Checkout = (props: CheckOutProps) => {
     address: userInfo?.address?.split(",")[0] || "",
     paymentMethod: "COD",
   });
-
+  const [shippingCost, setShippingCost] = useState(0);
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
+
+  // let timeoutId: NodeJS.Timeout | null = null;
+
+  // const debounce = (func: Function, delay: number) => {
+  //   return (...args: any[]) => {
+  //     if (timeoutId) {
+  //       clearTimeout(timeoutId);
+  //     }
+
+  //     timeoutId = setTimeout(() => {
+  //       func(...args);
+  //     }, delay);
+  //   };
+  // };
+
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // const handlChangeAddressDebounced = useCallback(
+  //   debounce(async function handleGetAddressSuggest(value: string) {
+  //     if (value.trim() !== "") {
+  //       const result = await getData(
+  //         `https://rsapi.goong.io/Place/AutoComplete?api_key=${process.env.NEXT_PUBLIC_MAP_API_KEY}&location=21.013715429594125,%20105.79829597455202&input=${orderInfo.address}`
+  //       );
+  //       const place_id = result.predictions[0].place_id;
+  //       setShippingCost("");
+  //     }
+  //   }, 500),
+  //   []
+  // );
+
+  useEffect(() => {
+    async function handleGetAddressSuggest(value: string) {
+      if (value.trim() !== "") {
+        const apiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
+        const result = await getData(
+          `https://rsapi.goong.io/geocode?address=${orderInfo?.address.trim()}&api_key=${apiKey}`
+        );
+        const currCornidate = result.results[0].geometry.location;
+
+        const getShippingCost = await getData(
+          `https://rsapi.goong.io/DistanceMatrix?origins=10.8383387, 106.7950538&destinations=${currCornidate.lat},${currCornidate.lng}&vehicle=bike&api_key=${apiKey}`
+        );
+        caculateShippingCost(
+          getShippingCost.rows[0].elements[0].distance.value
+        );
+      }
+    }
+    handleGetAddressSuggest(orderInfo.address);
+  }, [orderInfo?.address, shippingCost]);
 
   const handleAddress = (value: string) => {
     setOrderInfo({
@@ -58,6 +106,14 @@ const Checkout = (props: CheckOutProps) => {
     redirect("/cart");
   }
 
+  const caculateShippingCost = (shippingCost: number) => {
+    if (shippingCost <= 50000) {
+      setShippingCost(0);
+    } else if (shippingCost > 50000 && shippingCost <= 300000) {
+      setShippingCost(45000);
+    } else if (shippingCost > 300000) setShippingCost(90000);
+  };
+
   const handleSubmitOrder = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     const newOrder: OrderInfo = orderInfo;
@@ -67,6 +123,17 @@ const Checkout = (props: CheckOutProps) => {
       warningMessage("Vui lòng cung cấp số điện thoại");
       router.push("/profile");
     } else {
+      if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+        warningMessage("Đang tạo lại phiên đăng nhập mới");
+        router.refresh();
+        return;
+      } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+        warningMessage("Vui lòng đăng nhập để được đặt hàng");
+        router.push("/login");
+        router.refresh();
+        return;
+      }
+
       const id = toast.loading("Vui lòng chờ...");
       const res = await makeAnOrder(getCookie("accessToken")!, newOrder);
       if (res.success) {
@@ -119,9 +186,9 @@ const Checkout = (props: CheckOutProps) => {
       } else if (res.statusCode == 401) {
         warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
         router.refresh();
-      } else {
+      } else if (res.statusCode == 400) {
         toast.update(id, {
-          render: `Dữ liệu truyền chưa chính xác`,
+          render: `Địa chỉ phải bao gồm thành phố huyện và xã`,
           type: "error",
           autoClose: 1500,
           isLoading: false,
@@ -316,9 +383,22 @@ const Checkout = (props: CheckOutProps) => {
                         Tổng tiền hàng :
                       </h1>
                     </td>
+
                     <td className="w-fit">
                       <span className="text-text-color font-bold">{`${FormatPrice(
                         Total(cartItems)
+                      )} VNĐ`}</span>
+                    </td>
+                  </tr>
+                  <tr className="w-full border border-[#dee2e6]">
+                    <td className="p-3">
+                      <h1 className="text-text-color font-bold">
+                        Phí vận chuyển :
+                      </h1>
+                    </td>
+                    <td className="w-fit">
+                      <span className="text-text-color font-bold">{`${FormatPrice(
+                        shippingCost
                       )} VNĐ`}</span>
                     </td>
                   </tr>
@@ -344,7 +424,7 @@ const Checkout = (props: CheckOutProps) => {
                     </td>
                     <td className="w-fit">
                       <span className="text-secondary-color font-semibold text-lg">{`${FormatPrice(
-                        Total(cartItems)
+                        Total(cartItems) + shippingCost
                       )} VNĐ `}</span>
                     </td>
                   </tr>

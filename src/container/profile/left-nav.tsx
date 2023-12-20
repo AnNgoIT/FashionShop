@@ -16,12 +16,13 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import { useEffect, useState } from "react";
 import Skeleton from "@mui/material/Skeleton";
 import { UserInfo } from "@/features/types";
+import FeedbackIcon from "@mui/icons-material/Feedback";
 const theme = createTheme({
   breakpoints: {
     values: {
       xs: 499,
       sm: 576,
-      md: 768,
+      md: 800,
       lg: 992,
       xl: 1250,
     },
@@ -43,7 +44,7 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
   }, [info]);
 
   return (
-    <div className="col-span-full sm:col-span-10 sm:col-start-2 xl:col-span-2 xl:col-start-2 lg:col-span-3">
+    <div className="col-span-full sm:col-span-10 sm:col-start-2 xl:col-span-2 xl:col-start-2 lg:col-span-2">
       <ThemeProvider theme={theme}>
         <List
           sx={{
@@ -224,7 +225,7 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
               }}
             >
               <ListItemIcon>
-                <HistoryIcon sx={{ minWidth: "3rem" }} />
+                <FeedbackIcon sx={{ minWidth: "3rem" }} />
               </ListItemIcon>
               <ListItemText
                 sx={{

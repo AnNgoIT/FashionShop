@@ -57,7 +57,9 @@ const AdminDashBoardPage = async () => {
   ]);
   const handleDashboardResponse = async (res: any, newUserRes: any) => {
     if (accessToken) {
-      revenue = res?.success && res.result;
+      revenue = res?.success
+        ? res.result
+        : { accessToken: undefined, refreshToken: undefined };
       newUser = newUserRes?.success && newUserRes.result;
     } else {
       fullToken = res?.success && res.result;

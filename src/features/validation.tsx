@@ -1,5 +1,6 @@
 import { ResetPassword } from "@/container/profile/reset-password-form";
-import { Account } from "./types";
+import { Account, productItem } from "./types";
+import { ProductItemError } from "@/container/admin/admin-product-item";
 
 // Hàm validate
 const validateRegisterForm = (account: Account) => {
@@ -177,5 +178,21 @@ export const validateResetPasswordForm = (userPassword: ResetPassword) => {
     errors.confirmPassword = "Xác nhận mật khẩu mới chưa chính xác";
   }
 
+  return errors;
+};
+
+export const validateProductItemForm = (validateValue: productItem) => {
+  const errors: ProductItemError = {
+    quantity: "",
+    price: "",
+  };
+  if (validateValue.quantity <= 0) {
+    errors.quantity = "Số lượng sản phẩm phải lớn hơn 0";
+  } else if (validateValue.quantity <= validateValue.sold) {
+    errors.quantity = "Số lượng sản phẩm phải lớn hơn hoặc bằng số đã bán ra";
+  }
+  if (validateValue.price <= 0) {
+    errors.price = "Giá sản phẩm phải lớn hơn 0";
+  }
   return errors;
 };

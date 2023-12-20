@@ -26,7 +26,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import { createData, patchData } from "@/hooks/useAdmin";
-import { getCookie, setCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select from "@mui/material/Select";
@@ -74,7 +74,7 @@ const AdminBrand = (props: AdminBrandProps) => {
       setBrandList(
         brands.sort((a, b) => b.brandId - a.brandId).slice(0, rowsPerPage)
       );
-    if (token) {
+    if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
@@ -85,6 +85,9 @@ const AdminBrand = (props: AdminBrandProps) => {
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
   }, [brands, rowsPerPage, token]);
 
@@ -164,6 +167,17 @@ const AdminBrand = (props: AdminBrandProps) => {
 
   async function handleUpdateBrand(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const updatePayload: UpdateBrand = {
       name: updateBrand ? brand.name : null,
       nation: updateBrand ? brand.nation : null,
@@ -173,6 +187,9 @@ const AdminBrand = (props: AdminBrandProps) => {
       getCookie("accessToken")!,
       updatePayload
     );
+    resetBrand();
+    setUpdateBrand(null);
+    handleClose();
     if (update.success) {
       successMessage("Đổi thương hiệu thành công");
       // setOrderList((prevOrderItems) =>
@@ -181,17 +198,11 @@ const AdminBrand = (props: AdminBrandProps) => {
       //   )
       // );
       router.refresh();
-      resetBrand();
-      setUpdateBrand(null);
-      handleClose();
     } else if (update.statusCode == 401) {
       warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
       router.refresh();
     } else if (update.status == 500) {
       errorMessage("Lỗi hệ thống");
-      resetBrand();
-      setUpdateBrand(null);
-      handleClose();
       router.refresh();
     } else if (update.status == 404) {
       errorMessage("Không tìm thấy thương hiệu này");
@@ -203,6 +214,16 @@ const AdminBrand = (props: AdminBrandProps) => {
   }
   async function handleCreateBrand(e: { preventDefault: () => void }) {
     e.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
 
     const payload = {
       name: brand.name,
@@ -215,6 +236,7 @@ const AdminBrand = (props: AdminBrandProps) => {
       payload,
       "application/json"
     );
+    handleClose();
     if (res.success) {
       toast.update(id, {
         render: `Tạo thương hiệu mới thành công`,
@@ -222,7 +244,6 @@ const AdminBrand = (props: AdminBrandProps) => {
         autoClose: 500,
         isLoading: false,
       });
-      handleClose();
       router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {

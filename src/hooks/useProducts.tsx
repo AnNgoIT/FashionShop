@@ -12,7 +12,6 @@ export const addProductItemToCart = async (
       Authorization: `Bearer ${accessToken}`,
     },
   };
-
   try {
     const res = await axios.post(
       `${HTTP_PORT}/api/v1/users/customers/carts/cartItems`,
@@ -22,6 +21,6 @@ export const addProductItemToCart = async (
     const data = res && res.data ? res.data : {};
     return data;
   } catch (error: any) {
-    return error;
+    return error.response.data;
   }
 };

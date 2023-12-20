@@ -8,14 +8,8 @@ import {
   banner_thoi_trang_nam,
   banner_thoi_trang_nu,
   banner_thoi_trang_nu_2,
-  main_banner1,
-  main_banner2,
-  main_banner3,
-  main_banner_chinh,
-  sale_banner1,
   sale_banner2,
 } from "@/assests/images";
-import Box from "@mui/material/Box";
 import { imageLoader } from "@/features/img-loading";
 import Image from "next/image";
 export const MyArrowNext = (clickHandler: () => void, hasNext: boolean) => {
@@ -84,23 +78,23 @@ const Banner = () => {
   return (
     <section className="container grid grid-cols-12 p-4 max-md:px-4 gap-4 mt-[96px]">
       <div className="grid grid-cols-1 md:grid-cols-12 col-span-full gap-4">
-        <div className="col-span-full lg:col-span-8 rounded-sm">
+        <div className="col-span-full lg:col-span-8 rounded-sm h-full">
           <Carousel
             showStatus={false}
             showThumbs={false}
             swipeable={true}
             transitionTime={150}
-            autoPlay={true}
+            // autoPlay={true}
             infiniteLoop={true}
             // showArrows={false}
             renderIndicator={MyIndicator}
-            className="grid grid-flow-col"
+            className="grid grid-flow-col h-full"
           >
-            <article className="grid grid-flow-col gap-x-4">
+            <article className="grid grid-flow-col gap-x-4 h-full">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="h-[200px] md:h-[310px]"
+                className="h-full"
                 alt="banner_thoi_trang_nu"
                 src={banner_thoi_trang_nu_2}
                 width={485}
@@ -108,11 +102,11 @@ const Banner = () => {
                 quality={100}
               />
             </article>
-            <article className="grid grid-flow-col gap-x-4">
+            <article className="grid grid-flow-col gap-x-4 h-full">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="h-[200px] md:h-[310px]"
+                className="h-full"
                 alt="banner_thoi_trang_nu"
                 src={sale_banner2}
                 width={485}

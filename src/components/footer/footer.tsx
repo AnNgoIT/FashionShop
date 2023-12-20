@@ -45,13 +45,13 @@ const Footer = () => {
             </span>
             <ul className="grid place-items-start py-4">
               <li className="transition-opacity hover:opacity-60 p-1">
-                <Link href="/about">Về chúng tôi</Link>
+                <Link href="#">Về chúng tôi</Link>
               </li>
               <li className="transition-opacity hover:opacity-60 p-1">
-                <Link href="/blog">Trang tin tức</Link>
+                <Link href="#">Trang tin tức</Link>
               </li>
               <li className="transition-opacity hover:opacity-60 p-1">
-                <Link href="/">Chính sách bảo mật</Link>
+                <Link href="#">Chính sách bảo mật</Link>
               </li>
             </ul>
           </div>
@@ -62,15 +62,15 @@ const Footer = () => {
             <ul className="grid place-items-start py-4">
               <li className="p-1">
                 <FontAwesomeIcon icon={faLocationDot} />
-                <span className="ml-2">Địa chỉ</span>
+                <span className="ml-2">3/32A Đường 182 Quận 9</span>
               </li>
               <li className="p-1">
                 <FontAwesomeIcon icon={faPhone} />
-                <span className="ml-2">Số điện thoại</span>
+                <span className="ml-2">0376399721</span>
               </li>
               <li className="p-1">
                 <FontAwesomeIcon icon={faEnvelope} />
-                <span className="ml-2">Email</span>
+                <span className="ml-2">ngothuaan2002@gmail.com</span>
               </li>
             </ul>
           </div>

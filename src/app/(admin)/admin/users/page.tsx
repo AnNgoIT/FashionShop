@@ -56,7 +56,9 @@ export default async function Page() {
     if (accessToken) {
       refreshUsers = res?.success && res.result.userList;
     } else {
-      fullToken = res?.success && res.result;
+      fullToken = res?.success
+        ? res.result
+        : { accessToken: undefined, refreshToken: undefined };
       const newOrders = await getAllUsersByRoleName(
         fullToken?.accessToken!,
         fullToken?.refreshToken!,

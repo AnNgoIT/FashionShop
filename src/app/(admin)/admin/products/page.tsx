@@ -1,9 +1,7 @@
 import { fetchAllCategories, fetchAllBrands } from "@/app/(guest)/product/page";
 import { HTTP_PORT, refreshLogin } from "@/app/page";
-import { LoadingComponent } from "@/components/loading";
 import AdminProduct from "@/container/admin/admin-product";
 import { getCookie, hasCookie } from "cookies-next";
-import dynamic from "next/dynamic";
 import { cookies } from "next/headers";
 
 // const AdminProduct = dynamic(() => import("@/container/admin/admin-product"), {
@@ -77,7 +75,7 @@ const AdminProductPage = async () => {
       if (newProducts.success) {
         refreshedProducts = newProducts.result.content;
       }
-    }
+    } else fullToken = { accessToken: undefined, refreshToken: undefined };
   }
 
   const product = productsResponse?.success

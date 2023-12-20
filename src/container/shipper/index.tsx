@@ -1,5 +1,5 @@
 "use client";
-import { deliveryItem, productItemInOrder } from "@/features/types";
+import { deliveryItem, orderItem, productItemInOrder } from "@/features/types";
 import InfoIcon from "@mui/icons-material/Info";
 import React, { useEffect, useState } from "react";
 import { FormatPrice } from "@/features/product/FilterAmount";
@@ -21,14 +21,19 @@ import {
 } from "@/features/toasting";
 import { useRouter } from "next/navigation";
 import { getDataAdmin, patchData } from "@/hooks/useAdmin";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import { decodeToken } from "@/features/jwt-decode";
-import { setCookie, getCookie, getCookies, deleteCookie } from "cookies-next";
+import {
+  setCookie,
+  getCookie,
+  getCookies,
+  deleteCookie,
+  hasCookie,
+} from "cookies-next";
 import Typography from "@mui/material/Typography";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -37,6 +42,7 @@ import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
 import Image from "next/image";
 import { Total } from "@/features/cart/TotalPrice";
 import { logout } from "@/hooks/useAuth";
+import CircularProgress from "@mui/material/CircularProgress";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -80,9 +86,10 @@ const Shipper = ({
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [order, setOrder] = useState<deliveryItem | null>(null);
-  const [deliveryDetail, setDeliveryDetail] = useState<
-    productItemInOrder[] | null
-  >(null);
+  const [deliveryDetail, setDeliveryDetail] = useState<{
+    order: orderItem;
+    orderItems: productItemInOrder[];
+  } | null>(null);
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -102,19 +109,20 @@ const Shipper = ({
     deliveries &&
       deliveries.length > 0 &&
       setDeliveryList(deliveries.slice(0, rowsPerPage));
-    if (token) {
+    if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.accessToken!)!,
-        maxAge: ACCESS_MAX_AGE,
+        expires: decodeToken(token.accessToken)!,
       });
       setCookie("refreshToken", token.refreshToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
-        expires: decodeToken(token.refreshToken!)!,
-        maxAge: REFRESH_MAX_AGE,
+        expires: decodeToken(token.refreshToken)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deliveries, rowsPerPage, token]);
@@ -175,21 +183,42 @@ const Shipper = ({
   };
 
   async function openInfoModal(item: deliveryItem) {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+    setOpen(true);
+
     const res = await getDataAdmin(
       `/api/v1/users/shippers/deliveries/${item.deliveryId}`,
       getCookie("accessToken")!
     );
     if (res.success) {
-      setDeliveryDetail(res.result.orderItems);
+      setDeliveryDetail(res.result);
     } else if (res.statusCode == 401) {
       warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
       router.refresh();
     }
-    setOpen(true);
   }
 
   async function handleUpdateDelivery(event: any, delivery: deliveryItem) {
     event.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
 
     if (delivery.isReceived === false && delivery.isDelivered === false) {
       const shipperReceived = await patchData(
@@ -248,18 +277,6 @@ const Shipper = ({
         errorMessage("Không tìm thấy đơn giao này");
       } else errorMessage("Lỗi sai dữ liệu truyền");
     }
-
-    // setDeliveryList((prevdeliveryItems) =>
-    //   prevdeliveryItems.map((item) =>
-    //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
-    //   )
-    // );
-    // handleCloseDialog();
-    // router.refresh();
-    // const startIndex = page * rowsPerPage;
-
-    // Tạo một mảng mới từ danh sách danh mục ban đầu, bắt đầu từ chỉ số mới
-    // setDeliveryList(newDeliveryList.slice(startIndex, startIndex + rowsPerPage));
   }
 
   return (
@@ -297,58 +314,70 @@ const Shipper = ({
         aria-labelledby="order-tracking-title"
         aria-describedby="order-tracking-description"
       >
-        <Box className="relative" sx={modalOrderDetailStyle}>
-          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            Chi tiết đơn hàng
+        <Box className="" sx={modalOrderDetailStyle}>
+          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center p-2">
+            Chi tiết đơn mua
           </h2>
-          <ul className="min-h-[21rem]">
-            {deliveryDetail &&
-              deliveryDetail.length > 0 &&
-              deliveryDetail.map((productItem) => {
-                return (
-                  <li className="w-full" key={productItem.orderItemId}>
-                    <div className="flex justify-between p-2">
-                      <div className="flex gap-x-2">
-                        <Image
-                          className="outline outline-1 outline-border-color w-[6rem] h-[7rem]"
-                          src={productItem.image}
-                          blurDataURL={productItem.image}
-                          loader={imageLoader}
-                          placeholder="blur"
-                          width={100}
-                          height={100}
-                          alt={"orderItemImg"}
-                        ></Image>
-                        <h1 className="text-sm text-secondary-color font-bold">
-                          {productItem.productName}
-                        </h1>
+          {deliveryDetail && deliveryDetail.orderItems.length > 0 ? (
+            <>
+              <ul className="min-h-[21rem]">
+                {deliveryDetail.orderItems.map((productItem) => {
+                  return (
+                    <li className="w-full" key={productItem.orderItemId}>
+                      <div className="flex justify-between py-2">
+                        <div className="flex gap-x-2">
+                          <Image
+                            className="outline outline-2 outline-secondary-color w-[6rem] h-[7rem] p-1"
+                            src={productItem.image}
+                            blurDataURL={productItem.image}
+                            loader={imageLoader}
+                            placeholder="blur"
+                            width={100}
+                            height={100}
+                            alt={"orderItemImg"}
+                          ></Image>
+                          <h1 className="text-sm text-secondary-color font-bold">
+                            {productItem.productName}
+                          </h1>
+                        </div>
+                        <span className="text-text-light-color text-md">{`x${productItem.quantity}`}</span>
                       </div>
-                      <span className="text-text-light-color text-md">{`x${productItem.quantity}`}</span>
-                    </div>
-                  </li>
-                );
-              })}
-          </ul>
-          <div className="absolute px-2 py-4 border-t border-text-color w-[90%]">
-            <div className="flex justify-between text-text-light-color text-base p-2">
-              <span> Phí vận chuyển: </span>
-              <strong className="font-black">{FormatPrice(45000)} VNĐ</strong>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="py-4 border-t border-text-light-color">
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Tổng đơn hàng: </span>
+                  <strong className="font-black">
+                    {deliveryDetail &&
+                      FormatPrice(Total(deliveryDetail.orderItems))}
+                    VNĐ
+                  </strong>
+                </div>
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Phương thức thanh toán: </span>
+                  <strong className="font-black">
+                    {deliveryDetail?.order.paymentMethod == "COD"
+                      ? "Thanh toán khi nhận"
+                      : "Ví điện tử VNPay"}
+                  </strong>
+                </div>
+                <div className="flex justify-between text-secondary-color text-xl font-bold p-1">
+                  <span> Thành tiền: </span>
+                  <strong className="font-black">
+                    {deliveryDetail &&
+                      FormatPrice(Total(deliveryDetail.orderItems))}
+                    VNĐ
+                  </strong>
+                </div>
+              </div>{" "}
+            </>
+          ) : (
+            <div className="flex justify-center items-center p-4 h-[29.3rem]">
+              <CircularProgress />
             </div>
-            <div className="flex justify-between text-text-light-color text-base p-2">
-              <span> Tổng đơn hàng: </span>
-              <strong className="font-black">
-                {deliveryDetail && FormatPrice(Total(deliveryDetail))}
-                VNĐ
-              </strong>
-            </div>
-            <div className="flex justify-between text-secondary-color text-xl font-bold p-2">
-              <span> Thành tiền: </span>
-              <strong className="font-black">
-                {deliveryDetail && FormatPrice(Total(deliveryDetail) + 45000)}
-                VNĐ
-              </strong>
-            </div>
-          </div>
+          )}
         </Box>
       </Modal>
       <div className="min-h-[4rem] bg-primary-color text-white flex justify-between items-center p-4">

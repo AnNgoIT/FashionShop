@@ -20,7 +20,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import { decodeToken } from "@/features/jwt-decode";
-import { setCookie } from "cookies-next";
+import { deleteCookie, setCookie } from "cookies-next";
 import Avatar from "@mui/material/Avatar";
 import dayjs from "dayjs";
 
@@ -66,33 +66,36 @@ const AdminUser = ({
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [users, rowsPerPage, token]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = e.target.files;
 
-    if (files && files.length > 0) {
-      const file = files[0];
-      const reader = new FileReader();
+  //   if (files && files.length > 0) {
+  //     const file = files[0];
+  //     const reader = new FileReader();
 
-      reader.onload = (e) => {
-        if (e.target && e.target.result) {
-          const imageUrl = e.target.result.toString();
-          setAvatar(imageUrl);
-        }
-      };
+  //     reader.onload = (e) => {
+  //       if (e.target && e.target.result) {
+  //         const imageUrl = e.target.result.toString();
+  //         setAvatar(imageUrl);
+  //       }
+  //     };
 
-      reader.readAsDataURL(file);
-    }
-  };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
-  const handleCustomButtonClick = () => {
-    if (fileInputRef && fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
+  // const handleCustomButtonClick = () => {
+  //   if (fileInputRef && fileInputRef.current) {
+  //     fileInputRef.current.click();
+  //   }
+  // };
 
   const handleChangePage = (event: any, newPage: number) => {
     // Tính toán chỉ số bắt đầu mới của danh sách danh mục dựa trên số trang mới

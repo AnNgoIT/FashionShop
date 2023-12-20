@@ -10,6 +10,8 @@ import { validateChangePasswordForm } from "@/features/validation";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { warningMessage } from "@/features/toasting";
+import InputAdornment from "@mui/material/InputAdornment";
+import ShowHidePassword from "@/features/visibility";
 const ChangePassword = () => {
   const router = useRouter();
   const [userPassword, setUserPassword] = useState({
@@ -22,6 +24,15 @@ const ChangePassword = () => {
     newPassword: "",
     confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
 
   const isError = (error: any) => {
     for (const key in error) {
@@ -36,7 +47,7 @@ const ChangePassword = () => {
     const value = e.target.value;
     setUserPassword({
       ...userPassword,
-      [e.target.name]: value,
+      [e.target.name]: value.trim(),
     });
 
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
@@ -50,9 +61,9 @@ const ChangePassword = () => {
     e.preventDefault();
 
     const reset = {
-      currentPassword: userPassword.currentPassword,
-      newPassword: userPassword.newPassword,
-      confirmPassword: userPassword.confirmPassword,
+      currentPassword: userPassword.currentPassword.trim(),
+      newPassword: userPassword.newPassword.trim(),
+      confirmPassword: userPassword.confirmPassword.trim(),
     };
     const formErrors = validateChangePasswordForm(reset);
 
@@ -113,7 +124,16 @@ const ChangePassword = () => {
               fullWidth
               required
               autoComplete="off"
-              type="password"
+              endAdornment={
+                <InputAdornment position="end">
+                  <ShowHidePassword
+                    showPassword={showPassword}
+                    click={handleClickShowPassword}
+                    mousedownPassword={handleMouseDownPassword}
+                  />
+                </InputAdornment>
+              }
+              type={showPassword ? "text" : "password"}
               value={userPassword.currentPassword}
               onChange={handleChange}
               id="currentPassword"
@@ -134,7 +154,7 @@ const ChangePassword = () => {
               fullWidth
               required
               autoComplete="off"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={userPassword.newPassword}
               onChange={handleChange}
               id="newPassword"
@@ -156,7 +176,7 @@ const ChangePassword = () => {
               fullWidth
               required
               autoComplete="off"
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="confirmPassword"
               onChange={handleChange}
               // placeholder="Type your confirmPassword"

@@ -26,7 +26,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import { createData, patchData } from "@/hooks/useAdmin";
-import { getCookie, setCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select from "@mui/material/Select";
@@ -77,7 +77,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
           .sort((a, b) => b.styleValueId - a.styleValueId)
           .slice(0, rowsPerPage)
       );
-    if (token) {
+    if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
         // secure: process.env.NODE_ENV === "production",
@@ -88,6 +88,9 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
   }, [styleValues, rowsPerPage, token]);
 
@@ -173,6 +176,17 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
     event: React.FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const updatePayload: UpdateStyleValue = {
       name: styleValue ? styleValue.name : null,
     };
@@ -208,7 +222,16 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
   }
   async function handleCreateStyleValue(e: { preventDefault: () => void }) {
     e.preventDefault();
-
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
     const payload = {
       name: styleValue.name,
       styleId: styleValue.styleName,

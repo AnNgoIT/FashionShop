@@ -24,7 +24,7 @@ import FormControl from "@mui/material/FormControl";
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import { getCookie, setCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie, setCookie } from "cookies-next";
 import dayjs from "dayjs";
 import {
   errorMessage,
@@ -40,6 +40,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
+import CircularProgress from "@mui/material/CircularProgress";
 const AdminOrders = ({
   orders,
   token,
@@ -50,9 +51,10 @@ const AdminOrders = ({
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [order, setOrder] = useState<orderItem | null>(null);
-  const [orderDetail, setOrderDetail] = useState<productItemInOrder[] | null>(
-    null
-  );
+  const [orderDetail, setOrderDetail] = useState<{
+    order: orderItem;
+    orderItems: productItemInOrder[];
+  } | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -74,6 +76,9 @@ const AdminOrders = ({
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,21 +118,42 @@ const AdminOrders = ({
   };
 
   async function openInfoModal(item: orderItem) {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+    setOpen(true);
     const res = await getDataAdmin(
       `/api/v1/users/admin/orders/${item.orderId}`,
       getCookie("accessToken")!
     );
     if (res.success) {
-      setOrderDetail(res.result.orderItems);
+      setOrderDetail(res.result);
     } else if (res.statusCode == 401) {
       warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
       router.refresh();
     }
-    setOpen(true);
   }
 
   async function handleUpdateOrder(event: any, order: orderItem) {
     event.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const newStatus =
       order.status === "NOT_PROCESSED"
         ? "PROCESSING"
@@ -197,18 +223,6 @@ const AdminOrders = ({
         router.refresh();
       } else errorMessage("Lỗi sai dữ liệu truyền");
     }
-
-    // setOrderList((prevOrderItems) =>
-    //   prevOrderItems.map((item) =>
-    //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
-    //   )
-    // );
-    // handleCloseDialog();
-    // router.refresh();
-    // const startIndex = page * rowsPerPage;
-
-    // Tạo một mảng mới từ danh sách danh mục ban đầu, bắt đầu từ chỉ số mới
-    // setOrderList(newOrderList.slice(startIndex, startIndex + rowsPerPage));
   }
 
   function handleSearchOrders(e: { preventDefault: () => void }, id: string) {
@@ -260,58 +274,68 @@ const AdminOrders = ({
         aria-labelledby="order-tracking-title"
         aria-describedby="order-tracking-description"
       >
-        <Box className="relative" sx={modalOrderDetailStyle}>
-          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            Chi tiết đơn hàng
+        <Box className="" sx={modalOrderDetailStyle}>
+          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center p-2">
+            Chi tiết đơn mua
           </h2>
-          <ul className="min-h-[21rem]">
-            {orderDetail &&
-              orderDetail.length > 0 &&
-              orderDetail.map((productItem) => {
-                return (
-                  <li className="w-full" key={productItem.orderItemId}>
-                    <div className="flex justify-between p-2">
-                      <div className="flex gap-x-2">
-                        <Image
-                          className="outline outline-1 outline-border-color w-[6rem] h-[7rem]"
-                          src={productItem.image}
-                          blurDataURL={productItem.image}
-                          loader={imageLoader}
-                          placeholder="blur"
-                          width={100}
-                          height={100}
-                          alt={"orderItemImg"}
-                        ></Image>
-                        <h1 className="text-sm text-secondary-color font-bold">
-                          {productItem.productName}
-                        </h1>
+          {orderDetail && orderDetail.orderItems.length > 0 ? (
+            <>
+              <ul className="min-h-[21rem]">
+                {orderDetail.orderItems.map((productItem) => {
+                  return (
+                    <li className="w-full" key={productItem.orderItemId}>
+                      <div className="flex justify-between py-2">
+                        <div className="flex gap-x-2">
+                          <Image
+                            className="outline outline-2 outline-secondary-color w-[6rem] h-[7rem] p-1"
+                            src={productItem.image}
+                            blurDataURL={productItem.image}
+                            loader={imageLoader}
+                            placeholder="blur"
+                            width={100}
+                            height={100}
+                            alt={"orderItemImg"}
+                          ></Image>
+                          <h1 className="text-sm text-secondary-color font-bold">
+                            {productItem.productName}
+                          </h1>
+                        </div>
+                        <span className="text-text-light-color text-md">{`x${productItem.quantity}`}</span>
                       </div>
-                      <span className="text-text-light-color text-md">{`x${productItem.quantity}`}</span>
-                    </div>
-                  </li>
-                );
-              })}
-          </ul>
-          <div className="absolute px-2 py-4 border-t border-text-color w-[90%]">
-            <div className="flex justify-between text-text-light-color text-base p-2">
-              <span> Phí vận chuyển: </span>
-              <strong className="font-black">{FormatPrice(45000)} VNĐ</strong>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="py-4 border-t border-text-light-color">
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Tổng đơn hàng: </span>
+                  <strong className="font-black">
+                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}
+                    VNĐ
+                  </strong>
+                </div>
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Phương thức thanh toán: </span>
+                  <strong className="font-black">
+                    {orderDetail?.order.paymentMethod == "COD"
+                      ? "Thanh toán khi nhận"
+                      : "Ví điện tử VNPay"}
+                  </strong>
+                </div>
+                <div className="flex justify-between text-secondary-color text-xl font-bold p-1">
+                  <span> Thành tiền: </span>
+                  <strong className="font-black">
+                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}
+                    VNĐ
+                  </strong>
+                </div>
+              </div>{" "}
+            </>
+          ) : (
+            <div className="flex justify-center items-center p-4 h-[29.3rem]">
+              <CircularProgress />
             </div>
-            <div className="flex justify-between text-text-light-color text-base p-2">
-              <span> Tổng đơn hàng: </span>
-              <strong className="font-black">
-                {orderDetail && FormatPrice(Total(orderDetail))}
-                VNĐ
-              </strong>
-            </div>
-            <div className="flex justify-between text-secondary-color text-xl font-bold p-2">
-              <span> Thành tiền: </span>
-              <strong className="font-black">
-                {orderDetail && FormatPrice(Total(orderDetail) + 45000)}
-                VNĐ
-              </strong>
-            </div>
-          </div>
+          )}
         </Box>
       </Modal>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -376,7 +400,7 @@ const AdminOrders = ({
                   <TableCell sx={{ minWidth: "7rem" }} align="left">
                     Ngày đặt
                   </TableCell>
-                  <TableCell sx={{ minWidth: "11rem" }} align="left">
+                  <TableCell sx={{ minWidth: "9rem" }} align="left">
                     Địa chỉ
                   </TableCell>
                   <TableCell sx={{ minWidth: "12rem" }} align="left">
@@ -409,10 +433,9 @@ const AdminOrders = ({
                           ? "Thanh toán khi nhận"
                           : "Ví điện tử VNPay"}
                       </TableCell>
-                      <TableCell
-                        sx={{ width: "10rem" }}
-                        align="left"
-                      >{`${FormatPrice(item.totalAmount)} VNĐ`}</TableCell>
+                      <TableCell align="left">{`${FormatPrice(
+                        item.totalAmount
+                      )} VNĐ`}</TableCell>
                       <TableCell sx={{ width: "10rem" }} align="left">
                         <FormControl sx={{ minWidth: "10rem" }}>
                           <div
@@ -460,7 +483,8 @@ const AdminOrders = ({
                             <InfoIcon />
                           </Button>
                           {item.status != "CANCELLED" &&
-                            item.status != "DELIVERED" && (
+                            item.status != "DELIVERED" &&
+                            item.status != "SHIPPING" && (
                               <Button
                                 onClick={(e) => handleOpenDialog(item)}
                                 sx={{

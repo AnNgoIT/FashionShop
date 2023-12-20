@@ -35,7 +35,7 @@ const CartPage = async () => {
       fullToken = refresh.result;
       const res = await userCart(refresh.result.accessToken);
       refreshUserCart = res.result;
-    }
+    } else fullToken = { accessToken: undefined, refreshToken: undefined };
   }
 
   const cart =

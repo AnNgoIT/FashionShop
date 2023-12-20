@@ -83,6 +83,9 @@ const CartTopNav = ({
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info]);
@@ -286,7 +289,7 @@ const CartTopNav = ({
               ></Menu>
             )}
           </li>
-          <li>
+          {/* <li>
             <Menu
               dropdownContent={
                 <Paper
@@ -322,7 +325,7 @@ const CartTopNav = ({
                 </div>
               }
             ></Menu>
-          </li>
+          </li> */}
         </ul>
       </div>
     </nav>

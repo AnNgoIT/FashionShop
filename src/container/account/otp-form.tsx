@@ -41,7 +41,7 @@ const OTPForm = () => {
     const id = toast.loading("Đang xác nhận...");
     const response = await verifyOTP({
       email: verifyEmail.email,
-      otp,
+      otp: otp.trim(),
     });
     if (response.success) {
       toast.update(id, {

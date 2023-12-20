@@ -7,7 +7,7 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { deleteCookie, getCookie, setCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie, setCookie } from "cookies-next";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -18,6 +18,9 @@ import MenuItem from "@mui/material/MenuItem";
 import { getAuthenticated } from "@/hooks/useData";
 import Revenue from "@/components/dashboard/Revenue";
 import NewUsers from "@/components/dashboard/NewUser";
+import { warningMessage } from "@/features/toasting";
+import router from "next/router";
+import { useRouter } from "next/navigation";
 type DashBoardProps = {
   token?: { accessToken?: string; refreshToken?: string };
   revenues: number;
@@ -30,6 +33,7 @@ type staticticsFilter = {
   year: number | string;
 };
 const AdminDashBoard = (props: DashBoardProps) => {
+  const router = useRouter();
   const [filterValue, setFilterValue] = useState<staticticsFilter>({
     day: "Chọn",
     month: "Chọn",
@@ -57,12 +61,24 @@ const AdminDashBoard = (props: DashBoardProps) => {
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
-    } else if (!token) {
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
       deleteCookie("refreshToken");
     }
   }, [newUsers, revenues, token]);
 
   const handleFilter = async (e: any) => {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const value = e.target.value;
     setFilterValue({
       ...filterValue,

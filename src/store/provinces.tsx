@@ -470,14 +470,14 @@ export const provinces = [
               "short_codename": "quan_hoa"
             },
             {
-              "name": "Phường Yên Hoà",
+              "name": "Phường Yên Hòa",
               "code": 172,
               "codename": "phuong_yen_hoa",
               "division_type": "phường",
               "short_codename": "yen_hoa"
             },
             {
-              "name": "Phường Trung Hoà",
+              "name": "Phường Trung Hòa",
               "code": 175,
               "codename": "phuong_trung_hoa",
               "division_type": "phường",

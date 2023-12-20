@@ -44,6 +44,8 @@ import {
 } from "@/features/toasting";
 import useLocal from "@/hooks/useLocalStorage";
 import CategoryIcon from "@mui/icons-material/Category";
+import { Suspense } from "react";
+import { LoadingComponent } from "../loading";
 const Input = styled("input")(({ theme }) => ({
   width: 200,
   backgroundColor: theme.palette.mode === "light" ? "#fff" : "#000",
@@ -139,11 +141,28 @@ const TopNav = (props: NavProps) => {
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
+    }
+    if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      local.removeItem("viewedProducts");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleLogout = async () => {
+    // if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+    //   warningMessage("Đang tạo lại phiên đăng nhập mới");
+    //   router.refresh();
+    //   return;
+    // } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+    //   warningMessage("Vui lòng đăng nhập để dùng chức năng này");
+    //   router.push("/login");
+    //   router.refresh();
+    //   return;
+    // }
+
     const id = toast.loading("Đang đăng xuất...");
     const res = await logout(cookies.accessToken!, cookies.refreshToken!);
     if (res.success) {
@@ -284,92 +303,94 @@ const TopNav = (props: NavProps) => {
                   }
                   arrowPos="104px"
                 ></Menu>
-                <Input
-                  value={keyword}
-                  onChange={(e) => handleChange(e.target.value)}
-                  onFocus={() => setOnSearch(true)}
-                  name="keyword"
-                  autoComplete="off"
-                  className="outline-none px-4 py-3 text-sm truncate flex-1 rounded-lg"
-                  type="text"
-                  placeholder="Tìm kiếm sản phẩm..."
-                ></Input>
-                <button
-                  type="button"
-                  name="search-button"
-                  onClick={handleSearchProducts}
-                  className="absolute right-[0.25rem] transition-opacity hover:opacity-60 bg-primary-color
+                <Suspense fallback={<LoadingComponent />}>
+                  <Input
+                    value={keyword}
+                    onChange={(e) => handleChange(e.target.value)}
+                    onFocus={() => setOnSearch(true)}
+                    name="keyword"
+                    autoComplete="off"
+                    className="outline-none px-4 py-3 text-sm truncate flex-1 rounded-lg"
+                    type="text"
+                    placeholder="Tìm kiếm sản phẩm..."
+                  ></Input>
+                  <button
+                    type="button"
+                    name="search-button"
+                    onClick={handleSearchProducts}
+                    className="absolute right-[0.25rem] transition-opacity hover:opacity-60 bg-primary-color
              cursor-pointer text-white grid place-content-center rounded-md py-[10px] px-5"
-                >
-                  <FontAwesomeIcon
-                    className="icon"
-                    icon={faSearch}
-                  ></FontAwesomeIcon>
-                </button>
-                {onSearch && keyword.length > 0 && (
-                  <Listbox
-                    key={"listbox"}
-                    sx={{
-                      width: "100%",
-                      maxHeight: "14rem",
-                      overflow: "auto",
-                    }}
                   >
-                    {products &&
-                    products.filter((product) => {
-                      const value = keyword.toLowerCase();
-                      const name = product.name.toLowerCase();
-                      return value && name.includes(value) && name !== value;
-                    }).length == 0 ? (
-                      <div className="w-full h-[8rem] flex justify-center items-center text-xl text-text-color">
-                        Không tìm thấy sản phẩm
-                      </div>
-                    ) : (
-                      products &&
-                      products
-                        .filter((product) => {
-                          const value = keyword.toLowerCase();
-                          const name = product.name.toLowerCase();
-                          return (
-                            value && name.includes(value) && name !== value
-                          );
-                        })
-                        .map((product) => {
-                          return (
-                            <Link
-                              key={product.productId}
-                              href={`/product/${product.productId}`}
-                            >
-                              <li
-                                className="flex item-center p-3 max-h-max gap-x-2
-                        hover:bg-primary-color hover:text-white cursor-pointer border-b border-border-color"
+                    <FontAwesomeIcon
+                      className="icon"
+                      icon={faSearch}
+                    ></FontAwesomeIcon>
+                  </button>
+                  {onSearch && keyword.length > 0 && (
+                    <Listbox
+                      key={"listbox"}
+                      sx={{
+                        width: "100%",
+                        maxHeight: "14rem",
+                        overflow: "auto",
+                      }}
+                    >
+                      {products &&
+                      products.filter((product) => {
+                        const value = keyword.toLowerCase();
+                        const name = product.name.toLowerCase();
+                        return value && name.includes(value) && name !== value;
+                      }).length == 0 ? (
+                        <div className="w-full h-[8rem] flex justify-center items-center text-xl text-text-color">
+                          Không tìm thấy sản phẩm
+                        </div>
+                      ) : (
+                        products &&
+                        products
+                          .filter((product) => {
+                            const value = keyword.toLowerCase();
+                            const name = product.name.toLowerCase();
+                            return (
+                              value && name.includes(value) && name !== value
+                            );
+                          })
+                          .map((product) => {
+                            return (
+                              <Link
+                                key={product.productId}
+                                href={`/product/${product.productId}`}
                               >
-                                <div className="border border-border-color max-w-[5rem] h-max">
-                                  <Image
-                                    loader={imageLoader}
-                                    blurDataURL={product.image}
-                                    placeholder="blur"
-                                    className="group-hover:shadow-sd"
-                                    alt="autocompleImg"
-                                    src={product.image}
-                                    width={120}
-                                    height={40}
-                                    priority
-                                  ></Image>
-                                </div>
-                                <span
-                                  key={product.productId}
-                                  className="cursor-pointer text-left"
+                                <li
+                                  className="flex item-center p-3 max-h-max gap-x-2
+                        hover:bg-primary-color hover:text-white cursor-pointer border-b border-border-color"
                                 >
-                                  {product.name}
-                                </span>
-                              </li>
-                            </Link>
-                          );
-                        })
-                    )}
-                  </Listbox>
-                )}
+                                  <div className="border border-border-color max-w-[5rem] h-max">
+                                    <Image
+                                      loader={imageLoader}
+                                      blurDataURL={product.image}
+                                      placeholder="blur"
+                                      className="group-hover:shadow-sd"
+                                      alt="autocompleImg"
+                                      src={product.image}
+                                      width={120}
+                                      height={40}
+                                      priority
+                                    ></Image>
+                                  </div>
+                                  <span
+                                    key={product.productId}
+                                    className="cursor-pointer text-left"
+                                  >
+                                    {product.name}
+                                  </span>
+                                </li>
+                              </Link>
+                            );
+                          })
+                      )}
+                    </Listbox>
+                  )}
+                </Suspense>
               </>
             )}
         </div>
@@ -536,7 +557,7 @@ const TopNav = (props: NavProps) => {
                     ></Menu>
                   )}
                 </li>
-                <li>
+                {/* <li>
                   <Menu
                     dropdownContent={
                       <Paper
@@ -563,16 +584,16 @@ const TopNav = (props: NavProps) => {
                         <span className="text-white text-sm whitespace-nowrap">
                           Thông báo
                         </span>
-                        {/* <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
+                        <div className="absolute -top-0.5 right-[22px] px-1.5 py-0.75 rounded-full text-white text-sm bg-secondary-color">
                           {info &&
                             cartItems &&
                             cartItems.length > 0 &&
                             cartItems.length}
-                        </div> */}
+                        </div>
                       </div>
                     }
                   ></Menu>
-                </li>
+                </li> */}
                 <li>
                   <Menu
                     dropdownContent={

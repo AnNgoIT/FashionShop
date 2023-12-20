@@ -32,7 +32,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Chip from "@mui/material/Chip";
 import { createData, patchData, putData } from "@/hooks/useAdmin";
-import { getCookie, setCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie, setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
@@ -100,6 +100,9 @@ const AdminCategory = (props: AdminCategoryProps) => {
         // secure: process.env.NODE_ENV === "production",
         expires: decodeToken(token.refreshToken!)!,
       });
+    } else if (token && (!token.accessToken || !token.refreshToken)) {
+      deleteCookie("accessToken");
+      deleteCookie("refreshToken");
     }
   }, [categories, rowsPerPage, token]);
 
@@ -231,6 +234,17 @@ const AdminCategory = (props: AdminCategoryProps) => {
 
   async function handleUpdateCategory(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const updatePayload: UpdateCategory = {
       name: category?.name,
       parentId:
@@ -253,6 +267,9 @@ const AdminCategory = (props: AdminCategoryProps) => {
       updatePayload,
       "multipart/form-data"
     );
+    resetCategory();
+    setUpdateCategory(null);
+    handleClose();
     if (update.success) {
       successMessage("Đổi danh mục thành công");
       // setOrderList((prevOrderItems) =>
@@ -261,30 +278,30 @@ const AdminCategory = (props: AdminCategoryProps) => {
       //   )
       // );
       router.refresh();
-      resetCategory();
-      setUpdateCategory(null);
-      handleClose();
     } else if (update.statusCode == 401) {
       warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
       router.refresh();
     } else if (update.status == 500) {
       errorMessage("Lỗi hệ thống");
-      resetCategory();
-      setUpdateCategory(null);
-      handleClose();
       router.refresh();
     } else if (update.status == 404) {
       errorMessage("Không tìm thấy danh mục này");
       router.refresh();
     } else
       errorMessage("Tên danh mục và danh mục cha mới phải khác với các tên cũ");
-
-    // resetCategory();
-    // setUpdateCategory(null);
-    // handleClose();
   }
   async function handleCreateCategory(e: { preventDefault: () => void }) {
     e.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", category.name);
@@ -292,6 +309,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
     formData.append("imageFile", image);
     formData.append("styleIds", changeStyleNameToId().join(","));
 
+    handleClose();
     const id = toast.loading("Đang tạo...");
     const res = await createData(
       "/api/v1/users/admin/categories",
@@ -305,7 +323,6 @@ const AdminCategory = (props: AdminCategoryProps) => {
         autoClose: 500,
         isLoading: false,
       });
-      handleClose();
       router.refresh();
     } else if (res.statusCode == 403 || res.statusCode == 401) {
       toast.update(id, {

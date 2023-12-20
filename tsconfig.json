@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "preserveSymlinks": true,
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -23,12 +20,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@mui/material": [
-        "./src/material"
-      ]
+      "@/*": ["./src/*"],
+      "@mui/material": ["./src/material"]
+      // "react": ["./node_modules/@types/react"]
     },
     "forceConsistentCasingInFileNames": true
   },
@@ -38,9 +32,11 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "middleware.ts",
-    "src/features/loader.js"
-, "src/components/dashboard/Chart.tsx"  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "src/features/loader.js",
+    "src/components/dashboard/Chart.tsx",
+    "src/app/test/page.js",
+    "src/features/map.js",
+    "src/container/profile/address.tsx"
+  ],
+  "exclude": ["node_modules"]
 }

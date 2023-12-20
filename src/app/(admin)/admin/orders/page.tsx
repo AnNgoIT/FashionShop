@@ -44,7 +44,9 @@ const AdminOrderPage = async () => {
     if (accessToken) {
       refreshedOrders = res?.success && res.result.content;
     } else {
-      fullToken = res?.success && res.result;
+      fullToken = res?.success
+        ? res.result
+        : { accessToken: undefined, refreshToken: undefined };
       const newOrders = await fetchAllOrdersAdmin(
         fullToken?.accessToken!,
         fullToken?.refreshToken!

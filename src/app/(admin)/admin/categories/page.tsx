@@ -69,7 +69,7 @@ const AdminCategoryPage = async () => {
       );
       if (newCategories.success)
         refreshCategories = newCategories.result.content;
-    }
+    } else fullToken = { accessToken: undefined, refreshToken: undefined };
   }
 
   const category = res?.success ? res.result.content : refreshCategories;

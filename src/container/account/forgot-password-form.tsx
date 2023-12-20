@@ -15,6 +15,11 @@ const ForgotPasswordForm = () => {
   const [error, setError] = useState<string>("");
   const { setVerifyEmail } = useContext(VerifyEmailContext);
 
+  const handleEmail = (e: any) => {
+    const value = e.target.value.trim();
+    setEmail(value.trim());
+  };
+
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     // Xử lý logic ở đây
@@ -32,6 +37,14 @@ const ForgotPasswordForm = () => {
         isLoading: false,
       });
       router.push("/forgot-password/verify");
+    } else if (res.statusCode == 400) {
+      toast.update(id, {
+        render: `Email phải đúng định dạng @*.*`,
+        type: "error",
+        autoClose: 1500,
+        isLoading: false,
+      });
+      setError(`Email phải đúng định dạng @*.*`);
     } else if (res.statusCode == 404) {
       toast.update(id, {
         render: `Tài khoản này chưa được đăng ký`,
@@ -46,7 +59,7 @@ const ForgotPasswordForm = () => {
 
   return (
     <div
-      className={`col-span-full md:col-span-10 md:col-start-2 lg:col-span-6 lg:col-start-4 grid grid-cols-12 gap-x-8 shadow-hd
+      className={`col-span-full md:col-span-10 md:col-start-2 lg:col-span-4 lg:col-start-5 grid grid-cols-12 gap-x-8 shadow-hd
          bg-white py-5 max-lg:px-10 min-h-[40px]`}
     >
       <h2
@@ -63,10 +76,10 @@ const ForgotPasswordForm = () => {
           <FormControl fullWidth error={error != ""}>
             <InputLabel htmlFor="email">Nhập email của bạn</InputLabel>
             <OutlinedInput
-              type="email"
+              type="text"
               value={email}
               required
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmail}
               id="email"
               name="email"
               label="Nhập email của bạn"

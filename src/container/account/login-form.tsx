@@ -43,7 +43,7 @@ const LoginForm = () => {
     const value = e.target.value;
     setAccount({
       ...account,
-      [e.target.name]: value,
+      [e.target.name]: value.trim(),
     });
 
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
@@ -72,10 +72,8 @@ const LoginForm = () => {
         } else {
           local.setItem("viewedProducts", JSON.stringify([]));
           successMessage("Đăng nhập thành công");
-          setTimeout(() => {
-            router.refresh();
-          }, 100);
-          router.back();
+          router.push("/");
+          router.refresh();
         }
       }
     } else {
@@ -194,7 +192,6 @@ const LoginForm = () => {
         <Link
           className="flex items-center justify-center"
           href="/forgot-password"
-          prefetch={false}
         >
           <h1
             className="hover:text-text-color transition-all duration-200 cursor-pointer
@@ -205,7 +202,7 @@ const LoginForm = () => {
         </Link>
         <p className="text-text-light-color flex justify-center items-center gap-x-2">
           Chưa có tài khoản?
-          <Link href="/register" prefetch={false}>
+          <Link href="/register">
             <span className="text-primary-color transition-all duration-200 hover:text-text-color cursor-pointer">
               Đăng ký ngay
             </span>

@@ -261,7 +261,7 @@ const RegisterForm = () => {
       <div className="col-span-full text-[14px] leading-[28px] text-center font-medium text-primary-color mt-5">
         <p className="text-[#999]">
           Đã có tài khoản?
-          <Link href="/login" prefetch={false}>
+          <Link href="/login">
             <span className="text-primary-color transition-all duration-200 hover:text-text-color cursor-pointer">
               {" "}
               Đăng nhập ngay

@@ -11,7 +11,7 @@ import { cartItem } from "@/features/types";
 import NavigateButton from "@/components/button";
 import { imageLoader } from "@/features/img-loading";
 import { updateCartItem, deleteCartItem, getUserCart } from "@/hooks/useAuth";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { CartProps } from "@/container/cart/cart";
 import { useRouter } from "next/navigation";
 import { successMessage, warningMessage } from "@/features/toasting";
@@ -49,6 +49,16 @@ const CartDropdown = (props: CartProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuantityChangeDebounced = useCallback(
     debounce(async (itemId: number, newQuantity: number) => {
+      if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+        warningMessage("Đang tạo lại phiên đăng nhập mới");
+        router.refresh();
+        return;
+      } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+        warningMessage("Vui lòng đăng nhập để dùng chức năng này");
+        router.push("/login");
+        router.refresh();
+        return;
+      }
       try {
         const res = await updateCartItem(
           getCookie("accessToken")!,
@@ -91,6 +101,17 @@ const CartDropdown = (props: CartProps) => {
   };
 
   const handleRemoveItem = async (itemId: number) => {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để dùng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
       successMessage("Xóa thành công");

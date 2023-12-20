@@ -25,7 +25,7 @@ import NavigateButton, { QuantityButton } from "@/components/button";
 import { UserInfo, cartItem } from "@/features/types";
 import usePath from "@/hooks/usePath";
 import { deleteCartItem, getUserCart, updateCartItem } from "@/hooks/useAuth";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
@@ -95,6 +95,17 @@ const Cart = (props: CartProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleQuantityChangeDebounced = useCallback(
     debounce(async (itemId: number, newQuantity: number) => {
+      if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+        warningMessage("Đang tạo lại phiên đăng nhập mới");
+        router.refresh();
+        return;
+      } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+        warningMessage("Vui lòng đăng nhập để dùng chức năng này");
+        router.push("/login");
+        router.refresh();
+        return;
+      }
+
       try {
         const res = await updateCartItem(
           getCookie("accessToken")!,
@@ -160,6 +171,17 @@ const Cart = (props: CartProps) => {
   };
 
   const handleRemoveItem = async (itemId: number) => {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để dùng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const res = await deleteCartItem(getCookie("accessToken")!, itemId);
     if (res.success) {
       successMessage("Xóa thành công");
@@ -416,7 +438,7 @@ const Cart = (props: CartProps) => {
                     <article className="flex justify-between items-center">
                       <h1 className="text-text-color">Phí vận chuyển </h1>
                       <span className="text-primary-color font-semibold">{`${FormatPrice(
-                        isCartItemChecked.length !== 0 ? 45000 : 0
+                        0
                       )} VNĐ`}</span>
                     </article>
                   </td>
@@ -426,8 +448,7 @@ const Cart = (props: CartProps) => {
                     <article className="flex justify-between items-center">
                       <h1 className="text-text-color font-bold">Thành tiền</h1>
                       <span className="text-primary-color font-bold text-[20px]">{`${FormatPrice(
-                        Total(isCartItemChecked) +
-                          (isCartItemChecked.length !== 0 ? 45000 : 0)
+                        Total(isCartItemChecked)
                       )} VNĐ`}</span>
                     </article>
                   </td>

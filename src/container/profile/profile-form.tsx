@@ -18,7 +18,7 @@ import { UserInfo } from "@/features/types";
 import { UserContext } from "@/store";
 import dayjs from "dayjs";
 import { updateProfile } from "@/hooks/useAuth";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import isLeapYear from "dayjs/plugin/isLeapYear"; // import plugin
@@ -26,6 +26,7 @@ import "dayjs/locale/en"; // import locale
 import Skeleton from "@mui/material/Skeleton";
 import MuiPhoneNumber from "mui-phone-number";
 import { user_img2 } from "@/assests/users";
+import { warningMessage } from "@/features/toasting";
 
 dayjs.extend(isLeapYear); // use plugin
 dayjs.locale("en"); // use locale
@@ -112,11 +113,26 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
+
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     if (!isUpdating) return;
     // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
     const formData = new FormData();
-    formData.append("fullname", userInfo.fullname || "");
-    formData.append("phone", userInfo.phone || "");
+    formData.append(
+      "fullname",
+      userInfo.fullname ? userInfo.fullname.trim() : ""
+    );
+    formData.append("phone", userInfo.phone ? userInfo.phone.trim() : "");
     formData.append("dob", dayjs(userInfo.dob).format("MM/DD/YYYY"));
     formData.append("gender", userInfo.gender || "");
     formData.append("address", userInfo.address || "");

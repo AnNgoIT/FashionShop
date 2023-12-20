@@ -33,7 +33,9 @@ const AccountLayout = async ({ children }: { children: ReactNode }) => {
         role: res.result.role,
       };
     } else {
-      fullToken = res?.success && res.result;
+      fullToken = res?.success
+        ? res.result
+        : { accessToken: undefined, refreshToken: undefined };
       const newUserInfo = await fetchUserCredentials(
         fullToken?.accessToken!,
         fullToken?.refreshToken!

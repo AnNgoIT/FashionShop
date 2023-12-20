@@ -8,7 +8,7 @@ import { refreshLogin } from "@/app/page";
 const StylesPage = async () => {
   const res = await fetchAllStyles();
   const style = res && res.success && res.result.content;
-  
+
   let fullToken = undefined;
   if (
     !hasCookie("accessToken", { cookies }) &&
@@ -18,7 +18,7 @@ const StylesPage = async () => {
     const refreshSession = await refreshLogin(refreshToken);
     if (refreshSession.success) {
       fullToken = refreshSession.result;
-    }
+    } else fullToken = { accessToken: undefined, refreshToken: undefined };
   }
   return <AdminStyle token={fullToken} styles={style} />;
 };

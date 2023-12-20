@@ -1,6 +1,4 @@
-import { HTTP_PORT, refreshLogin } from "@/app/page";
 import AdminShipper from "@/container/admin/admin-shipper";
-import AdminUser from "@/container/admin/admin-user";
 import { User } from "@/features/types";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
@@ -23,7 +21,9 @@ export default async function Page() {
     if (accessToken) {
       refreshUsers = res?.success && res.result.userList;
     } else {
-      fullToken = res?.success && res.result;
+      fullToken = res?.success
+        ? res.result
+        : { accessToken: undefined, refreshToken: undefined };
       const newOrders = await getAllUsersByRoleName(
         fullToken?.accessToken!,
         fullToken?.refreshToken!,

@@ -35,6 +35,7 @@ export const patchData = async (
   const config: any = {
     headers: {
       "Content-Type": contentType,
+      // "Access-Control-Allow-Origin": "*",
       Authorization: `Bearer ${accessToken}`,
     },
   };

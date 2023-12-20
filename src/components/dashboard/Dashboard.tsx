@@ -12,16 +12,10 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { mainListItems } from "./listItems";
-import { ReactNode, useContext, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { logout } from "@/hooks/useAuth";
-import { deleteCookie, getCookies, setCookie } from "cookies-next";
-import { cookies } from "next/headers";
-import router from "next/router";
-import { toast } from "react-toastify";
+import { deleteCookie, getCookies } from "cookies-next";
 import { useRouter } from "next/navigation";
-import { UserContext } from "@/store";
-import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import { successMessage } from "@/features/toasting";
 import Avatar from "@mui/material/Avatar";
 
@@ -85,7 +79,6 @@ export default function Dashboard({
   children: ReactNode;
 }) {
   const router = useRouter();
-  const { setUser } = useContext(UserContext);
 
   const [open, setOpen] = useState(true);
   const toggleDrawer = () => {

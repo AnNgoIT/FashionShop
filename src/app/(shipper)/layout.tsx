@@ -1,8 +1,20 @@
+"use client";
 import React, { ReactNode } from "react";
-import ShipperLayout from "@/container/shipper/shipper-layout";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
 
-const Layout = async ({ children }: { children: ReactNode }) => {
-  return <ShipperLayout>{children}</ShipperLayout>;
+const defaultTheme = createTheme();
+
+const Layout = ({ children }: { children: ReactNode }) => {
+  return (
+    <ThemeProvider theme={defaultTheme}>
+      <Box sx={{ display: "flex" }}>
+        <CssBaseline />
+        {children}
+      </Box>
+    </ThemeProvider>
+  );
 };
 
 export default Layout;

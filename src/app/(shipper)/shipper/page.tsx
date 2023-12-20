@@ -1,5 +1,5 @@
 import { HTTP_PORT, refreshLogin } from "@/app/page";
-import Shipper from "@/container/shipper/shipper";
+import Shipper from "@/container/shipper";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 

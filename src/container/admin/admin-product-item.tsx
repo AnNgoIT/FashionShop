@@ -1,7 +1,5 @@
 "use client";
 import { FormatPrice } from "@/features/product/FilterAmount";
-import Title from "@/components/dashboard/Title";
-import Toolbar from "@mui/material/Toolbar";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -13,19 +11,14 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Button from "@mui/material/Button";
-import TablePagination from "@mui/material/TablePagination";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import UpdateIcon from "@mui/icons-material/Update";
 import { Product, StyleValue, productItem } from "@/features/types";
-import Autocomplete from "@mui/material/Autocomplete";
-import Chip from "@mui/material/Chip";
-import NavigateButton from "@/components/button";
-import AddIcon from "@mui/icons-material/Add";
-import TextField from "@mui/material/TextField";
 import Image from "next/image";
+import EditIcon from "@mui/icons-material/Edit";
+
 import {
   VisuallyHiddenInput,
   imageLoader,
@@ -35,17 +28,14 @@ import {
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemText from "@mui/material/ListItemText";
-import { getCookie } from "cookies-next";
-import { createData, getDataAdmin } from "@/hooks/useAdmin";
+import { getCookie, hasCookie } from "cookies-next";
+import { createData, getDataAdmin, patchData } from "@/hooks/useAdmin";
 import { useRouter } from "next/navigation";
-import {
-  errorMessage,
-  successMessage,
-  warningMessage,
-} from "@/features/toasting";
+import { warningMessage } from "@/features/toasting";
 import { toast } from "react-toastify";
-import { LoadingComponent } from "@/components/loading";
-
+import { validateProductItemForm } from "@/features/validation";
+import FormHelperText from "@mui/material/FormHelperText";
+import ProductDetail from "../product/detail";
 type AdminProductItemProps = {
   productId: number;
   productName: string;
@@ -57,6 +47,11 @@ type AdminProductItemProps = {
 
 type StyleList = {
   [x: string]: string;
+};
+
+export type ProductItemError = {
+  quantity: string;
+  price: string;
 };
 
 const AdminProductItem = (props: AdminProductItemProps) => {
@@ -84,17 +79,17 @@ const AdminProductItem = (props: AdminProductItemProps) => {
   });
   const [isUpdate, setUpdate] = useState<boolean>(false);
   const [image, setImage] = useState<any>("");
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [productList, setProductList] = useState<productItem[] | undefined>(
-    undefined
-  );
+  const [errors, setErrors] = useState<ProductItemError>({
+    quantity: "",
+    price: "",
+  });
+  const [productItemList, setProductItemList] = useState<productItem[]>([]);
 
   const [styleValueList, setStyleValueList] = useState<
     StyleValue[] | undefined
   >(undefined);
   const [styleValueNames, setStyleValueNames] = useState<string[]>([]);
   const [styleList, setStyleList] = useState<StyleList | null>(null);
-  const [page, setPage] = useState(0);
 
   useEffect(() => {
     const handleProductName = (name: string, id: number) => {
@@ -130,13 +125,24 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       setStyleValueList(newStyleValueList);
     };
     const handleProductItemList = async (productId: number) => {
+      if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+        warningMessage("Đang tạo lại phiên đăng nhập mới");
+        router.refresh();
+        return undefined;
+      } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+        warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+        router.push("/login");
+        router.refresh();
+        return;
+      }
+
       const productItemList = await getDataAdmin(
         `/api/v1/productItems/parent/${productId}`,
         getCookie("accessToken")!
       );
       if (productItemList.success) {
-        setProductList(productItemList.result.content);
-      } else setProductList([]);
+        setProductItemList(productItemList.result.content);
+      } else setProductItemList([]);
     };
 
     if (productName !== "" && productId !== -1) {
@@ -158,6 +164,19 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     return result;
   }
 
+  function handleClose() {
+    resetProductItem();
+    setProductItemList([]);
+    setImage("");
+    setStyleList(null);
+    setStyleValueList(undefined);
+    handleCloseProductItem(false);
+    setErrors({
+      quantity: "",
+      price: "",
+    });
+  }
+
   const handleProductItem = (e: any) => {
     const value = e.target.value;
     setProductItem({
@@ -166,6 +185,10 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     });
 
     // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
+    setErrors({
+      quantity: "",
+      price: "",
+    });
   };
 
   const handleStyleList = (e: any) => {
@@ -191,6 +214,11 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             ...productItem,
             image: imageUrl,
           });
+          // Xóa thông báo lỗi khi người dùng thay đổi giá trị trong trường
+          setErrors({
+            quantity: "",
+            price: "",
+          });
         }
       };
 
@@ -198,8 +226,28 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     }
   };
 
-  async function handleCreateProduct(e: { preventDefault: () => void }) {
+  const isError = (error: ProductItemError) => {
+    for (const key in error) {
+      if (error[key as keyof ProductItemError] !== "") {
+        return false; // Nếu có ít nhất một giá trị trống, trả về true
+      }
+    }
+    return true; // Nếu tất cả giá trị đều không trống, trả về false
+  };
+
+  async function handleCreateProductItem(e: { preventDefault: () => void }) {
     e.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
     const formData = new FormData();
     formData.append("productId", productItem.parentId.toString());
     formData.append("image", image);
@@ -209,63 +257,53 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       "styleValueIds",
       Object.values(changeStyleNameToId()).join(",")
     );
-    const id = toast.loading("Tạo sản phẩm mới...");
-    const res = await createData(
-      "/api/v1/users/admin/productItems",
-      getCookie("accessToken")!,
-      formData
-    );
-    if (res.success) {
-      toast.update(id, {
-        render: `Tạo sản phẩm mới thành công`,
-        type: "success",
-        autoClose: 500,
-        isLoading: false,
-      });
-      resetProductItem();
-      productList && setProductList([...productList, res.result]);
-      // handleClose();
-      router.refresh();
-    } else if (res.statusCode == 403 || res.statusCode == 401) {
-      toast.update(id, {
-        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
-        type: "warning",
-        autoClose: 500,
-        isLoading: false,
-      });
-      router.refresh();
-      handleClose();
-    } else if (res.statusCode == 409) {
-      toast.update(id, {
-        render: `phân loại này đã tồn tại`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else if (res.statusCode == 400) {
-      toast.update(id, {
-        render: `Lỗi nhập dữ liệu không trùng khớp`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else if (res.status == 500) {
-      handleClose();
-      toast.update(id, {
-        render: `Lỗi hệ thống`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    }
-  }
-  function handleClose() {
-    resetProductItem();
-    setProductList([]);
-    setImage("");
-    setStyleList(null);
-    setStyleValueList(undefined);
-    handleCloseProductItem(false);
+
+    const formErrors = validateProductItemForm(productItem);
+
+    if (isError(formErrors)) {
+      const id = toast.loading("Tạo sản phẩm mới...");
+      const res = await createData(
+        "/api/v1/users/admin/productItems",
+        getCookie("accessToken")!,
+        formData
+      );
+      if (res.success) {
+        toast.update(id, {
+          render: `Tạo sản phẩm mới thành công`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+        resetProductItem();
+        productItemList && setProductItemList([...productItemList, res.result]);
+        // handleClose();
+        router.refresh();
+      } else if (res.statusCode == 403 || res.statusCode == 401) {
+        toast.update(id, {
+          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+          type: "warning",
+          autoClose: 500,
+          isLoading: false,
+        });
+        router.refresh();
+        handleClose();
+      } else if (res.statusCode == 409) {
+        toast.update(id, {
+          render: `Phân loại này của sản phẩm đã tồn tại`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else if (res.status == 500) {
+        handleClose();
+        toast.update(id, {
+          render: `Lỗi hệ thống`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      }
+    } else setErrors(formErrors);
   }
 
   function resetProductItem() {
@@ -281,7 +319,84 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       styleValueNames: [],
       sku: "",
     });
+    setUpdate(false);
     setImage("");
+  }
+
+  function openUpdateProductItem(e: any, productItem: productItem) {
+    e.preventDefault();
+    setUpdate(true);
+    setImage("");
+    setProductItem(productItem);
+  }
+
+  async function handleUpdateProductItem(event: any) {
+    event.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("quantity", productItem.quantity.toString());
+    if (image !== "") {
+      formData.append("image", image);
+    }
+    formData.append("price", productItem.price.toString());
+
+    const formErrors = validateProductItemForm(productItem);
+
+    if (isError(formErrors)) {
+      const id = toast.loading("Đang cập nhật...");
+      const res = await patchData(
+        `/api/v1/users/admin/productItems/${productItem?.productItemId}`,
+        getCookie("accessToken")!,
+        formData,
+        "multipart/form-data"
+      );
+      setProductItemList((productList: productItem[]) =>
+        productList.map((item: productItem) =>
+          item.productItemId === productItem.productItemId
+            ? {
+                ...item,
+                image: res.result.image,
+                quantity: res.result.quantity,
+                price: res.result.price,
+              }
+            : item
+        )
+      );
+      resetProductItem();
+      if (res.success) {
+        toast.update(id, {
+          render: `Cập nhật thành công`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+
+        router.refresh();
+      } else if (res.statusCode == 409) {
+        toast.update(id, {
+          render: `Sản phẩm cập nhật đã trùng với một sản phẩm khác`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else
+        toast.update(id, {
+          render: `Lỗi hệ thống`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+    } else setErrors(formErrors);
   }
 
   return (
@@ -292,31 +407,193 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       aria-describedby="modal-modal-description"
     >
       <Box sx={modalProductItemStyle}>
-        <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-          Tạo phân loại sản phẩm
+        {/* <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={modalStyle}>
+            <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
+              {isUpdate ? `Cập nhật sản phẩm` : "Tạo sản phẩm mới"}
+            </h2>
+            <form
+              onSubmit={(event) => handleUpdateProductItem(event)}
+              className="col-span-full grid grid-flow-col grid-cols-12 "
+            >
+              <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium my-4">
+                <div className="grid grid-flow-col w-fit gap-x-2">
+                  {productItem && productItem.image ? (
+                    <Image
+                      loader={imageLoader}
+                      blurDataURL={productItem.image}
+                      placeholder="blur"
+                      className="w-[6.25rem] h-[6.25rem] rounded-md"
+                      width={300}
+                      height={300}
+                      src={productItem.image}
+                      alt="Uploaded Image"
+                    ></Image>
+                  ) : (
+                    <p className="grid place-content-center text-xl text-text-color">
+                      Không có ảnh nào
+                    </p>
+                  )}
+                </div>
+                <Button
+                  sx={{ marginTop: "1rem", background: "#639df1" }}
+                  component="label"
+                  variant="contained"
+                  className="mt-4 bg-primary-color hover:bg-text-color w-max"
+                >
+                  Tải ảnh lên
+                  <VisuallyHiddenInput
+                    required={!isUpdate}
+                    onChange={(e) => handleImageUpload(e)}
+                    type="file"
+                  />
+                </Button>
+              </div>
+              <div className="col-span-full">
+                <button
+                  className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+                           float-right px-[15px] text-white rounded-[5px]"
+                  type="submit"
+                >
+                  Lưu
+                </button>
+              </div>
+            </form>
+          </Box>
+        </Modal> */}
+        <div className="w-full min-h-[8rem]">
+          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
+            Danh sách phân loại sản phẩm
+          </h2>
+          {productItemList && productItemList.length > 0 ? (
+            <Container maxWidth="xl" sx={{ paddingX: "0px!important" }}>
+              <Grid item xs={12} md={4} lg={3}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    // height: 240,
+                    overflow: "auto",
+                  }}
+                >
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Image</TableCell>
+                        <TableCell>Style</TableCell>
+                        <TableCell>Quantity</TableCell>
+                        <TableCell>Price</TableCell>
+                        <TableCell>Sold</TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {productItemList
+                        .sort((a, b) => b.productItemId - a.productItemId)
+                        .map((item) => (
+                          <TableRow key={item.productItemId}>
+                            <TableCell
+                              sx={{ minWidth: "5rem", minHeight: "5rem" }}
+                            >
+                              <Image
+                                className="w-[5rem] h-[5rem] outline outline-1 outline-border-color p-1"
+                                loader={imageLoader}
+                                placeholder="blur"
+                                blurDataURL={item.image}
+                                width={80}
+                                height={80}
+                                alt="productImg"
+                                src={item.image}
+                              ></Image>
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                minWidth: "12rem",
+                                maxWidth: "13rem",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              <p className="truncate w-full">
+                                {item.styleValueNames.join(" - ")}
+                              </p>
+                            </TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>
+                              <span className="max-md:block max-md:w-max">
+                                {FormatPrice(item.price)} VNĐ
+                              </span>
+                            </TableCell>
+                            <TableCell>{item.sold}</TableCell>
+                            <TableCell>
+                              {" "}
+                              <Button
+                                onClick={(e) => openUpdateProductItem(e, item)}
+                                sx={{
+                                  "&:hover": {
+                                    backgroundColor: "transparent",
+                                    opacity: "0.6",
+                                  },
+                                  color: "#639df1",
+                                }}
+                              >
+                                <EditIcon />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              </Grid>
+            </Container>
+          ) : (
+            <div className="text-lg min-h-[6rem] grid place-content-center p-4 text-secondary-color">
+              Không có phân loại sản phẩm nào
+            </div>
+          )}
+        </div>
+        <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4 mt-8">
+          {isUpdate ? "Cập nhật phân loại sản phẩm" : "Tạo phân loại sản phẩm"}
         </h2>
         <form
-          onSubmit={(event) => handleCreateProduct(event)}
+          onSubmit={
+            isUpdate
+              ? (event) => handleUpdateProductItem(event)
+              : (event) => handleCreateProductItem(event)
+          }
           className="grid grid-flow-col grid-cols-12"
         >
+          {!isUpdate && (
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <FormControl className="col-span-8 col-start-3">
+                <InputLabel className="mb-2" htmlFor="parentName">
+                  Tên sản phẩm
+                </InputLabel>
+                <OutlinedInput
+                  required
+                  id="parentName"
+                  name="parentName"
+                  disabled={true}
+                  readOnly={true}
+                  value={productItem.parentName}
+                  label="Tên sản phẩm"
+                ></OutlinedInput>
+              </FormControl>
+            </div>
+          )}
           <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-            <FormControl className="col-span-8 col-start-3">
-              <InputLabel className="mb-2" htmlFor="parentName">
-                Tên sản phẩm
-              </InputLabel>
-              <OutlinedInput
-                required
-                id="parentName"
-                name="parentName"
-                disabled={true}
-                readOnly={true}
-                value={productItem.parentName}
-                label="Tên sản phẩm"
-              ></OutlinedInput>
-            </FormControl>
-          </div>
-          <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-            <FormControl className="col-span-8 col-start-3">
+            <FormControl
+              className="col-span-8 col-start-3"
+              error={errors.quantity !== ""}
+            >
               <InputLabel className="mb-2" htmlFor="Quantity">
                 Số lượng
               </InputLabel>
@@ -331,10 +608,16 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                 onChange={handleProductItem}
                 label="Số lượng"
               />
+              <FormHelperText id="quantity-error">
+                {errors.quantity}
+              </FormHelperText>
             </FormControl>
           </div>
           <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
-            <FormControl className="col-span-8 col-start-3">
+            <FormControl
+              className="col-span-8 col-start-3"
+              error={errors.price !== ""}
+            >
               <InputLabel className="mb-2" htmlFor="Price">
                 Giá
               </InputLabel>
@@ -349,12 +632,14 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                 onChange={handleProductItem}
                 label="Giá"
               />
+              <FormHelperText id="price-error">{errors.price}</FormHelperText>
             </FormControl>
           </div>
           {styleValueList &&
             styleValueNames &&
             styleList &&
             styleValueNames.length > 0 &&
+            !isUpdate &&
             styleValueNames.map((name) => {
               return (
                 <div
@@ -401,7 +686,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             })}
           <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium my-4">
             <div className="grid grid-flow-col w-fit gap-x-2">
-              {productItem && image && productItem.image ? (
+              {productItem && productItem.image ? (
                 <Image
                   loader={imageLoader}
                   className="w-[6.25rem] h-[6.25rem] rounded-md"
@@ -425,13 +710,27 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             >
               Tải ảnh lên
               <VisuallyHiddenInput
-                required
+                required={!isUpdate}
                 onChange={(e) => handleImageUpload(e)}
                 type="file"
               />
             </Button>
           </div>
-          <div className="col-span-8 col-start-3">
+          <div
+            className={`col-span-8 col-start-3 ${
+              isUpdate ? "flex gap-x-2 justify-end" : ""
+            }`}
+          >
+            {isUpdate && (
+              <button
+                onClick={() => resetProductItem()}
+                className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+                            float-right px-[15px] text-white rounded-[5px]"
+                type="button"
+              >
+                Trở về
+              </button>
+            )}
             <button
               className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
                            float-right px-[15px] text-white rounded-[5px]"
@@ -441,87 +740,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             </button>
           </div>
         </form>
-        <div className="w-full mt-16 min-h-[8rem]">
-          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            Danh sách phân loại sản phẩm
-          </h2>
-          {productList && productList.length > 0 ? (
-            <Container maxWidth="xl" sx={{ paddingX: "0px!important" }}>
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    // height: 240,
-                    overflow: "auto",
-                  }}
-                >
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Image</TableCell>
-                        <TableCell>Style</TableCell>
-                        <TableCell>Quantity</TableCell>
-                        <TableCell>Price</TableCell>
-                        <TableCell>Sold</TableCell>
-                        <TableCell></TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {productList
-                        .sort((a, b) => b.productItemId - a.productItemId)
-                        .map((item) => (
-                          <TableRow key={item.productItemId}>
-                            <TableCell
-                              sx={{ minWidth: "5rem", minHeight: "5rem" }}
-                            >
-                              <Image
-                                className="w-[5rem] h-[5rem] outline outline-1 outline-border-color"
-                                loader={imageLoader}
-                                placeholder="blur"
-                                blurDataURL={item.image}
-                                width={80}
-                                height={80}
-                                alt="productImg"
-                                src={item.image}
-                              ></Image>
-                            </TableCell>
-                            <TableCell
-                              sx={{
-                                minWidth: "12rem",
-                                maxWidth: "13rem",
-                                overflow: "hidden",
-                                whiteSpace: "nowrap",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              <p className="truncate w-full">
-                                {item.styleValueNames.join(" - ")}
-                              </p>
-                            </TableCell>
-                            <TableCell>{item.quantity}</TableCell>
-                            <TableCell>
-                              <span className="max-md:block max-md:w-max">
-                                {FormatPrice(item.price)} VNĐ
-                              </span>
-                            </TableCell>
-                            <TableCell>{item.sold}</TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </Paper>
-              </Grid>
-            </Container>
-          ) : productList && productList.length == 0 ? (
-            <div className="text-lg min-h-[6rem] grid place-content-center p-4 text-secondary-color">
-              Không có phân loại sản phẩm nào
-            </div>
-          ) : (
-            <LoadingComponent />
-          )}
-        </div>
       </Box>
     </Modal>
   );

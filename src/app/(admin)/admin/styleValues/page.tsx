@@ -24,7 +24,7 @@ const StyleValuePage = async () => {
     const refreshSession = await refreshLogin(refreshToken);
     if (refreshSession.success) {
       fullToken = refreshSession.result;
-    }
+    } else fullToken = { accessToken: undefined, refreshToken: undefined };
   }
 
   return (

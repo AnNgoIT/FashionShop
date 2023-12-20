@@ -2,6 +2,7 @@
 const nextConfig = {
   // output: "export",
   swcMinify: true,
+  // reactStrictMode: false,
   modularizeImports: {
     "@mui/material": {
       transform: "@mui/material/{{member}}",

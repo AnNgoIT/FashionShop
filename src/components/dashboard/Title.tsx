@@ -8,7 +8,7 @@ interface TitleProps {
 export default function Title(props: TitleProps) {
   return (
     <Typography
-      className="flex justify-center items-center text-3xl font-bold gap-x-2"
+      className="text-3xl font-bold gap-x-2 w-full"
       component="h2"
       variant="h6"
       gutterBottom
