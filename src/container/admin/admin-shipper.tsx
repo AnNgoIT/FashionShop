@@ -241,7 +241,7 @@ const AdminShipper = ({
       >
         <Box sx={modalOrderDetailStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            Tạo mới người vận chuyển
+            Tạo mới
           </h2>
           <form
             onSubmit={(event) => handleCreateUser(event)}

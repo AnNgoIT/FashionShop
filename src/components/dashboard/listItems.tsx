@@ -75,7 +75,7 @@ export const mainListItems = (
         <ListItemIcon>
           <StyleIcon />
         </ListItemIcon>
-        <ListItemText primary="Kiểu cách sản phẩm" />
+        <ListItemText primary="Thuộc tính sản phẩm" />
       </ListItemButton>
     </Link>
     <Link href="/admin/styleValues">
@@ -83,7 +83,7 @@ export const mainListItems = (
         <ListItemIcon>
           <FormatPaintIcon />
         </ListItemIcon>
-        <ListItemText primary="Giá trị kiểu cách" />
+        <ListItemText primary="Giá trị thuộc tính" />
       </ListItemButton>
     </Link>
   </>

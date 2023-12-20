@@ -245,7 +245,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
     );
     if (res.success) {
       toast.update(id, {
-        render: `Tạo giá trị kiểu thành công`,
+        render: `Tạo giá trị thuộc tính thành công`,
         type: "success",
         autoClose: 500,
         isLoading: false,
@@ -330,7 +330,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
               <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
                 <FormControl className="col-span-full">
                   <InputLabel className="mb-2" htmlFor="styleId">
-                    Kiểu
+                    thuộc tính
                   </InputLabel>
                   <Select
                     required
@@ -338,7 +338,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
                     id="style-id"
                     name="styleName"
                     value={styleValue.styleName}
-                    label="Kiểu"
+                    label="thuộc tính"
                     onChange={handleStyleValue}
                   >
                     {styles &&
@@ -380,7 +380,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
           >
             <Title>
               <div className="flex w-full justify-between items-center min-w-[680px]">
-                <span>Danh sách giá trị kiểu</span>
+                <span>Danh sách giá trị thuộc tính</span>
                 <Autocomplete
                   sx={{ width: 300 }}
                   onChange={(e, newStyle) =>
@@ -394,7 +394,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
                   options={styleValues}
                   getOptionLabel={(option) => option.name}
                   renderInput={(params) => (
-                    <TextField {...params} label="Giá trị kiểu" />
+                    <TextField {...params} label="Giá trị thuộc tính" />
                   )}
                   renderOption={(props, option) => {
                     return (
@@ -428,7 +428,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Kiểu</TableCell>
+                  <TableCell>thuộc tính</TableCell>
                   <TableCell>Tên</TableCell>
                   <TableCell></TableCell>
                 </TableRow>

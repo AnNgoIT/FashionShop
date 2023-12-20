@@ -548,7 +548,7 @@ const AdminProduct = (props: AdminProductProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Cập nhật sản phẩm` : "Tạo sản phẩm mới"}
+            {isUpdate ? `Cập nhật sản phẩm` : "Tạo mới"}
           </h2>
           <form
             onSubmit={

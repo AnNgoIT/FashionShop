@@ -180,7 +180,7 @@ const AdminStyle = (props: AdminStyleProps) => {
       updatePayload
     );
     if (update.success) {
-      successMessage("Đổi kiểu cách thành công");
+      successMessage("Đổi thuộc tính thành công");
       // setOrderList((prevOrderItems) =>
       //   prevOrderItems.map((item) =>
       //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
@@ -200,9 +200,10 @@ const AdminStyle = (props: AdminStyleProps) => {
       handleClose();
       router.refresh();
     } else if (update.status == 404) {
-      errorMessage("Không tìm thấy kiểu cách này");
+      errorMessage("Không tìm thấy thuộc tính này");
       router.refresh();
-    } else errorMessage("Tên kiểu cách mới phải khác với các tên kiểu cách cũ");
+    } else
+      errorMessage("Tên thuộc tính mới phải khác với các tên thuộc tính cũ");
   }
   async function handleCreateStyle(e: { preventDefault: () => void }) {
     e.preventDefault();
@@ -228,7 +229,7 @@ const AdminStyle = (props: AdminStyleProps) => {
     );
     if (res.success) {
       toast.update(id, {
-        render: `Tạo kiểu mới thành công`,
+        render: `Tạo thuộc tính mới thành công`,
         type: "success",
         autoClose: 500,
         isLoading: false,
@@ -245,7 +246,7 @@ const AdminStyle = (props: AdminStyleProps) => {
       router.refresh();
     } else if (res.statusCode == 409) {
       toast.update(id, {
-        render: "Kiểu sản phẩm này đã tồn tại",
+        render: "thuộc tính sản phẩm này đã tồn tại",
         type: "error",
         autoClose: 500,
         isLoading: false,
@@ -282,7 +283,7 @@ const AdminStyle = (props: AdminStyleProps) => {
       >
         <Box sx={modalStyle}>
           <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
-            {isUpdate ? `Cập nhật kiểu cách` : "Tạo kiểu mới"}
+            {isUpdate ? `Cập nhật thuộc tính` : "Tạo thuộc tính mới"}
           </h2>
           <form
             onSubmit={
@@ -333,7 +334,7 @@ const AdminStyle = (props: AdminStyleProps) => {
           >
             <Title>
               <div className="flex w-full justify-between items-center min-w-[680px]">
-                <span>Danh sách kiểu sản phẩm</span>
+                <span>Danh sách thuộc tính sản phẩm</span>
                 <Autocomplete
                   sx={{ width: 300 }}
                   onChange={(e, newStyle) =>
@@ -347,7 +348,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                   options={styles}
                   getOptionLabel={(option) => option.name}
                   renderInput={(params) => (
-                    <TextField {...params} label="Kiểu sản phẩm" />
+                    <TextField {...params} label="Thuộc tính sản phẩm" />
                   )}
                   renderOption={(props, option) => {
                     return (
@@ -374,7 +375,7 @@ const AdminStyle = (props: AdminStyleProps) => {
                 />
                 <NavigateButton onClick={handleOpen}>
                   <AddIcon sx={{ marginRight: "0.25rem" }} />
-                  Tạo kiểu mới
+                  Tạo mới
                 </NavigateButton>
               </div>
             </Title>
