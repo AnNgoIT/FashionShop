@@ -227,7 +227,15 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                 <div className="flex justify-between text-text-light-color text-base p-1">
                   <span> Tổng đơn hàng: </span>
                   <strong className="font-black">
-                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}
+                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}{" "}
+                    VNĐ
+                  </strong>
+                </div>
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Phí vận chuyển: </span>
+                  <strong className="font-black">
+                    {orderDetail &&
+                      FormatPrice(orderDetail.order.shippingCost || 0)}{" "}
                     VNĐ
                   </strong>
                 </div>
@@ -242,7 +250,11 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                 <div className="flex justify-between text-secondary-color text-xl font-bold p-1">
                   <span> Thành tiền: </span>
                   <strong className="font-black">
-                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}
+                    {orderDetail &&
+                      FormatPrice(
+                        Total(orderDetail.orderItems) +
+                          orderDetail.order.shippingCost || 0
+                      )}{" "}
                     VNĐ
                   </strong>
                 </div>

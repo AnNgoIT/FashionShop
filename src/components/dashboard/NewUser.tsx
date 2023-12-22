@@ -6,7 +6,13 @@ function preventDefault(event: React.MouseEvent) {
   event.preventDefault();
 }
 
-export default function NewUsers({ newUsers }: { newUsers: number }) {
+export default function NewUsers({
+  newUsers,
+  title,
+}: {
+  newUsers: number;
+  title: string;
+}) {
   // const [totalUsers, setTotalUsers] = useState<number>(0);
 
   // useEffect(() => {
@@ -17,8 +23,7 @@ export default function NewUsers({ newUsers }: { newUsers: number }) {
     <>
       <Title>
         <div className="text-secondary-color flex items-center justify-center gap-x-1">
-          <SupervisorAccountIcon sx={{ fontSize: "1.5rem" }} /> Tổng số người
-          dùng
+          <SupervisorAccountIcon sx={{ fontSize: "1.5rem" }} /> {title}
         </div>
       </Title>
       <Typography component="p" variant="h5">

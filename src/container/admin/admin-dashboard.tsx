@@ -1,5 +1,5 @@
 "use client";
-import { Chart, NewUsersChart } from "@/components/dashboard/Chart";
+import { Chart } from "@/components/dashboard/Chart";
 import { decodeToken } from "@/features/jwt-decode";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -19,16 +19,16 @@ import { getAuthenticated } from "@/hooks/useData";
 import Revenue from "@/components/dashboard/Revenue";
 import NewUsers from "@/components/dashboard/NewUser";
 import { warningMessage } from "@/features/toasting";
-import router from "next/router";
 import { useRouter } from "next/navigation";
 import ExportDefaultToolbar from "@/components/dashboard/order-bar";
-import { Product, orderItem } from "@/features/types";
+import { Product, Revenues, Transaction } from "@/features/types";
 import Top3ProductsPieChart from "@/components/dashboard/Pie-Chart";
+import Button from "@mui/material/Button";
+
 type DashBoardProps = {
   token?: { accessToken?: string; refreshToken?: string };
-  revenues: number;
+  revenues: Revenues;
   newUsers: number;
-  orders: orderItem[];
   products: Product[];
 };
 
@@ -45,15 +45,20 @@ const AdminDashBoard = (props: DashBoardProps) => {
     year: "Chọn",
   });
 
-  const { token, revenues, newUsers, orders, products } = props;
+  const { token, revenues, newUsers, products } = props;
 
   const [totalRevenues, setTotalRevenues] = useState<number>(0);
+  const [transactionList, setTransactionList] = useState<Transaction[]>([]);
   const [totalUsers, setTotalUsers] = useState<number>(0);
+  const [filterRevenues, setFilterRevenues] = useState<number>(0);
+  const [filterUsers, setFilterUsers] = useState<number>(0);
+  const [filterType, setFilterType] = useState<string>("");
   useEffect(() => {
     if (revenues && newUsers) {
-      setTotalRevenues(revenues);
+      setTotalRevenues(revenues.totalRevenues);
       setTotalUsers(newUsers);
     }
+    revenues && setTransactionList(revenues.transactionList);
     if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
@@ -71,7 +76,7 @@ const AdminDashBoard = (props: DashBoardProps) => {
     }
   }, [newUsers, revenues, token]);
 
-  const handleFilter = async (e: any) => {
+  const handleFilter = async (type: string) => {
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
       warningMessage("Đang tạo lại phiên đăng nhập mới");
       router.refresh();
@@ -83,32 +88,31 @@ const AdminDashBoard = (props: DashBoardProps) => {
       return;
     }
 
-    const value = e.target.value;
-    setFilterValue({
-      ...filterValue,
-      [e.target.name]: value,
-    });
-
+    if (filterValue.day == "Chọn" && type == "day") {
+      warningMessage("Vui lòng chọn ngày để thống kê");
+      return;
+    } else if (filterValue.month == "Chọn" && type == "month") {
+      warningMessage("Vui lòng chọn tháng để thống kê");
+      return;
+    } else if (filterValue.year == "Chọn" && type == "year") {
+      warningMessage("Vui lòng chọn năm để thống kê");
+      return;
+    }
+    setFilterType(type);
     let day =
-        e.target.name == "day"
-          ? "&day=" + value
-          : filterValue.day !== "Chọn"
+        filterValue.day !== "Chọn"
           ? "&day=" + filterValue.day
           : "&day=" + new Date().getDate(),
       month =
-        e.target.name == "month"
-          ? "&month=" + value
-          : filterValue.month !== "Chọn"
+        filterValue.month !== "Chọn"
           ? "&month=" + filterValue.month
-          : "&month=" + new Date().getUTCMonth() + 1,
+          : "&month=" + new Date().getMonth() + 1,
       year =
-        e.target.name == "year"
-          ? "year=" + value
-          : filterValue.year !== "Chọn"
-          ? "year=" + filterValue?.year
+        filterValue.year !== "Chọn"
+          ? "year=" + filterValue.year
           : "year=" + new Date().getFullYear();
 
-    if (e.target.name === "day" && value != "Chọn") {
+    if (type == "day" && filterValue.day != "Chọn") {
       const [revenueRes, userRes] = await Promise.all([
         getAuthenticated(
           `/api/v1/users/admin/statistics/revenue-days?${year}${month}${day}`,
@@ -119,9 +123,14 @@ const AdminDashBoard = (props: DashBoardProps) => {
           getCookie("accessToken")!
         ),
       ]);
-      setTotalRevenues(revenueRes?.success ? revenueRes.result : 0);
-      setTotalUsers(userRes?.success ? userRes.result : 0);
-    } else if (e.target.name === "month" && value != "Chọn") {
+      setFilterRevenues(
+        revenueRes?.success ? revenueRes.result.revenuesByDay : 0
+      );
+      setTransactionList(
+        revenueRes?.success ? revenueRes.result.transactionList : []
+      );
+      setFilterUsers(userRes?.success ? userRes.result : 0);
+    } else if (type == "month" && filterValue.month != "Chọn") {
       const [revenueRes, userRes] = await Promise.all([
         getAuthenticated(
           `/api/v1/users/admin/statistics/revenue-months?${year}${month}`,
@@ -132,9 +141,14 @@ const AdminDashBoard = (props: DashBoardProps) => {
           getCookie("accessToken")!
         ),
       ]);
-      setTotalRevenues(revenueRes?.success ? revenueRes.result : 0);
-      setTotalUsers(userRes?.success ? userRes.result : 0);
-    } else if (e.target.name === "year" && value != "Chọn") {
+      setFilterRevenues(
+        revenueRes?.success ? revenueRes.result.revenuesByMonth : 0
+      );
+      setTransactionList(
+        revenueRes?.success ? revenueRes.result.transactionList : []
+      );
+      setFilterUsers(userRes?.success ? userRes.result : 0);
+    } else if (type == "year" && filterValue.year != "Chọn") {
       const [revenueRes, userRes] = await Promise.all([
         getAuthenticated(
           `/api/v1/users/admin/statistics/revenue-years?${year}`,
@@ -145,9 +159,31 @@ const AdminDashBoard = (props: DashBoardProps) => {
           getCookie("accessToken")!
         ),
       ]);
-      setTotalRevenues(revenueRes?.success ? revenueRes.result : 0);
-      setTotalUsers(userRes?.success ? userRes.result : 0);
+      setFilterRevenues(
+        revenueRes?.success ? revenueRes.result.revenuesByYear : 0
+      );
+      setTransactionList(
+        revenueRes?.success ? revenueRes.result.transactionList : []
+      );
+      setFilterUsers(userRes?.success ? userRes.result : 0);
     }
+  };
+  const handleChangeFilter = (e: any) => {
+    const value = e.target.value;
+    if (value == "Chọn") {
+      setFilterValue({
+        day: "",
+        month: "",
+        year: "",
+      });
+      setFilterRevenues(0);
+      setFilterUsers(0);
+    }
+    setFilterValue({
+      ...filterValue,
+      [e.target.name]: value,
+    });
+    // setFilterType("");
   };
 
   return (
@@ -194,7 +230,10 @@ const AdminDashBoard = (props: DashBoardProps) => {
                 height: "fit-content",
               }}
             >
-              <Revenue revenues={totalRevenues} />
+              <Revenue
+                revenues={totalRevenues}
+                title={"Tổng doanh thu đạt được"}
+              />
             </Paper>
           </Grid>
           <Grid item xs={12} md={4} lg={4}>
@@ -208,7 +247,7 @@ const AdminDashBoard = (props: DashBoardProps) => {
                 height: "fit-content",
               }}
             >
-              <NewUsers newUsers={totalUsers} />
+              <NewUsers newUsers={totalUsers} title={"Tổng số người dùng"} />
             </Paper>
           </Grid>
           {/* Recent Orders */}
@@ -246,7 +285,146 @@ const AdminDashBoard = (props: DashBoardProps) => {
             </Paper>
           </Grid>
           <Grid height={"fit-content"} item xs={12}>
-            <span className="text-lg font-bold">5 đơn hàng gần nhất</span>
+            <span className="text-lg font-bold">Danh sách giao dịch</span>
+          </Grid>
+          <Grid item xs={12}>
+            <div className="flex flex-col gap-y-2 justify-start bg-white rounded-md shadow-md p-4">
+              <div className="w-full flex justify-between items-center gap-x-1 text-xl font-bold p-2 border-b border-border-color">
+                <div className="flex gap-x-2 items-center">
+                  <FilterAltIcon sx={{ fontSize: "1.5rem" }} />
+                  Lọc theo
+                </div>
+                <div className="flex gap-x-2 items-center">
+                  <Button onClick={() => handleFilter("day")}>Ngày</Button>
+                  <Button onClick={() => handleFilter("month")}>Tháng</Button>
+                  <Button onClick={() => handleFilter("year")}>Năm</Button>
+                </div>
+              </div>
+              <div className="w-full grid grid-cols-3 gap-x-2">
+                <div className="p-2 col-span-1">
+                  <FormControl fullWidth>
+                    <InputLabel id="day-filter-label">Ngày</InputLabel>
+                    <Select
+                      name="day"
+                      labelId="day-filter-label"
+                      id="day-filtering"
+                      value={filterValue?.day || "Chọn"}
+                      label="Ngày"
+                      onChange={handleChangeFilter}
+                    >
+                      <MenuItem value={"Chọn"}>Chọn</MenuItem>
+                      {Array.from(Array(31).keys())
+                        .map((x) => x + 1)
+                        .map((item) => {
+                          return (
+                            <MenuItem key={item} value={item}>
+                              {item}
+                            </MenuItem>
+                          );
+                        })}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div className="p-2 col-span-1">
+                  <FormControl fullWidth>
+                    <InputLabel id="month-filter-label">Tháng</InputLabel>
+                    <Select
+                      name="month"
+                      labelId="month-filter-label"
+                      id="month-filtering"
+                      value={filterValue?.month || "Chọn"}
+                      label="Tháng"
+                      onChange={handleChangeFilter}
+                    >
+                      <MenuItem value={"Chọn"}>Chọn</MenuItem>
+                      {Array.from(Array(new Date().getMonth() + 1).keys())
+                        .map((x) => x + 1)
+                        .map((item) => {
+                          return (
+                            <MenuItem key={item} value={item}>
+                              {item}
+                            </MenuItem>
+                          );
+                        })}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div className="p-2 col-span-1">
+                  <FormControl fullWidth>
+                    <InputLabel id="year-filter-label">Năm</InputLabel>
+                    <Select
+                      name="year"
+                      labelId="year-filter-label"
+                      id="year-filtering"
+                      value={filterValue?.year || "Chọn"}
+                      label="Năm"
+                      onChange={handleChangeFilter}
+                    >
+                      <MenuItem value={"Chọn"}>Chọn</MenuItem>
+                      {[2020, 2021, 2022, 2023].map((item) => {
+                        return (
+                          <MenuItem key={item} value={item}>
+                            {item}
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                </div>
+              </div>
+            </div>
+          </Grid>
+          {filterType != "" && (
+            <>
+              <Grid height={"fit-content"} item xs={12}>
+                <span className="text-lg font-bold">
+                  Doanh thu và người dùng đạt được vào{" "}
+                  {filterValue.day != "Chọn" &&
+                    filterType != "month" &&
+                    filterType != "year" &&
+                    `${filterType == "day" ? "Ngày " : ""}` +
+                      filterValue.day +
+                      "/"}
+                  {filterValue.month != "Chọn" &&
+                    filterType != "year" &&
+                    `${filterType == "month" ? "Tháng " : ""}` +
+                      filterValue.month +
+                      "/"}
+                  {filterValue.year != "Chọn" &&
+                    `${filterType == "year" ? "Năm " : ""}` + +filterValue.year}
+                </span>
+              </Grid>
+            </>
+          )}
+
+          <Grid item xs={2}></Grid>
+          <Grid item xs={12} md={4} lg={4}>
+            <Paper
+              sx={{
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "fit-content",
+              }}
+            >
+              <Revenue revenues={filterRevenues} title={"Doanh thu"} />
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4} lg={4}>
+            <Paper
+              sx={{
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "fit-content",
+              }}
+            >
+              <NewUsers newUsers={filterUsers} title={"Số người tạo mới"} />
+            </Paper>
           </Grid>
           <Grid item xs={12} md={4} lg={12}>
             <Paper
@@ -257,81 +435,7 @@ const AdminDashBoard = (props: DashBoardProps) => {
                 height: "fit-content",
               }}
             >
-              <ExportDefaultToolbar orders={orders} />
-              {/* <div className="w-full flex items-center gap-x-1 text-xl font-bold p-2 border-b border-border-color">
-                <FilterAltIcon sx={{ fontSize: "32px" }} />
-                Lọc theo
-              </div>
-              <div className="p-2">
-                <FormControl fullWidth>
-                  <InputLabel id="year-filter-label">Năm</InputLabel>
-                  <Select
-                    name="year"
-                    labelId="year-filter-label"
-                    id="year-filtering"
-                    value={filterValue?.year || "Chọn"}
-                    label="Năm"
-                    onChange={handleFilter}
-                  >
-                    <MenuItem value={"Chọn"}>Chọn</MenuItem>
-                    {[2020, 2021, 2022, 2023].map((item) => {
-                      return (
-                        <MenuItem key={item} value={item}>
-                          {item}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="p-2">
-                <FormControl fullWidth>
-                  <InputLabel id="month-filter-label">Tháng</InputLabel>
-                  <Select
-                    name="month"
-                    labelId="month-filter-label"
-                    id="month-filtering"
-                    value={filterValue?.month || "Chọn"}
-                    label="Tháng"
-                    onChange={handleFilter}
-                  >
-                    <MenuItem value={"Chọn"}>Chọn</MenuItem>
-                    {Array.from(Array(new Date().getMonth() + 1).keys())
-                      .map((x) => x + 1)
-                      .map((item) => {
-                        return (
-                          <MenuItem key={item} value={item}>
-                            {item}
-                          </MenuItem>
-                        );
-                      })}
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="p-2">
-                <FormControl fullWidth>
-                  <InputLabel id="day-filter-label">Ngày</InputLabel>
-                  <Select
-                    name="day"
-                    labelId="day-filter-label"
-                    id="day-filtering"
-                    value={filterValue?.day || "Chọn"}
-                    label="Ngày"
-                    onChange={handleFilter}
-                  >
-                    <MenuItem value={"Chọn"}>Chọn</MenuItem>
-                    {Array.from(Array(31).keys())
-                      .map((x) => x + 1)
-                      .map((item) => {
-                        return (
-                          <MenuItem key={item} value={item}>
-                            {item}
-                          </MenuItem>
-                        );
-                      })}
-                  </Select>
-                </FormControl>
-              </div>{" "} */}
+              <ExportDefaultToolbar transactionList={transactionList} />
             </Paper>
             {/* <Paper
               sx={{

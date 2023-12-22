@@ -4,11 +4,14 @@ import Title from "./Title";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { useEffect, useState } from "react";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
-function preventDefault(event: React.MouseEvent) {
-  event.preventDefault();
-}
 
-export default function Revenue({ revenues }: { revenues: number }) {
+export default function Revenue({
+  revenues,
+  title,
+}: {
+  revenues: number;
+  title: string;
+}) {
   const [totalRevenues, setTotalRevenues] = useState<number>(0);
 
   useEffect(() => {
@@ -19,8 +22,7 @@ export default function Revenue({ revenues }: { revenues: number }) {
     <>
       <Title>
         <div className="text-primary-color flex items-center justify-center gap-x-1">
-          <MonetizationOnIcon sx={{ fontSize: "1.5rem" }} /> Tổng doanh thu đạt
-          được
+          <MonetizationOnIcon sx={{ fontSize: "1.5rem" }} /> {title}
         </div>
       </Title>
       <Typography component="p" variant="h5">

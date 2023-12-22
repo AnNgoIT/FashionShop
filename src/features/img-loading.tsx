@@ -183,6 +183,23 @@ export const modalOrderDetailStyle = {
   p: 2,
 };
 
+export const modalOrderChangeStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: {
+    xs: "80vw",
+    lg: 500,
+  },
+  height: "fit-content",
+  overflow: "auto",
+  bgcolor: "background.paper",
+  borderRadius: "0.25rem",
+  boxShadow: 24,
+  p: 2,
+};
+
 export const theme = createTheme({
   breakpoints: {
     values: {

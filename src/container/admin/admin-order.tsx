@@ -1,11 +1,16 @@
 "use client";
 import Title from "@/components/dashboard/Title";
-import { orderItem, productItemInOrder } from "@/features/types";
+import { User, orderItem, productItemInOrder } from "@/features/types";
 import InfoIcon from "@mui/icons-material/Info";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Total } from "@/features/cart/TotalPrice";
-import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
+import {
+  imageLoader,
+  modalOrderChangeStyle,
+  modalOrderDetailStyle,
+  modalStyle,
+} from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import Toolbar from "@mui/material/Toolbar";
 import Modal from "@mui/material/Modal";
@@ -24,7 +29,13 @@ import FormControl from "@mui/material/FormControl";
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import { deleteCookie, getCookie, hasCookie, setCookie } from "cookies-next";
+import {
+  deleteCookie,
+  getCookie,
+  getCookies,
+  hasCookie,
+  setCookie,
+} from "cookies-next";
 import dayjs from "dayjs";
 import {
   errorMessage,
@@ -34,13 +45,40 @@ import {
 import { useRouter } from "next/navigation";
 import { getDataAdmin, patchData } from "@/hooks/useAdmin";
 import { decodeToken } from "@/features/jwt-decode";
-import { ACCESS_MAX_AGE, REFRESH_MAX_AGE } from "@/hooks/useData";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import CircularProgress from "@mui/material/CircularProgress";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import { CustomTabPanel, a11yProps } from "../shipper";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import ListItemText from "@mui/material/ListItemText";
+import { getAuthenticated } from "@/hooks/useData";
+
+export type DeliveryDetail = {
+  deliveryId: number;
+  note: string | null;
+  shipperEmail: string;
+  isReceived: boolean;
+  isDelivered: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  address?: string;
+  phone: string;
+  orderId?: number;
+  totalAmount?: number;
+  shipperId?: string;
+  recipientName: string;
+  shipperName: string;
+  checkoutStatus: boolean;
+};
+
 const AdminOrders = ({
   orders,
   token,
@@ -55,16 +93,30 @@ const AdminOrders = ({
     order: orderItem;
     orderItems: productItemInOrder[];
   } | null>(null);
+  const [deliveryDetail, setDeliveryDetail] = useState<DeliveryDetail | null>(
+    null
+  );
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const [orderList, setOrderList] = useState<orderItem[]>(
-    orders.slice(0, rowsPerPage)
-  );
+  const [orderList, setOrderList] = useState<orderItem[]>([]);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [openShippingModal, setOpenShippingModal] = useState<boolean>(false);
+  const [value, setValue] = React.useState(0);
+  const [shipper, setShipper] = useState<{ fullname: string; email: string }>({
+    fullname: "",
+    email: "",
+  });
+  const [shipperList, setShipperList] = useState<User[]>([]);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setPage(0);
+    setRowsPerPage(5);
+    setOrderList(orders || []);
+    setValue(newValue);
+  };
 
   useEffect(() => {
-    orders && orders.length > 0 && setOrderList(orders.slice(0, rowsPerPage));
+    setOrderList(orders);
     if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
@@ -80,38 +132,77 @@ const AdminOrders = ({
       deleteCookie("accessToken");
       deleteCookie("refreshToken");
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, rowsPerPage, token]);
 
   const handleClose = () => {
     setOpen(false);
+    setOrderDetail(null);
+    setDeliveryDetail(null);
+  };
+  const handeCloseShipperForm = () => {
+    setOpenShippingModal(false);
+    setShipper({ fullname: "", email: "" });
+    setShipperList([]);
   };
 
-  const handleChangePage = (event: any, newPage: number) => {
+  const handleChangePage = (newOrders: orderItem[], newPage: number) => {
     // Tính toán chỉ số bắt đầu mới của danh sách danh mục dựa trên số trang mới
     const startIndex = newPage * rowsPerPage;
 
     // Tạo một mảng mới từ danh sách danh mục ban đầu, bắt đầu từ chỉ số mới
-    const newOrderList = orders.slice(startIndex, startIndex + rowsPerPage);
+    const newOrderList = newOrders.slice(startIndex, startIndex + rowsPerPage);
 
     // Cập nhật trang và danh sách danh mục
     setPage(newPage);
     setOrderList(newOrderList);
   };
 
-  const handleChangeRowsPerPage = (event: { target: { value: string } }) => {
+  const handleChangeRowsPerPage = (
+    newOrders: orderItem[],
+    event: { target: { value: string } }
+  ) => {
     setRowsPerPage(() => {
-      setOrderList(orders.slice(0, +event.target.value));
+      setOrderList(newOrders.slice(0, +event.target.value));
       return +event.target.value;
     });
     setPage(0);
   };
 
-  const handleOpenDialog = (changeOrder: orderItem) => {
+  const handleOpenDialog = async (changeOrder: orderItem) => {
     setOpenDialog(true);
     setOrder(changeOrder);
   };
+
+  const handleOpenShipperForm = async (changeOrder: orderItem) => {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return undefined;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+    setOrder(changeOrder);
+    setOpenShippingModal(true);
+    const res = await getAuthenticated(
+      `/api/v1/users/admin/user-management/users/address?address=${changeOrder.address
+        .split("-")[1]
+        .trim()}`,
+      getCookie("accessToken")!
+    );
+    if (res.success) {
+      setShipperList(res.result.userList);
+    } else if (res.statusCode == 400) {
+      errorMessage("Địa chỉ không hợp lệ");
+      setShipperList([]);
+    } else if (res.statusCode == 500) {
+      errorMessage("Lỗi hệ thống");
+    }
+  };
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setOrder(null);
@@ -129,16 +220,18 @@ const AdminOrders = ({
       return;
     }
     setOpen(true);
-    const res = await getDataAdmin(
-      `/api/v1/users/admin/orders/${item.orderId}`,
-      getCookie("accessToken")!
-    );
-    if (res.success) {
-      setOrderDetail(res.result);
-    } else if (res.statusCode == 401) {
-      warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-      router.refresh();
-    }
+    const [orderDetailRes, shipperRes] = await Promise.all([
+      getDataAdmin(
+        `/api/v1/users/admin/orders/${item.orderId}`,
+        getCookie("accessToken")!
+      ),
+      getDataAdmin(
+        `/api/v1/users/admin/orders/${item.orderId}/delivery`,
+        getCookie("accessToken")!
+      ),
+    ]);
+    setOrderDetail(orderDetailRes.success ? orderDetailRes.result : null);
+    setDeliveryDetail(shipperRes.success ? shipperRes.result : null);
   }
 
   async function handleUpdateOrder(event: any, order: orderItem) {
@@ -193,9 +286,7 @@ const AdminOrders = ({
       } else errorMessage("Lỗi sai dữ liệu truyền");
     } else if (newStatus == "SHIPPING") {
       const changeOrderStatusToShipping = await patchData(
-        `/api/v1/users/admin/orders/toShipping/${
-          order.orderId
-        }?address=${order.address.split("-")[1].trim()}`,
+        `/api/v1/users/admin/orders/toShipping/${order.orderId}?shipperEmail=${shipper.email}`,
         getCookie("accessToken")!,
         {}
       );
@@ -208,6 +299,7 @@ const AdminOrders = ({
               : item
           )
         );
+        handeCloseShipperForm();
         router.refresh();
         handleCloseDialog();
       } else if (changeOrderStatusToShipping.statusCode == 401) {
@@ -225,15 +317,15 @@ const AdminOrders = ({
     }
   }
 
-  function handleSearchOrders(e: { preventDefault: () => void }, id: string) {
-    if (id == undefined) setOrderList(orders.slice(0, rowsPerPage));
-    else {
-      const newOrderList = orders.filter((item) =>
-        item.orderId.toString().includes(id)
-      );
-      setOrderList(newOrderList);
-    }
-  }
+  // function handleSearchOrders(e: { preventDefault: () => void }, id: string) {
+  //   if (id == undefined) setOrderList(orders.slice(0, rowsPerPage));
+  //   else {
+  //     const newOrderList = orders.filter((item) =>
+  //       item.orderId.toString().includes(id)
+  //     );
+  //     setOrderList(newOrderList);
+  //   }
+  // }
 
   return (
     <Box
@@ -254,10 +346,10 @@ const AdminOrders = ({
         aria-labelledby="delete-address-title"
         aria-describedby="delete-address-description"
       >
-        <DialogTitle sx={{ textAlign: "center" }} id="delete-address-title">
-          {`Xác nhận thay đổi trạng thái đơn hàng này?`}
-        </DialogTitle>
         <DialogContent>
+          <DialogTitle sx={{ textAlign: "center" }} id="delete-address-title">
+            {`Xác nhận thay đổi trạng thái đơn hàng này?`}
+          </DialogTitle>
           <DialogContentText id="delete-address-description"></DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -307,10 +399,49 @@ const AdminOrders = ({
                 })}
               </ul>
               <div className="py-4 border-t border-text-light-color">
+                {deliveryDetail && (
+                  <>
+                    <div className="flex justify-between text-text-light-color text-base p-1">
+                      <span> Người giao hàng: </span>
+                      <strong className="font-black">
+                        {deliveryDetail.shipperName}
+                      </strong>
+                    </div>
+                    <div className="flex justify-between text-text-light-color text-base p-1">
+                      <span> Số điện thoại người giao </span>
+                      <strong className="font-black">
+                        {deliveryDetail.phone.length == 13
+                          ? deliveryDetail.phone.slice(3, 13)
+                          : deliveryDetail.phone}
+                      </strong>
+                    </div>
+                    <div className="flex justify-between text-text-light-color text-base p-1">
+                      <span> Nơi giao hàng: </span>
+                      <strong className="font-black">
+                        {deliveryDetail.address?.split(" - ")[1] || "Không có"}
+                      </strong>
+                    </div>
+                    <div className="flex justify-between text-text-light-color text-base p-1">
+                      <span> Email: </span>
+                      <strong className="font-black">
+                        {deliveryDetail.shipperEmail}
+                      </strong>
+                    </div>
+                  </>
+                )}
+
                 <div className="flex justify-between text-text-light-color text-base p-1">
                   <span> Tổng đơn hàng: </span>
                   <strong className="font-black">
-                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}
+                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}{" "}
+                    VNĐ
+                  </strong>
+                </div>
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Phí vận chuyển: </span>
+                  <strong className="font-black">
+                    {orderDetail &&
+                      FormatPrice(orderDetail.order.shippingCost || 0)}{" "}
                     VNĐ
                   </strong>
                 </div>
@@ -325,7 +456,11 @@ const AdminOrders = ({
                 <div className="flex justify-between text-secondary-color text-xl font-bold p-1">
                   <span> Thành tiền: </span>
                   <strong className="font-black">
-                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}
+                    {orderDetail &&
+                      FormatPrice(
+                        Total(orderDetail.orderItems) +
+                          orderDetail.order.shippingCost || 0
+                      )}{" "}
                     VNĐ
                   </strong>
                 </div>
@@ -336,6 +471,80 @@ const AdminOrders = ({
               <CircularProgress />
             </div>
           )}
+        </Box>
+      </Modal>
+      <Modal
+        open={openShippingModal}
+        onClose={handeCloseShipperForm}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalOrderChangeStyle}>
+          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center pb-4">
+            Chọn người giao hàng
+          </h2>
+          <div className="col-span-full grid grid-flow-col grid-cols-12 ">
+            <div className="col-span-full grid grid-flow-col place-content-between grid-cols-12 text-sm text-[#999] font-medium mb-4">
+              <div className="col-span-full text-xl font-semibold py-4 text-secondary-color">
+                {(shipper.fullname !== "" &&
+                  "Email shipper: " +
+                    shipperList.find(
+                      (item) => item.fullname === shipper.fullname
+                    )?.email) ||
+                  ""}
+              </div>
+              <FormControl className="col-span-full">
+                <InputLabel className="mb-2" htmlFor="shipper">
+                  Người giao hàng
+                </InputLabel>
+                <Select
+                  required
+                  id="shipper"
+                  name="shipper"
+                  value={shipper.fullname}
+                  onChange={(e) =>
+                    setShipper({
+                      ...shipper,
+                      fullname: e.target.value,
+                      email:
+                        shipperList.find(
+                          (item) => item.fullname === e.target.value
+                        )?.email || "",
+                    })
+                  }
+                  input={<OutlinedInput label="Người giao hàng" />}
+                >
+                  {shipperList.map((shipper: User, index: number) => (
+                    <MenuItem key={index} value={shipper.fullname || ""}>
+                      <ListItemText primary={shipper.fullname} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <div className="col-span-full flex gap-x-2 mt-8 justify-end items-center">
+                <button
+                  onClick={() => {
+                    setShipperList([]);
+                    setShipper({ fullname: "", email: "" });
+                    setOpenShippingModal(false);
+                  }}
+                  className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+                     float-right px-[15px] text-white rounded-[5px]"
+                  type="button"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={(e) => handleUpdateOrder(e, order!)}
+                  className="bg-primary-color transition-all duration-200 hover:bg-text-color py-[8px] 
+                     float-right px-[15px] text-white rounded-[5px]"
+                  type="button"
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </div>
+          </div>
         </Box>
       </Modal>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -353,93 +562,96 @@ const AdminOrders = ({
             <Title>
               <div className="grid grid-cols-12 items-center">
                 <span className="col-span-4">Danh sách đơn hàng</span>
-                <Autocomplete
-                  sx={{ width: 300 }}
-                  onChange={(e, newOrders) =>
-                    handleSearchOrders(e, newOrders?.orderId.toString()!)
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    value == undefined || option.orderId == value.orderId
-                  }
-                  options={orders}
-                  getOptionLabel={(option) => option.orderId.toString()}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Đơn hàng" />
-                  )}
-                  renderOption={(props, option) => {
-                    return (
-                      <li
-                        {...props}
-                        key={option.orderId}
-                        className="flex justify-between items-center px-3 py-2 border-b border-border-color"
-                      >
-                        <span key={`product-name-${option.orderId}`}>
-                          {option.orderId}
-                        </span>
-                      </li>
-                    );
-                  }}
-                  renderTags={(tagValue, getTagProps) => {
-                    return tagValue.map((option, index) => (
-                      <Chip
-                        {...getTagProps({ index })}
-                        key={option.orderId}
-                        label={option.orderId}
-                      />
-                    ));
-                  }}
-                />
               </div>
             </Title>
-            <Table size="medium">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ minWidth: "8rem" }} align="left">
-                    Tên
-                  </TableCell>
-                  <TableCell sx={{ minWidth: "7rem" }} align="left">
-                    Ngày đặt
-                  </TableCell>
-                  <TableCell sx={{ minWidth: "9rem" }} align="left">
-                    Địa chỉ
-                  </TableCell>
-                  <TableCell sx={{ minWidth: "12rem" }} align="left">
-                    Phương thức thanh toán
-                  </TableCell>
-                  <TableCell sx={{ minWidth: "7.5rem" }} align="left">
-                    Tổng tiền
-                  </TableCell>
-                  <TableCell align="left">Trạng thái</TableCell>
-                  <TableCell align="left"></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orderList &&
-                  orderList.map((item) => (
-                    <TableRow key={item.orderId}>
-                      <TableCell align="left">{item.fullName}</TableCell>
-                      <TableCell align="left">
-                        {dayjs(new Date(item.createdAt!)).format("DD/MM/YYYY")}
-                      </TableCell>
-                      <TableCell align="left">
-                        {item.address.split("-").length == 1
-                          ? `${item.address}`
-                          : `${item.address.split("-")[1]}, ${
-                              item.address.split("-")[2]
-                            }`}
-                      </TableCell>
-                      <TableCell align="left">
-                        {item.paymentMethod === "COD"
-                          ? "Thanh toán khi nhận"
-                          : "Ví điện tử VNPay"}
-                      </TableCell>
-                      <TableCell align="left">{`${FormatPrice(
-                        item.totalAmount
-                      )} VNĐ`}</TableCell>
-                      <TableCell sx={{ width: "10rem" }} align="left">
-                        <FormControl sx={{ minWidth: "10rem" }}>
-                          <div
-                            className={`
+            <Box
+              sx={{ borderBottom: 1, width: "100%", borderColor: "divider" }}
+            >
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                aria-label="order-tabs"
+              >
+                <Tab label="Tất cả" sx={{ color: "black" }} {...a11yProps(0)} />
+                <Tab
+                  label="Chưa xử lý"
+                  sx={{ color: "black" }}
+                  {...a11yProps(1)}
+                />
+                <Tab
+                  label="Đang xử lý"
+                  sx={{ color: "black" }}
+                  {...a11yProps(2)}
+                />
+                <Tab
+                  label="Đang giao hàng"
+                  sx={{ color: "black" }}
+                  {...a11yProps(3)}
+                />
+                <Tab
+                  label="Giao hàng thành công"
+                  sx={{ color: "black" }}
+                  {...a11yProps(4)}
+                />
+                <Tab label="Đã hủy" sx={{ color: "black" }} {...a11yProps(5)} />
+              </Tabs>
+            </Box>
+            <CustomTabPanel value={value} index={0}>
+              <Table size="medium">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Tên
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      Ngày đặt
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "12rem" }} align="left">
+                      Phương thức thanh toán
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7.5rem" }} align="left">
+                      Tổng tiền
+                    </TableCell>
+                    <TableCell align="left">Trạng thái</TableCell>
+                    <TableCell align="left"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderList &&
+                    orderList.slice(0, rowsPerPage).map((item) => (
+                      <TableRow key={item.orderId}>
+                        <TableCell align="left">{item.fullName}</TableCell>
+                        <TableCell align="left">
+                          {dayjs(new Date(item.createdAt!)).format(
+                            "DD/MM/YYYY"
+                          )}
+                        </TableCell>
+                        <TableCell align="left">
+                          {item.address.split("-").length == 1
+                            ? `${item.address}`
+                            : `${item.address.split("-")[1]}, ${
+                                item.address.split("-")[2]
+                              }`}
+                        </TableCell>
+                        <TableCell align="left">
+                          {item.paymentMethod === "COD"
+                            ? "Thanh toán khi nhận"
+                            : "Ví điện tử VNPay"}
+                        </TableCell>
+                        <TableCell
+                          // suppressHydrationWarning={true}
+                          align="left"
+                        >{`${FormatPrice(item.totalAmount)} VNĐ`}</TableCell>
+                        <TableCell sx={{ width: "10rem" }} align="left">
+                          <FormControl sx={{ minWidth: "10rem" }}>
+                            <div
+                              className={`
                             p-2 text-white text-sm font-bold rounded-md ${
                               item.status == "NOT_PROCESSED"
                                 ? "bg-text-light-color"
@@ -453,40 +665,158 @@ const AdminOrders = ({
                                   "bg-secondary-color"
                             }
                             `}
-                            id="status-select"
-                          >
-                            {item.status == "NOT_PROCESSED"
-                              ? "Chưa xử lý"
-                              : item.status == "PROCESSING"
-                              ? "Đang xử lý"
-                              : item.status == "SHIPPING"
-                              ? "Đang giao hàng"
-                              : item.status == "DELIVERED"
-                              ? "Giao hàng thành công"
-                              : item.status == "CANCELLED" && "Đơn hàng bị hủy"}
+                              id="status-select"
+                            >
+                              {item.status == "NOT_PROCESSED"
+                                ? "Chưa xử lý"
+                                : item.status == "PROCESSING"
+                                ? "Đang xử lý"
+                                : item.status == "SHIPPING"
+                                ? "Đang giao hàng"
+                                : item.status == "DELIVERED"
+                                ? "Giao hàng thành công"
+                                : item.status == "CANCELLED" &&
+                                  "Đơn hàng bị hủy"}
+                            </div>
+                          </FormControl>
+                        </TableCell>
+                        <TableCell sx={{ minWidth: "12.5rem" }} align="left">
+                          <div className="flex justify-start items-center">
+                            <Button
+                              onClick={() => openInfoModal(item)}
+                              sx={{
+                                "&:hover": {
+                                  color: "#999",
+                                  opacity: "0.6",
+                                  background: "white",
+                                },
+                                color: "#639df1",
+                              }}
+                            >
+                              <InfoIcon />
+                            </Button>
+                            {item.status != "CANCELLED" &&
+                              item.status != "DELIVERED" &&
+                              item.status != "SHIPPING" && (
+                                <Button
+                                  onClick={(e) => {
+                                    item.status == "PROCESSING"
+                                      ? handleOpenShipperForm(item)
+                                      : handleOpenDialog(item);
+                                  }}
+                                  sx={{
+                                    "&:hover": {
+                                      opacity: "0.6",
+                                      background: "white",
+                                    },
+                                    color: "#639df1",
+                                    textTransform: "capitalize",
+                                  }}
+                                >
+                                  Xác nhận
+                                </Button>
+                              )}
                           </div>
-                        </FormControl>
-                      </TableCell>
-                      <TableCell sx={{ minWidth: "12.5rem" }} align="left">
-                        <div className="flex justify-between items-center gap-x-2">
-                          <Button
-                            onClick={() => openInfoModal(item)}
-                            sx={{
-                              "&:hover": {
-                                color: "#999",
-                                opacity: "0.6",
-                                background: "white",
-                              },
-                              color: "#639df1",
-                            }}
-                          >
-                            <InfoIcon />
-                          </Button>
-                          {item.status != "CANCELLED" &&
-                            item.status != "DELIVERED" &&
-                            item.status != "SHIPPING" && (
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={orders.length}
+                page={page}
+                onPageChange={(e, newPage) => handleChangePage(orders, newPage)}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) => handleChangeRowsPerPage(orders, e)}
+              />
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={1}>
+              <Table size="medium">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Tên
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      Ngày đặt
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "12rem" }} align="left">
+                      Phương thức thanh toán
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7.5rem" }} align="left">
+                      Tổng tiền
+                    </TableCell>
+                    <TableCell align="left">Trạng thái</TableCell>
+                    <TableCell align="left"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderList &&
+                    orderList
+                      .filter((order) => order.status == "NOT_PROCESSED")
+                      .slice(0, rowsPerPage)
+                      .map((item) => (
+                        <TableRow key={item.orderId}>
+                          <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">
+                            {dayjs(new Date(item.createdAt!)).format(
+                              "DD/MM/YYYY"
+                            )}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.address.split("-").length == 1
+                              ? `${item.address}`
+                              : `${item.address.split("-")[1]}, ${
+                                  item.address.split("-")[2]
+                                }`}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.paymentMethod === "COD"
+                              ? "Thanh toán khi nhận"
+                              : "Ví điện tử VNPay"}
+                          </TableCell>
+                          <TableCell align="left">{`${FormatPrice(
+                            item.totalAmount
+                          )} VNĐ`}</TableCell>
+                          <TableCell sx={{ width: "10rem" }} align="left">
+                            <FormControl sx={{ minWidth: "10rem" }}>
+                              <div
+                                className={`
+                            p-2 text-white text-sm font-bold rounded-md bg-text-light-color`}
+                                id="status-select"
+                              >
+                                Chưa xử lý
+                              </div>
+                            </FormControl>
+                          </TableCell>
+                          <TableCell sx={{ minWidth: "12.5rem" }} align="left">
+                            <div className="flex justify-start items-center">
                               <Button
-                                onClick={(e) => handleOpenDialog(item)}
+                                onClick={() => openInfoModal(item)}
+                                sx={{
+                                  "&:hover": {
+                                    color: "#999",
+                                    opacity: "0.6",
+                                    background: "white",
+                                  },
+                                  color: "#639df1",
+                                }}
+                              >
+                                <InfoIcon />
+                              </Button>
+
+                              <Button
+                                onClick={(e) => {
+                                  item.status == "PROCESSING"
+                                    ? handleOpenShipperForm(item)
+                                    : handleOpenDialog(item);
+                                }}
                                 sx={{
                                   "&:hover": {
                                     opacity: "0.6",
@@ -498,23 +828,476 @@ const AdminOrders = ({
                               >
                                 Xác nhận
                               </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  orders.filter((order) => order.status == "NOT_PROCESSED")
+                    .length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    orders.filter((order) => order.status == "NOT_PROCESSED"),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    orders.filter((order) => order.status == "NOT_PROCESSED"),
+                    e
+                  )
+                }
+              />
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={2}>
+              <Table size="medium">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Tên
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      Ngày đặt
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "12rem" }} align="left">
+                      Phương thức thanh toán
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7.5rem" }} align="left">
+                      Tổng tiền
+                    </TableCell>
+                    <TableCell align="left">Trạng thái</TableCell>
+                    <TableCell align="left"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderList &&
+                    orderList
+                      .filter((order) => order.status == "PROCESSING")
+                      .slice(0, rowsPerPage)
+                      .map((item) => (
+                        <TableRow key={item.orderId}>
+                          <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">
+                            {dayjs(new Date(item.createdAt!)).format(
+                              "DD/MM/YYYY"
                             )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-            <TablePagination
-              sx={{ overflow: "visible" }}
-              component="div"
-              count={orders.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.address.split("-").length == 1
+                              ? `${item.address}`
+                              : `${item.address.split("-")[1]}, ${
+                                  item.address.split("-")[2]
+                                }`}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.paymentMethod === "COD"
+                              ? "Thanh toán khi nhận"
+                              : "Ví điện tử VNPay"}
+                          </TableCell>
+                          <TableCell align="left">
+                            {`${FormatPrice(item.totalAmount)} VNĐ`}
+                          </TableCell>
+                          <TableCell sx={{ width: "10rem" }} align="left">
+                            <FormControl sx={{ minWidth: "10rem" }}>
+                              <div
+                                className={`
+                            p-2 text-white text-sm font-bold rounded-md bg-yellow-400`}
+                                id="status-select"
+                              >
+                                Đang xử lý
+                              </div>
+                            </FormControl>
+                          </TableCell>
+                          <TableCell sx={{ minWidth: "12.5rem" }} align="left">
+                            <div className="flex justify-start items-center">
+                              <Button
+                                onClick={() => openInfoModal(item)}
+                                sx={{
+                                  "&:hover": {
+                                    color: "#999",
+                                    opacity: "0.6",
+                                    background: "white",
+                                  },
+                                  color: "#639df1",
+                                }}
+                              >
+                                <InfoIcon />
+                              </Button>
+
+                              <Button
+                                onClick={(e) => {
+                                  item.status == "PROCESSING"
+                                    ? handleOpenShipperForm(item)
+                                    : handleOpenDialog(item);
+                                }}
+                                sx={{
+                                  "&:hover": {
+                                    opacity: "0.6",
+                                    background: "white",
+                                  },
+                                  color: "#639df1",
+                                  textTransform: "capitalize",
+                                }}
+                              >
+                                Xác nhận
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  orders.filter((order) => order.status == "PROCESSING").length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    orders.filter((order) => order.status == "PROCESSING"),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    orders.filter((order) => order.status == "PROCESSING"),
+                    e
+                  )
+                }
+              />
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={3}>
+              <Table size="medium">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Tên
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      Ngày đặt
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "12rem" }} align="left">
+                      Phương thức thanh toán
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7.5rem" }} align="left">
+                      Tổng tiền
+                    </TableCell>
+                    <TableCell align="left">Trạng thái</TableCell>
+                    <TableCell align="left"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderList &&
+                    orderList
+                      .filter((order) => order.status == "SHIPPING")
+                      .slice(0, rowsPerPage)
+                      .map((item) => (
+                        <TableRow key={item.orderId}>
+                          <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">
+                            {dayjs(new Date(item.createdAt!)).format(
+                              "DD/MM/YYYY"
+                            )}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.address.split("-").length == 1
+                              ? `${item.address}`
+                              : `${item.address.split("-")[1]}, ${
+                                  item.address.split("-")[2]
+                                }`}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.paymentMethod === "COD"
+                              ? "Thanh toán khi nhận"
+                              : "Ví điện tử VNPay"}
+                          </TableCell>
+                          <TableCell align="left">{`${FormatPrice(
+                            item.totalAmount
+                          )} VNĐ`}</TableCell>
+                          <TableCell sx={{ width: "10rem" }} align="left">
+                            <FormControl sx={{ minWidth: "10rem" }}>
+                              <div
+                                className={`
+                            p-2 text-white text-sm font-bold rounded-md bg-purple-400`}
+                                id="status-select"
+                              >
+                                Đang giao hàng
+                              </div>
+                            </FormControl>
+                          </TableCell>
+                          <TableCell sx={{ minWidth: "12.5rem" }} align="left">
+                            <div className="flex justify-start items-center">
+                              <Button
+                                onClick={() => openInfoModal(item)}
+                                sx={{
+                                  "&:hover": {
+                                    color: "#999",
+                                    opacity: "0.6",
+                                    background: "white",
+                                  },
+                                  color: "#639df1",
+                                }}
+                              >
+                                <InfoIcon />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  orders.filter((order) => order.status == "SHIPPING").length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    orders.filter((order) => order.status == "SHIPPING"),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    orders.filter((order) => order.status == "SHIPPING"),
+                    e
+                  )
+                }
+              />
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={4}>
+              <Table size="medium">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Tên
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      Ngày đặt
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "12rem" }} align="left">
+                      Phương thức thanh toán
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7.5rem" }} align="left">
+                      Tổng tiền
+                    </TableCell>
+                    <TableCell align="left">Trạng thái</TableCell>
+                    <TableCell align="left"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderList &&
+                    orderList
+                      .filter((order) => order.status == "DELIVERED")
+                      .slice(0, rowsPerPage)
+                      .map((item) => (
+                        <TableRow key={item.orderId}>
+                          <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">
+                            {dayjs(new Date(item.createdAt!)).format(
+                              "DD/MM/YYYY"
+                            )}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.address.split("-").length == 1
+                              ? `${item.address}`
+                              : `${item.address.split("-")[1]}, ${
+                                  item.address.split("-")[2]
+                                }`}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.paymentMethod === "COD"
+                              ? "Thanh toán khi nhận"
+                              : "Ví điện tử VNPay"}
+                          </TableCell>
+                          <TableCell align="left">{`${FormatPrice(
+                            item.totalAmount
+                          )} VNĐ`}</TableCell>
+                          <TableCell sx={{ width: "10rem" }} align="left">
+                            <FormControl sx={{ minWidth: "10rem" }}>
+                              <div
+                                className={`p-2 text-white text-sm font-bold rounded-md bg-green-400`}
+                                id="status-select"
+                              >
+                                Giao hàng thành công
+                              </div>
+                            </FormControl>
+                          </TableCell>
+                          <TableCell sx={{ minWidth: "12.5rem" }} align="left">
+                            <div className="flex justify-start items-center">
+                              <Button
+                                onClick={() => openInfoModal(item)}
+                                sx={{
+                                  "&:hover": {
+                                    color: "#999",
+                                    opacity: "0.6",
+                                    background: "white",
+                                  },
+                                  color: "#639df1",
+                                }}
+                              >
+                                <InfoIcon />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  orders.filter((order) => order.status == "DELIVERED").length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    orders.filter((order) => order.status == "DELIVERED"),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    orders.filter((order) => order.status == "DELIVERED"),
+                    e
+                  )
+                }
+              />
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={5}>
+              <Table size="medium">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Tên
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      Ngày đặt
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "12rem" }} align="left">
+                      Phương thức thanh toán
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7.5rem" }} align="left">
+                      Tổng tiền
+                    </TableCell>
+                    <TableCell align="left">Trạng thái</TableCell>
+                    <TableCell align="left"></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderList &&
+                    orderList
+                      .filter((order) => order.status == "CANCELLED")
+                      .slice(0, rowsPerPage)
+                      .map((item) => (
+                        <TableRow key={item.orderId}>
+                          <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">
+                            {dayjs(new Date(item.createdAt!)).format(
+                              "DD/MM/YYYY"
+                            )}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.address.split("-").length == 1
+                              ? `${item.address}`
+                              : `${item.address.split("-")[1]}, ${
+                                  item.address.split("-")[2]
+                                }`}
+                          </TableCell>
+                          <TableCell align="left">
+                            {item.paymentMethod === "COD"
+                              ? "Thanh toán khi nhận"
+                              : "Ví điện tử VNPay"}
+                          </TableCell>
+                          <TableCell align="left">{`${FormatPrice(
+                            item.totalAmount
+                          )} VNĐ`}</TableCell>
+                          <TableCell sx={{ width: "10rem" }} align="left">
+                            <FormControl sx={{ minWidth: "10rem" }}>
+                              <div
+                                className={`p-2 text-white text-sm font-bold rounded-md bg-secondary-color`}
+                                id="status-select"
+                              >
+                                Đơn hàng bị hủy
+                              </div>
+                            </FormControl>
+                          </TableCell>
+                          <TableCell sx={{ minWidth: "12.5rem" }} align="left">
+                            <div className="flex justify-start items-center">
+                              <Button
+                                onClick={() => openInfoModal(item)}
+                                sx={{
+                                  "&:hover": {
+                                    color: "#999",
+                                    opacity: "0.6",
+                                    background: "white",
+                                  },
+                                  color: "#639df1",
+                                }}
+                              >
+                                <InfoIcon />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  orders.filter((order) => order.status == "CANCELLED").length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    orders.filter((order) => order.status == "CANCELLED"),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    orders.filter((order) => order.status == "CANCELLED"),
+                    e
+                  )
+                }
+              />
+            </CustomTabPanel>
           </Paper>
         </Grid>
       </Container>

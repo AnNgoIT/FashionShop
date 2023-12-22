@@ -37,7 +37,7 @@ function Chart() {
               `${new Date().getDate() - i}/${
                 new Date().getMonth() + 1
               }/${new Date().getFullYear()}`,
-              getData?.success ? getData.result : 0
+              getData?.success ? getData.result.revenuesByDay : 0
             );
             array.push(newData);
           })

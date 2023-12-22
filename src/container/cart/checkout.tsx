@@ -2,7 +2,7 @@
 import { Total } from "@/features/cart/TotalPrice";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import Link from "next/link";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { CartContext } from "@/store";
 import usePath from "@/hooks/usePath";
@@ -23,64 +23,37 @@ type CheckOutProps = {
   userInfo?: UserInfo;
 };
 
-type OrderInfo = {
+type Checkout = {
   cartItemIds: number[];
   fullName: string;
   phone: string;
   address: string;
   paymentMethod: string;
+  shippingCost: number;
 };
 
 const Checkout = (props: CheckOutProps) => {
   const router = useRouter();
   const { userInfo } = props;
   const { cartItems } = useContext(CartContext);
-  const [orderInfo, setOrderInfo] = useState<OrderInfo>({
+  const [checkout, setCheckOut] = useState<Checkout>({
     cartItemIds: cartItems?.map((cart) => cart.cartItemId) || [],
     fullName: userInfo?.fullname || "",
     phone: userInfo?.phone || "",
     address: userInfo?.address?.split(",")[0] || "",
+    shippingCost: 0,
     paymentMethod: "COD",
   });
-  const [shippingCost, setShippingCost] = useState(0);
   const thisPaths = usePath();
   const urlLink = thisPaths;
   const title = urlLink[0];
-
-  // let timeoutId: NodeJS.Timeout | null = null;
-
-  // const debounce = (func: Function, delay: number) => {
-  //   return (...args: any[]) => {
-  //     if (timeoutId) {
-  //       clearTimeout(timeoutId);
-  //     }
-
-  //     timeoutId = setTimeout(() => {
-  //       func(...args);
-  //     }, delay);
-  //   };
-  // };
-
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // const handlChangeAddressDebounced = useCallback(
-  //   debounce(async function handleGetAddressSuggest(value: string) {
-  //     if (value.trim() !== "") {
-  //       const result = await getData(
-  //         `https://rsapi.goong.io/Place/AutoComplete?api_key=${process.env.NEXT_PUBLIC_MAP_API_KEY}&location=21.013715429594125,%20105.79829597455202&input=${orderInfo.address}`
-  //       );
-  //       const place_id = result.predictions[0].place_id;
-  //       setShippingCost("");
-  //     }
-  //   }, 500),
-  //   []
-  // );
 
   useEffect(() => {
     async function handleGetAddressSuggest(value: string) {
       if (value.trim() !== "") {
         const apiKey = process.env.NEXT_PUBLIC_MAP_API_KEY;
         const result = await getData(
-          `https://rsapi.goong.io/geocode?address=${orderInfo?.address.trim()}&api_key=${apiKey}`
+          `https://rsapi.goong.io/geocode?address=${checkout?.address.trim()}&api_key=${apiKey}`
         );
         const currCornidate = result.results[0].geometry.location;
 
@@ -92,12 +65,13 @@ const Checkout = (props: CheckOutProps) => {
         );
       }
     }
-    handleGetAddressSuggest(orderInfo.address);
-  }, [orderInfo?.address, shippingCost]);
+    handleGetAddressSuggest(checkout.address);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkout.address]);
 
   const handleAddress = (value: string) => {
-    setOrderInfo({
-      ...orderInfo,
+    setCheckOut({
+      ...checkout,
       address: value,
     });
   };
@@ -107,16 +81,21 @@ const Checkout = (props: CheckOutProps) => {
   }
 
   const caculateShippingCost = (shippingCost: number) => {
-    if (shippingCost <= 50000) {
-      setShippingCost(0);
-    } else if (shippingCost > 50000 && shippingCost <= 300000) {
-      setShippingCost(45000);
-    } else if (shippingCost > 300000) setShippingCost(90000);
+    if (shippingCost <= 10000) {
+      setCheckOut({ ...checkout, shippingCost: 0 });
+    } else if (shippingCost > 10000 && shippingCost <= 30000) {
+      setCheckOut({ ...checkout, shippingCost: 20000 });
+    } else if (shippingCost > 30000 && shippingCost <= 50000) {
+      setCheckOut({ ...checkout, shippingCost: 35000 });
+    } else if (shippingCost > 50000 && shippingCost <= 100000) {
+      setCheckOut({ ...checkout, shippingCost: 60000 });
+    } else if (shippingCost > 100000)
+      setCheckOut({ ...checkout, shippingCost: 75000 });
   };
 
   const handleSubmitOrder = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    const newOrder: OrderInfo = orderInfo;
+    const newOrder: Checkout = checkout;
     if (newOrder.address.length == 0) {
       warningMessage("Vui lòng chọn địa chỉ nhận hàng");
     } else if (!newOrder.phone) {
@@ -349,8 +328,8 @@ const Checkout = (props: CheckOutProps) => {
                 return (
                   <Button
                     onClick={() =>
-                      setOrderInfo({
-                        ...orderInfo,
+                      setCheckOut({
+                        ...checkout,
                         paymentMethod:
                           item == "Thanh toán khi nhận" ? "COD" : "E_WALLET",
                       })
@@ -398,7 +377,7 @@ const Checkout = (props: CheckOutProps) => {
                     </td>
                     <td className="w-fit">
                       <span className="text-text-color font-bold">{`${FormatPrice(
-                        shippingCost
+                        checkout.shippingCost
                       )} VNĐ`}</span>
                     </td>
                   </tr>
@@ -410,7 +389,7 @@ const Checkout = (props: CheckOutProps) => {
                     </td>
                     <td className="w-[12rem]">
                       <span>
-                        {orderInfo.paymentMethod == "COD"
+                        {checkout.paymentMethod == "COD"
                           ? "Thanh toán khi nhận"
                           : "Ví VNPay"}
                       </span>
@@ -424,7 +403,7 @@ const Checkout = (props: CheckOutProps) => {
                     </td>
                     <td className="w-fit">
                       <span className="text-secondary-color font-semibold text-lg">{`${FormatPrice(
-                        Total(cartItems) + shippingCost
+                        Total(cartItems) + checkout.shippingCost
                       )} VNĐ `}</span>
                     </td>
                   </tr>
@@ -435,7 +414,7 @@ const Checkout = (props: CheckOutProps) => {
                 className="bg-secondary-color  transition-all duration-200 hover:opacity-60 py-[1.125rem]
                 float-right px-6 font-medium text-white rounded-md text-base"
               >
-                {orderInfo.paymentMethod == "E_WALLET"
+                {checkout.paymentMethod == "E_WALLET"
                   ? "Thanh toán"
                   : "Đặt hàng"}
               </button>

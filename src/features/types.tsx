@@ -128,6 +128,7 @@ export type cartItem = {
 
 export type orderItem = {
   orderId: number;
+  shippingCost: number;
   totalAmount: number;
   checkout: boolean;
   fullName: string;
@@ -199,4 +200,17 @@ export type RatingType = {
   };
   content: string;
   star: number;
+};
+
+export type Revenues = {
+  totalRevenues: number;
+  transactionList: Transaction[];
+};
+export type Transaction = {
+  transactionId: string;
+  order: orderItem;
+  transactionType: string;
+  amount: number;
+  content: string;
+  createdAt: string;
 };
