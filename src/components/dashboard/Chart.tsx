@@ -97,9 +97,10 @@ function Chart() {
                 textAnchor: "middle",
                 fill: theme.palette.text.primary,
                 ...theme.typography.body1,
+                // transform: "translateX(10px)",
               }}
             >
-              Doanh thu (VNĐ)
+              VNĐ
             </Label>
           </YAxis>
           <Tooltip />

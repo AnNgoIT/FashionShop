@@ -1,6 +1,7 @@
 import { fetchAllCategories, fetchAllBrands } from "@/app/(guest)/product/page";
 import { HTTP_PORT, refreshLogin } from "@/app/page";
 import AdminProduct from "@/container/admin/admin-product";
+import { Product } from "@/features/types";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
@@ -28,60 +29,67 @@ export const fetchAllStyleValues = async () => {
   }
 };
 
-export const fetchAllProductsByAdmin = async (accessToken: string) => {
-  const res = await fetch(`${HTTP_PORT}/api/v1/users/admin/products`, {
-    method: "GET", // *GET, POST, PUT, DELETE, etc.
-    mode: "same-origin", // no-cors, *cors, same-origin
-    cache: "no-cache",
-    credentials: "include", // include, *same-origin, omit
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    redirect: "follow", // manual, *follow, error
-    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-  });
-  // The return value is *not* serialized
-  // You can return Date, Map, Set, etc.
-
-  return res.json();
+export const fetchAllProductsByAdmin = async (
+  accessToken: string,
+  refreshToken: string
+) => {
+  if (accessToken || refreshToken) {
+    const res = await fetch(`${HTTP_PORT}/api/v1/users/admin/products`, {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      mode: "same-origin", // no-cors, *cors, same-origin
+      cache: "no-cache",
+      credentials: "include", // include, *same-origin, omit
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: "follow", // manual, *follow, error
+      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    });
+    // The return value is *not* serialized
+    // You can return Date, Map, Set, etc.
+    if (res.status == 401) {
+      const res2 = await refreshLogin(refreshToken);
+      if (res2.success) return res2;
+      else return undefined;
+    }
+    return res.json();
+  }
 };
 const AdminProductPage = async () => {
+  const accessToken = getCookie("accessToken", { cookies })!;
+  const refreshToken = getCookie("refreshToken", { cookies })!;
   const [
     productsResponse,
     categoriesResponse,
     brandsResponse,
     styleValuesResponse,
   ] = await Promise.all([
-    fetchAllProductsByAdmin(getCookie("accessToken", { cookies })!),
+    fetchAllProductsByAdmin(accessToken, refreshToken),
     fetchAllCategories(),
     fetchAllBrands(),
     fetchAllStyleValues(),
   ]);
-  let refreshedProducts = [],
+  let refreshedProducts: Product[] = [],
     fullToken = undefined;
-  if (
-    !hasCookie("accessToken", { cookies }) &&
-    hasCookie("refreshToken", { cookies })
-  ) {
-    const refreshToken = getCookie("refreshToken", { cookies })!;
-    const refershProducts = await refreshLogin(refreshToken);
-    if (refershProducts.success) {
-      fullToken = refershProducts.result;
-      const newProducts = await fetchAllProductsByAdmin(
-        refershProducts.result.accessToken
+
+  const handleProductResponse = async (res: any) => {
+    if (accessToken) {
+      refreshedProducts = res.success && res.result.content;
+    } else {
+      fullToken = res?.success
+        ? res.result
+        : { accessToken: undefined, refreshToken: undefined };
+      const res2 = await fetchAllProductsByAdmin(
+        fullToken.accessToken,
+        fullToken.refreshToken
       );
-      if (newProducts.success) {
-        refreshedProducts = newProducts.result.content;
-      }
-    } else fullToken = { accessToken: undefined, refreshToken: undefined };
-  }
+      refreshedProducts = res2.success ? res2.result.content : [];
+    }
+  };
 
-  const product = productsResponse?.success
-    ? productsResponse.result.content
-    : refreshedProducts;
-
+  await handleProductResponse(productsResponse);
   const category = categoriesResponse?.success
     ? categoriesResponse.result.content
     : [];
@@ -95,7 +103,7 @@ const AdminProductPage = async () => {
   return (
     <AdminProduct
       token={fullToken}
-      products={product}
+      products={refreshedProducts}
       categories={category}
       brands={brand}
       styleValues={styleValue}

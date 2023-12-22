@@ -21,10 +21,15 @@ import NewUsers from "@/components/dashboard/NewUser";
 import { warningMessage } from "@/features/toasting";
 import router from "next/router";
 import { useRouter } from "next/navigation";
+import ExportDefaultToolbar from "@/components/dashboard/order-bar";
+import { Product, orderItem } from "@/features/types";
+import Top3ProductsPieChart from "@/components/dashboard/Pie-Chart";
 type DashBoardProps = {
   token?: { accessToken?: string; refreshToken?: string };
   revenues: number;
   newUsers: number;
+  orders: orderItem[];
+  products: Product[];
 };
 
 type staticticsFilter = {
@@ -40,11 +45,10 @@ const AdminDashBoard = (props: DashBoardProps) => {
     year: "Chọn",
   });
 
-  const { token, revenues, newUsers } = props;
+  const { token, revenues, newUsers, orders, products } = props;
 
   const [totalRevenues, setTotalRevenues] = useState<number>(0);
   const [totalUsers, setTotalUsers] = useState<number>(0);
-
   useEffect(() => {
     if (revenues && newUsers) {
       setTotalRevenues(revenues);
@@ -162,7 +166,89 @@ const AdminDashBoard = (props: DashBoardProps) => {
       <Toolbar />
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4} lg={5}>
+          {/* <Grid item xs={12} md={4} lg={3}>
+            <Paper
+              sx={{
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                height: 240,
+              }}
+            >
+              <Chart />
+            </Paper>
+          </Grid> */}
+          {/* <Grid container xs={7} item> */}
+          <Grid height={"fit-content"} item xs={12}>
+            <span className="text-lg font-bold">Tổng quan</span>
+          </Grid>
+          <Grid item xs={2}></Grid>
+          <Grid item xs={12} md={4} lg={4}>
+            <Paper
+              sx={{
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "fit-content",
+              }}
+            >
+              <Revenue revenues={totalRevenues} />
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4} lg={4}>
+            <Paper
+              sx={{
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "fit-content",
+              }}
+            >
+              <NewUsers newUsers={totalUsers} />
+            </Paper>
+          </Grid>
+          {/* Recent Orders */}
+          <Grid height={"fit-content"} item xs={12}>
+            <span className="text-lg font-bold">Biểu đồ thống kê</span>
+          </Grid>
+          <Grid item xs={6}>
+            <Paper
+              sx={{
+                p: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "column",
+                height: 240,
+              }}
+            >
+              <Chart />
+            </Paper>
+          </Grid>
+          <Grid item xs={6}>
+            <Paper
+              sx={{
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                height: 240,
+              }}
+            >
+              <Top3ProductsPieChart
+                products={products
+                  .sort((a, b) => b.totalSold - a.totalSold)
+                  .slice(0, 3)}
+              />
+            </Paper>
+          </Grid>
+          <Grid height={"fit-content"} item xs={12}>
+            <span className="text-lg font-bold">5 đơn hàng gần nhất</span>
+          </Grid>
+          <Grid item xs={12} md={4} lg={12}>
             <Paper
               sx={{
                 p: 2,
@@ -171,7 +257,8 @@ const AdminDashBoard = (props: DashBoardProps) => {
                 height: "fit-content",
               }}
             >
-              <div className="w-full flex items-center gap-x-1 text-xl font-bold p-2 border-b border-border-color">
+              <ExportDefaultToolbar orders={orders} />
+              {/* <div className="w-full flex items-center gap-x-1 text-xl font-bold p-2 border-b border-border-color">
                 <FilterAltIcon sx={{ fontSize: "32px" }} />
                 Lọc theo
               </div>
@@ -233,7 +320,7 @@ const AdminDashBoard = (props: DashBoardProps) => {
                     onChange={handleFilter}
                   >
                     <MenuItem value={"Chọn"}>Chọn</MenuItem>
-                    {Array.from(Array(new Date().getDate()).keys())
+                    {Array.from(Array(31).keys())
                       .map((x) => x + 1)
                       .map((item) => {
                         return (
@@ -244,7 +331,7 @@ const AdminDashBoard = (props: DashBoardProps) => {
                       })}
                   </Select>
                 </FormControl>
-              </div>{" "}
+              </div>{" "} */}
             </Paper>
             {/* <Paper
               sx={{
@@ -259,68 +346,8 @@ const AdminDashBoard = (props: DashBoardProps) => {
               <NewUsersChart />
             </Paper> */}
           </Grid>
-          {/* <Grid item xs={12} md={4} lg={3}>
-            <Paper
-              sx={{
-                p: 2,
-                display: "flex",
-                flexDirection: "column",
-                height: 240,
-              }}
-            >
-              <Chart />
-            </Paper>
-          </Grid> */}
-          <Grid container xs={7} item>
-            <Grid height={"fit-content"} item xs={12}>
-              <span className="text-lg font-bold">Tổng quan</span>
-            </Grid>
-            <Grid item xs={12} md={4} lg={6}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "fit-content",
-                }}
-              >
-                <Revenue revenues={totalRevenues} />
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={4} lg={6}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "fit-content",
-                }}
-              >
-                <NewUsers newUsers={totalUsers} />
-              </Paper>
-            </Grid>
-            {/* Recent Orders */}
-            <Grid height={"fit-content"} item xs={12}>
-              <span className="text-lg font-bold">Biểu đồ thống kê</span>
-            </Grid>
-            <Grid item xs={12}>
-              <Paper
-                sx={{
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  height: 240,
-                }}
-              >
-                <Chart />
-              </Paper>
-            </Grid>
-          </Grid>
         </Grid>
+        {/* </Grid> */}
       </Container>
     </Box>
   );

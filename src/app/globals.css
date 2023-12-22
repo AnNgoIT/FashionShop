@@ -123,7 +123,9 @@ div {
 .MuiGrid-item {
   padding: 0.75rem !important;
 }
-
+/* .mui-prvans-MuiResponsiveChart-container g:first-child {
+  transform: translateX(-120px);
+} */
 /* Reset CSS */
 * {
   margin: 0;

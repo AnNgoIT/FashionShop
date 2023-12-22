@@ -11,6 +11,7 @@ const nextConfig = {
       transform: "@mui/icons-material/{{member}}",
     },
   },
+  transpilePackages: ["@mui/x-charts"],
   // experimental: {
   //   serverActions: true,
   // },

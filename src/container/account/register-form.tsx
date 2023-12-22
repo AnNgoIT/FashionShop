@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import Link from "next/link";
 import { Account } from "@/features/types";
 import FormControl from "@mui/material/FormControl";
@@ -8,13 +8,13 @@ import FormHelperText from "@mui/material/FormHelperText";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Box from "@mui/material/Box";
 import MuiPhoneNumber from "mui-phone-number";
-import validateRegisterForm from "@/features/validation";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { deleteUnverifyEmail, register, sendOTP } from "@/hooks/useAuth";
 import { VerifyEmailContext } from "@/store";
 import InputAdornment from "@mui/material/InputAdornment";
 import ShowHidePassword from "@/features/visibility";
+import { validateCreateAccountForm } from "@/features/validation";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -92,7 +92,7 @@ const RegisterForm = () => {
       confirmPassword: account.confirmPassword,
     };
 
-    const formErrors = validateRegisterForm(newAccount);
+    const formErrors = validateCreateAccountForm(newAccount);
 
     // Nếu không có lỗi, tiến hành submit form
     if (isError(formErrors)) {

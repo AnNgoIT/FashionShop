@@ -3,10 +3,11 @@ import { Account, productItem } from "./types";
 import { ProductItemError } from "@/container/admin/admin-product-item";
 
 // Hàm validate
-const validateRegisterForm = (account: Account) => {
+const validateCreateAccountForm = (account: Account) => {
   const errors: Account = {
     fullname: "",
     email: "",
+    address: "",
     phone: "",
     password: "",
     confirmPassword: "",
@@ -30,9 +31,12 @@ const validateRegisterForm = (account: Account) => {
   } else if (!/^\d{10,11}$/.test(account.phone)) {
     errors.phone = "Số điện thoại không chính xác, vui lòng nhập lại";
   }
+  if (account.address == "" || !account.address) {
+    errors.address = "Vui lòng chọn thành phố cho người giao hàng";
+  }
 
   // Kiểm tra password
-  if (!account.password) {
+  if (!account.password || account.password.length === 0) {
     errors.password = "Nhập mật khẩu của bạn";
   } else {
     // Kiểm tra độ dài
@@ -73,9 +77,7 @@ const validateRegisterForm = (account: Account) => {
   return errors;
 };
 
-export default validateRegisterForm;
-
-export const validateChangePasswordForm = (userPassword: {
+const validateChangePasswordForm = (userPassword: {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
@@ -127,7 +129,7 @@ export const validateChangePasswordForm = (userPassword: {
   return errors;
 };
 
-export const validateResetPasswordForm = (userPassword: ResetPassword) => {
+const validateResetPasswordForm = (userPassword: ResetPassword) => {
   const errors: ResetPassword = {
     email: userPassword.email,
     otp: "",
@@ -181,7 +183,7 @@ export const validateResetPasswordForm = (userPassword: ResetPassword) => {
   return errors;
 };
 
-export const validateProductItemForm = (validateValue: productItem) => {
+const validateProductItemForm = (validateValue: productItem) => {
   const errors: ProductItemError = {
     quantity: "",
     price: "",
@@ -195,4 +197,11 @@ export const validateProductItemForm = (validateValue: productItem) => {
     errors.price = "Giá sản phẩm phải lớn hơn 0";
   }
   return errors;
+};
+
+export {
+  validateChangePasswordForm,
+  validateCreateAccountForm,
+  validateProductItemForm,
+  validateResetPasswordForm,
 };

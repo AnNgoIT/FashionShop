@@ -16,7 +16,7 @@ export default function NewUsers({ newUsers }: { newUsers: number }) {
   return (
     <>
       <Title>
-        <div className="text-secondary-color flex items-center gap-x-1">
+        <div className="text-secondary-color flex items-center justify-center gap-x-1">
           <SupervisorAccountIcon sx={{ fontSize: "1.5rem" }} /> Tổng số người
           dùng
         </div>

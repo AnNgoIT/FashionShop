@@ -4,7 +4,10 @@ import { orderItem } from "@/features/types";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
-async function fetchAllOrdersAdmin(accessToken: string, refreshToken: string) {
+export async function fetchAllOrdersAdmin(
+  accessToken: string,
+  refreshToken: string
+) {
   if (accessToken || refreshToken) {
     const res = await fetch(`${HTTP_PORT}/api/v1/users/admin/orders`, {
       method: "GET", // *GET, POST, PUT, DELETE, etc.

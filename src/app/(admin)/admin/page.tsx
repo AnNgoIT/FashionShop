@@ -3,6 +3,9 @@ import AdminDashBoard from "@/container/admin/admin-dashboard";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import React from "react";
+import { fetchAllOrdersAdmin } from "./orders/page";
+import { fetchAllProductsByAdmin } from "./products/page";
+import { Product } from "@/features/types";
 
 async function fetchStatictics(
   url: string,
@@ -37,13 +40,15 @@ const AdminDashBoardPage = async () => {
   let fullToken =
       accessToken && refreshToken
         ? {
-            accessToken,
-            refreshToken,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
           }
         : undefined,
     revenue = 0,
     newUser = 0;
-  const [revenueRes, newUserRes] = await Promise.all([
+  let refreshedOrders: any[] = [],
+    refreshedProducts: Product[] = [];
+  const [revenueRes, newUserRes, ordersRes, productRes] = await Promise.all([
     fetchStatictics(
       "/api/v1/users/admin/statistics/total-revenues",
       accessToken,
@@ -54,35 +59,60 @@ const AdminDashBoardPage = async () => {
       accessToken,
       refreshToken
     ),
+    fetchAllOrdersAdmin(accessToken, refreshToken),
+    fetchAllProductsByAdmin(accessToken, refreshToken),
   ]);
-  const handleDashboardResponse = async (res: any, newUserRes: any) => {
+  const handleDashboardResponse = async (
+    res: any,
+    newUserRes: any,
+    orderRes: any,
+    productRes: any
+  ) => {
     if (accessToken) {
-      revenue = res?.success
+      revenue = res?.success && res.result;
+      newUser = newUserRes?.success && newUserRes.result;
+      refreshedOrders = orderRes?.success && orderRes.result.content;
+      refreshedProducts = productRes.success && productRes.result.content;
+    } else {
+      fullToken = res?.success
         ? res.result
         : { accessToken: undefined, refreshToken: undefined };
-      newUser = newUserRes?.success && newUserRes.result;
-    } else {
-      fullToken = res?.success && res.result;
-      const [revenueRes, newUserRes] = await Promise.all([
-        fetchStatictics(
-          "/api/v1/users/admin/statistics/total-revenues",
-          accessToken,
-          refreshToken
-        ),
-        fetchStatictics(
-          "/api/v1/users/admin/statistics/total-users",
-          accessToken,
-          refreshToken
-        ),
-      ]);
+      const [revenueRes, newUserRes, newOrdersRes, newProductRes] =
+        await Promise.all([
+          fetchStatictics(
+            "/api/v1/users/admin/statistics/total-revenues",
+            fullToken?.accessToken!,
+            fullToken?.refreshToken!
+          ),
+          fetchStatictics(
+            "/api/v1/users/admin/statistics/total-users",
+            fullToken?.accessToken!,
+            fullToken?.refreshToken!
+          ),
+          fetchAllOrdersAdmin(
+            fullToken?.accessToken!,
+            fullToken?.refreshToken!
+          ),
+          fetchAllProductsByAdmin(
+            fullToken?.accessToken!,
+            fullToken?.refreshToken!
+          ),
+        ]);
       revenue = revenueRes?.success && revenueRes.result;
       newUser = newUserRes?.success && newUserRes.result;
+      refreshedOrders = newOrdersRes?.success && newOrdersRes.result.content;
+      refreshedProducts = newProductRes.success && newProductRes.result.content;
     }
   };
-  await handleDashboardResponse(revenueRes, newUserRes);
-
+  await handleDashboardResponse(revenueRes, newUserRes, ordersRes, productRes);
   return (
-    <AdminDashBoard token={fullToken} revenues={revenue} newUsers={newUser} />
+    <AdminDashBoard
+      token={fullToken}
+      revenues={revenue}
+      newUsers={newUser}
+      orders={refreshedOrders}
+      products={refreshedProducts}
+    />
   );
 };
 

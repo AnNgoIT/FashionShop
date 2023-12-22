@@ -18,7 +18,7 @@ export default function Revenue({ revenues }: { revenues: number }) {
   return (
     <>
       <Title>
-        <div className="text-primary-color flex items-center gap-x-1">
+        <div className="text-primary-color flex items-center justify-center gap-x-1">
           <MonetizationOnIcon sx={{ fontSize: "1.5rem" }} /> Tổng doanh thu đạt
           được
         </div>

@@ -80,9 +80,9 @@ const Footer = () => {
 
       <div className="grid justify-center items-center w-full  bg-gradient-to-l md:bg-gradient-to-r transition-colors from-[#0e9de9] to-[#639df1]">
         <p className={`p-[25px] text-white font-normal text-[14px] leading-6`}>
-          © Thiet ke boi{" "}
+          © Thiết kế bởi{" "}
           <span className={`font-normal text-white`}>
-            Nguyen Ngoc Thang va Ngo Thua An
+            Nguyễn Ngọc Thắng và Ngô Thừa Ân
           </span>
         </p>
         <div className="grid grid-flow-col gap-1 justify-center items-center max-[767px]:pb-[25px] min-[991px]:pb-[26px] min-[1230px]:pb-[25px] xl:mb-[8px] md:mb-[4px] sm:mb-[8px]">
