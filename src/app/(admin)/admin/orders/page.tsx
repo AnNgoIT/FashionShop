@@ -4,7 +4,7 @@ import { orderItem } from "@/features/types";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
-export async function fetchAllOrdersAdmin(
+async function fetchAllOrdersAdmin(
   accessToken: string,
   refreshToken: string
 ) {
@@ -33,7 +33,7 @@ export async function fetchAllOrdersAdmin(
   // You can return Date, Map, Set, etc.
 }
 
-const AdminOrderPage = async () => {
+const AdminOrder = async () => {
   const accessToken = getCookie("accessToken", { cookies })!;
 
   const refreshToken = getCookie("refreshToken", { cookies })!;
@@ -61,4 +61,4 @@ const AdminOrderPage = async () => {
 
   return <AdminOrders token={fullToken} orders={refreshedOrders} />;
 };
-export default AdminOrderPage;
+export default AdminOrder;

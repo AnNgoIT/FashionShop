@@ -3,9 +3,34 @@ import AdminDashBoard from "@/container/admin/admin-dashboard";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import React from "react";
-import { fetchAllOrdersAdmin } from "./orders/page";
 import { fetchAllProductsByAdmin } from "./products/page";
 import { Product } from "@/features/types";
+
+async function fetchAllOrdersAdmin(accessToken: string, refreshToken: string) {
+  if (accessToken || refreshToken) {
+    const res = await fetch(`${HTTP_PORT}/api/v1/users/admin/orders`, {
+      method: "GET", // *GET, POST, PUT, DELETE, etc.
+      cache: "no-cache",
+      mode: "same-origin", // no-cors, *cors, same-origin
+      credentials: "include", // include, *same-origin, omit
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: "follow", // manual, *follow, error
+      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    });
+    if (res.status == 401) {
+      const res2 = await refreshLogin(refreshToken);
+      if (res2.success) return res2;
+      else return undefined;
+    }
+    return res.json(); // parses JSON response into native JavaScript objects
+  }
+  // The return value is *not* serialized
+  // You can return Date, Map, Set, etc.
+}
 
 async function fetchStatictics(
   url: string,
