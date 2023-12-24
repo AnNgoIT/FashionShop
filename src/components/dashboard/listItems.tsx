@@ -70,6 +70,14 @@ export const mainListItems = (
         <ListItemText primary="Thương hiệu" />
       </ListItemButton>
     </Link>
+    <Link href="/admin/salebanners">
+      <ListItemButton>
+        <ListItemIcon>
+          <CategoryIcon />
+        </ListItemIcon>
+        <ListItemText primary="Banner Quảng Cáo" />
+      </ListItemButton>
+    </Link>
     <Link href="/admin/styles">
       <ListItemButton>
         <ListItemIcon>

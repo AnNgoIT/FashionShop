@@ -214,3 +214,10 @@ export type Transaction = {
   content: string;
   createdAt: string;
 };
+export type SaleBanner = {
+  bannerId: number;
+  image: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isActive: boolean;
+};

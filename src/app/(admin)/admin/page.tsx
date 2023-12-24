@@ -47,8 +47,7 @@ const AdminDashBoardPage = async () => {
       transactionList: [],
     },
     newUser = 0;
-  let refreshedOrders: any[] = [],
-    refreshedProducts: Product[] = [];
+  let refreshedProducts: Product[] = [];
   const [revenueRes, newUserRes, productRes] = await Promise.all([
     fetchStatictics(
       "/api/v1/users/admin/statistics/total-revenues",

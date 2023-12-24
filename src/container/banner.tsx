@@ -78,7 +78,7 @@ const Banner = () => {
   return (
     <section className="container grid grid-cols-12 p-4 max-md:px-4 gap-4 mt-[96px]">
       <div className="grid grid-cols-1 md:grid-cols-12 col-span-full gap-4">
-        <div className="col-span-full lg:col-span-8 rounded-sm h-full">
+        <div className="col-span-full lg:col-span-8 rounded-sm">
           <Carousel
             showStatus={false}
             showThumbs={false}
@@ -88,13 +88,13 @@ const Banner = () => {
             infiniteLoop={true}
             // showArrows={false}
             renderIndicator={MyIndicator}
-            className="grid grid-flow-col h-full"
+            className="grid grid-flow-col"
           >
-            <article className="grid grid-flow-col gap-x-4 h-full">
+            <article className="grid grid-flow-col gap-x-4">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="h-full"
+                className="h-[190px] lg:h-[310px] w-full"
                 alt="banner_thoi_trang_nu"
                 src={banner_thoi_trang_nu_2}
                 width={485}
@@ -102,12 +102,12 @@ const Banner = () => {
                 quality={100}
               />
             </article>
-            <article className="grid grid-flow-col gap-x-4 h-full">
+            <article className="grid grid-flow-col gap-x-4">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
-                className="h-full"
-                alt="banner_thoi_trang_nu"
+                className="h-[190px] lg:h-[310px] w-full"
+                alt="sale_banner2"
                 src={sale_banner2}
                 width={485}
                 height={206}
@@ -124,7 +124,7 @@ const Banner = () => {
               placeholder="blur"
               width={430}
               height={152}
-              className="w-full h-full"
+              className="w-full lg:h-[151px]"
               quality={100}
               src={banner_thoi_trang_nam}
             ></Image>
@@ -136,7 +136,7 @@ const Banner = () => {
               placeholder="blur"
               width={430}
               height={151}
-              className="w-full h-full"
+              className="w-full lg:h-[151px]"
               quality={100}
               src={banner_thoi_trang_nu}
             ></Image>

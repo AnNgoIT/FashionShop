@@ -15,11 +15,11 @@ export default async function Page() {
             refreshToken,
           }
         : undefined,
-    refreshUsers: User[] = [];
+    users: User[] = [];
   const res = await getAllUsersByRoleName(accessToken, refreshToken, "SHIPPER");
   const handleUsersResponse = async (res: any) => {
     if (accessToken) {
-      refreshUsers = res?.success && res.result.userList;
+      users = res?.success && res.result.userList;
     } else {
       fullToken = res?.success
         ? res.result
@@ -29,10 +29,10 @@ export default async function Page() {
         fullToken?.refreshToken!,
         "SHIPPER"
       );
-      refreshUsers = newOrders?.success && newOrders.result.userList;
+      users = newOrders?.success && newOrders.result.userList;
     }
   };
   await handleUsersResponse(res);
 
-  return <AdminShipper shippers={refreshUsers} token={fullToken} />;
+  return <AdminShipper shippers={users} token={fullToken} />;
 }
