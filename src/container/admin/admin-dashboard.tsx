@@ -382,50 +382,49 @@ const AdminDashBoard = (props: DashBoardProps) => {
                   {filterValue.day != "Chọn" &&
                     filterType != "month" &&
                     filterType != "year" &&
-                    `${filterType == "day" ? "Ngày " : ""}` +
+                    `${filterType == "day" ? "ngày " : ""}` +
                       filterValue.day +
                       "/"}
                   {filterValue.month != "Chọn" &&
                     filterType != "year" &&
-                    `${filterType == "month" ? "Tháng " : ""}` +
+                    `${filterType == "month" ? "tháng " : ""}` +
                       filterValue.month +
                       "/"}
                   {filterValue.year != "Chọn" &&
-                    `${filterType == "year" ? "Năm " : ""}` + +filterValue.year}
+                    `${filterType == "year" ? "năm " : ""}` + +filterValue.year}
                 </span>
+              </Grid>
+              <Grid item xs={2}></Grid>
+              <Grid item xs={12} md={4} lg={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "fit-content",
+                  }}
+                >
+                  <Revenue revenues={filterRevenues} title={"Doanh thu"} />
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4} lg={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "fit-content",
+                  }}
+                >
+                  <NewUsers newUsers={filterUsers} title={"Số người tạo mới"} />
+                </Paper>
               </Grid>
             </>
           )}
-
-          <Grid item xs={2}></Grid>
-          <Grid item xs={12} md={4} lg={4}>
-            <Paper
-              sx={{
-                p: 2,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "fit-content",
-              }}
-            >
-              <Revenue revenues={filterRevenues} title={"Doanh thu"} />
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={4} lg={4}>
-            <Paper
-              sx={{
-                p: 2,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "fit-content",
-              }}
-            >
-              <NewUsers newUsers={filterUsers} title={"Số người tạo mới"} />
-            </Paper>
-          </Grid>
           <Grid item xs={12} md={4} lg={12}>
             <Paper
               sx={{

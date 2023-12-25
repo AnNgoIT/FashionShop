@@ -238,7 +238,7 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
               />
             </ListItemButton>
           </Link>
-          <Link
+          {/* <Link
             className="col-span-1 lg:col-span-full"
             href="/profile/notification"
           >
@@ -269,7 +269,7 @@ const ProfileNav = ({ info }: { info?: UserInfo }) => {
                 primary="Thông báo"
               />
             </ListItemButton>
-          </Link>
+          </Link> */}
         </List>
       </ThemeProvider>
     </div>

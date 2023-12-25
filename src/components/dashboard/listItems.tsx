@@ -6,7 +6,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleIcon from "@mui/icons-material/People";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import CategoryIcon from "@mui/icons-material/Category";
-import LayersIcon from "@mui/icons-material/Layers";
+import ImageIcon from "@mui/icons-material/Image";
 import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
 import StyleIcon from "@mui/icons-material/Style";
 import FormatPaintIcon from "@mui/icons-material/FormatPaint";
@@ -73,7 +73,7 @@ export const mainListItems = (
     <Link href="/admin/salebanners">
       <ListItemButton>
         <ListItemIcon>
-          <CategoryIcon />
+          <ImageIcon />
         </ListItemIcon>
         <ListItemText primary="Banner Quảng Cáo" />
       </ListItemButton>

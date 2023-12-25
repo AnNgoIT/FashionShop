@@ -31,6 +31,7 @@ import { useRouter } from "next/navigation";
 import { warningMessage } from "@/features/toasting";
 import { decodeToken } from "@/features/jwt-decode";
 import CircularProgress from "@mui/material/CircularProgress";
+import { HTTP_PORT, getData } from "@/hooks/useData";
 
 type AdminSaleBannerProps = {
   banners: SaleBanner[];
@@ -92,8 +93,6 @@ const AdminSaleBanner = (props: AdminSaleBannerProps) => {
       isActive: false,
     });
     setBannerDetail(null);
-    setPage(0);
-    setRowsPerPage(5);
     setImage("");
   }
 
@@ -131,20 +130,9 @@ const AdminSaleBanner = (props: AdminSaleBannerProps) => {
   };
 
   const openInfoModal = async (item: SaleBanner) => {
-    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
-      warningMessage("Đang tạo lại phiên đăng nhập mới");
-      router.refresh();
-      return undefined;
-    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
-      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
-      router.push("/login");
-      router.refresh();
-      return;
-    }
     setOpenDetail(true);
-    const bannerRes = await getDataAdmin(
-      `/api/v1/users/admin/banners/${item.bannerId}`,
-      getCookie("accessToken")!
+    const bannerRes = await getData(
+      `${HTTP_PORT}/api/v1/banners/${item.bannerId}`
     );
     setBannerDetail(bannerRes.success ? bannerRes.result : null);
   };

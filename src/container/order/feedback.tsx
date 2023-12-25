@@ -6,13 +6,13 @@ import InfoIcon from "@mui/icons-material/Info";
 import { imageLoader, modalOrderDetailStyle } from "@/features/img-loading";
 import { FormatPrice } from "@/features/product/FilterAmount";
 import { Total } from "@/features/cart/TotalPrice";
-import { orderItem, productItemInOrder } from "@/features/types";
+import { AllFeedBack, orderItem, productItemInOrder } from "@/features/types";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import { getUserOrder } from "@/hooks/useAuth";
 import FeedbackIcon from "@mui/icons-material/Feedback";
-import { getCookie, getCookies, hasCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import dayjs from "dayjs";
 import {
   errorMessage,
@@ -21,11 +21,12 @@ import {
 } from "@/features/toasting";
 import { useRouter } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
-import { postAuthenticatedData } from "@/hooks/useData";
+import { getAuthenticated, postAuthenticatedData } from "@/hooks/useData";
 import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
 import TextField from "@mui/material/TextField";
-import ProductDetail from "../product/detail";
+import { patchData } from "@/hooks/useAdmin";
+import Avatar from "@mui/material/Avatar";
 
 type Feedback = {
   orderItemId: number;
@@ -36,6 +37,7 @@ type HoverFeedback = {
   orderItemId: number;
   star: number;
 };
+
 const labels: { [index: string]: string } = {
   1: "Tệ",
   2: "Không hài lòng",
@@ -56,9 +58,11 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
   } | null>(null);
   const [orderList, setOrderList] = useState<orderItem[]>(orders);
   const [open, setOpen] = useState<boolean>(false);
+  const [openAllFeedBack, setOpenAllFeedBack] = useState<boolean>(false);
   const [openFeedBackModal, setOpenFeedBackModal] = useState<boolean>(false);
   const [hover, setHover] = useState<HoverFeedback[]>([]);
   const [feedBack, setFeedBack] = useState<Feedback[]>([]);
+  const [allFeedBack, setAllFeedBack] = useState<AllFeedBack[]>([]);
   useEffect(() => {
     if (orders) {
       setOrderList(orders);
@@ -99,6 +103,40 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
       handleClose();
     }
   };
+
+  const handleCloseAllFeedback = () => {
+    setOpenAllFeedBack(false);
+    setAllFeedBack([]);
+  };
+
+  const handleOpenAllFeedBack = async (item: orderItem) => {
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      handleCloseFeedBack();
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      handleCloseFeedBack();
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
+    setOpenAllFeedBack(true);
+    const res = await getAuthenticated(
+      `/api/v1/users/customers/ratings/${item.orderId}`,
+      getCookie("accessToken")!
+    );
+    if (res.success) {
+      setAllFeedBack(res.result);
+      router.refresh();
+    } else if (res.statusCode == 500) {
+      errorMessage("Lỗi hệ thống");
+    } else if (res.statusCode == 400) {
+      errorMessage("Truyền sai dữ liệu");
+    }
+  };
+
   const handleCloseFeedBack = () => {
     setOrderDetail(null);
     setOpenFeedBackModal(false);
@@ -144,18 +182,24 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
           ),
           getCookie("accessToken")!
         );
-
-        handleCloseFeedBack();
-        setFeedBack([]);
-
-        if (res.success) {
-          successMessage("Đánh giá thành công");
-          router.refresh();
-        } else if (res.status === 400 || res.statusCode === 500) {
+        if (res.status === 400 || res.statusCode === 500) {
           warningMessage(`Sản phẩm ${item.productName} đã được đánh giá`);
           break;
         }
       }
+    }
+    const changeRated = await patchData(
+      `/api/v1/users/customers/orders/${orderDetail?.order.orderId}/update-to-rated`,
+      getCookie("accessToken")!,
+      {}
+    );
+    handleCloseFeedBack();
+    setFeedBack([]);
+    if (changeRated.success) {
+      successMessage("Đánh giá thành công");
+      router.refresh();
+    } else if (changeRated.statusCode == 500) {
+      errorMessage("Lỗi hệ thống");
     }
   };
   const handleFeedBackOrder = async (item: orderItem) => {
@@ -180,8 +224,9 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
 bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
     >
       <h2
-        className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center max-md:p-4 pb-4 
-      border-b-[0] lg:border-b border-border-color h-fit"
+        className="col-span-full text-3xl tracking-[0] text-text-color 
+        uppercase font-semibold text-left max-lg:text-center max-md:p-4 pb-4 border-b-[0] lg:border-b border-border-color
+      h-fit"
       >
         Đánh giá đơn mua
       </h2>
@@ -197,7 +242,7 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
           </h2>
           {orderDetail && orderDetail.orderItems.length > 0 ? (
             <>
-              <ul className="min-h-[21rem]">
+              <ul className="min-h-[19rem]">
                 {orderDetail.orderItems.map((productItem) => {
                   return (
                     <li className="w-full" key={productItem.orderItemId}>
@@ -262,6 +307,98 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
             </>
           ) : (
             <div className="flex justify-center items-center p-4 h-[29.3rem]">
+              <CircularProgress />
+            </div>
+          )}
+        </Box>
+      </Modal>
+      <Modal
+        open={openAllFeedBack}
+        onClose={handleCloseAllFeedback}
+        aria-labelledby="order-feedback-title"
+        aria-describedby="order-feedback-description"
+      >
+        <Box className="" sx={modalOrderDetailStyle}>
+          <h2 className="w-full text-2xl tracking-[0] text-text-color uppercase font-semibold text-center p-2">
+            Đánh giá của đơn hàng
+          </h2>
+          {allFeedBack && allFeedBack.length > 0 ? (
+            <>
+              <ul className="min-h-[6rem]">
+                {allFeedBack.map((feedback, index) => {
+                  return (
+                    <li
+                      className={`w-full ${
+                        index !== allFeedBack.length - 1
+                          ? "border-b border-border-color py-2"
+                          : ""
+                      }`}
+                      key={index}
+                    >
+                      <div className="flex gap-x-2 flex-col gap-y-1 py-3 text-base text-text-color">
+                        <div className="flex gap-x-2">
+                          <Avatar src={feedback.image} />
+                          <Rating
+                            name="star"
+                            readOnly
+                            defaultValue={feedback.star}
+                            getLabelText={getLabelText}
+                          />
+                          <Box sx={{ ml: 0.5 }}>{labels[feedback.star]}</Box>
+                        </div>
+                        <div className="p-1 flex flex-col gap-y-1">
+                          <div>
+                            Sản phẩm:{" "}
+                            <span className="text-secondary-color">
+                              {feedback.fullname}{" "}
+                            </span>
+                          </div>
+                          <p>Nội dung đánh giá: {feedback.content}</p>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              {/* <div className="py-4 border-t border-text-light-color">
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Tổng đơn hàng: </span>
+                  <strong className="font-black">
+                    {orderDetail && FormatPrice(Total(orderDetail.orderItems))}{" "}
+                    VNĐ
+                  </strong>
+                </div>
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Phí vận chuyển: </span>
+                  <strong className="font-black">
+                    {orderDetail &&
+                      FormatPrice(orderDetail.order.shippingCost || 0)}{" "}
+                    VNĐ
+                  </strong>
+                </div>
+                <div className="flex justify-between text-text-light-color text-base p-1">
+                  <span> Phương thức thanh toán: </span>
+                  <strong className="font-black">
+                    {orderDetail?.order.paymentMethod == "COD"
+                      ? "Thanh toán khi nhận"
+                      : "Ví điện tử VNPay"}
+                  </strong>
+                </div>
+                <div className="flex justify-between text-secondary-color text-xl font-bold p-1">
+                  <span> Thành tiền: </span>
+                  <strong className="font-black">
+                    {orderDetail &&
+                      FormatPrice(
+                        Total(orderDetail.orderItems) +
+                          orderDetail.order.shippingCost || 0
+                      )}{" "}
+                    VNĐ
+                  </strong>
+                </div>
+              </div>{" "} */}
+            </>
+          ) : (
+            <div className="flex justify-center items-center p-4 min-h-[9.5rem]">
               <CircularProgress />
             </div>
           )}
@@ -469,7 +606,7 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                 >
                   <div className="col-span-8 md:col-span-5">
                     <h1 className="text-lg text-secondary-color">
-                      ID Đơn mua: {item.orderId}
+                      Mã Đơn mua: {item.orderId}
                     </h1>
                     <h2>
                       Ngày đặt hàng:
@@ -498,21 +635,39 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                       <InfoIcon />
                       <span className="text-lg pl-1">Chi tiết</span>
                     </Button>
-                    <Button
-                      onClick={() => handleFeedBackOrder(item)}
-                      sx={{
-                        textTransform: "capitalize",
-                        fontSize: "1rem",
-                        "&:hover": {
-                          background: "#f22a59",
-                          color: "white",
-                        },
-                        color: "#f22a59",
-                      }}
-                    >
-                      <FeedbackIcon />
-                      <span className="text-lg pl-1">Đánh giá</span>
-                    </Button>
+                    {!item.isRated ? (
+                      <Button
+                        onClick={() => handleFeedBackOrder(item)}
+                        sx={{
+                          textTransform: "capitalize",
+                          fontSize: "1rem",
+                          "&:hover": {
+                            background: "#f22a59",
+                            color: "white",
+                          },
+                          color: "#f22a59",
+                        }}
+                      >
+                        <FeedbackIcon />
+                        <span className="text-lg pl-1">Đánh giá</span>
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleOpenAllFeedBack(item)}
+                        sx={{
+                          textTransform: "capitalize",
+                          fontSize: "1rem",
+                          "&:hover": {
+                            background: "#f22a59",
+                            color: "white",
+                          },
+                          color: "#f22a59",
+                        }}
+                      >
+                        <FeedbackIcon />
+                        <span className="text-lg pl-1">Xem đánh giá</span>
+                      </Button>
+                    )}
                   </div>
                 </li>
               );

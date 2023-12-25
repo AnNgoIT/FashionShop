@@ -95,7 +95,7 @@ const Shipper = ({
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [deliveryList, setDeliveryList] = useState<deliveryItem[]>(
-    deliveries.sort((a, b) => b.orderId - a.orderId).slice(0, rowsPerPage)
+    deliveries.sort((a, b) => b.orderId - a.orderId)
   );
   const [openDialog, setOpenDialog] = useState<boolean>(false);
 
@@ -106,9 +106,7 @@ const Shipper = ({
   };
 
   useEffect(() => {
-    deliveries &&
-      deliveries.length > 0 &&
-      setDeliveryList(deliveries.slice(0, rowsPerPage));
+    deliveries && deliveries.length > 0 && setDeliveryList(deliveries);
     if (token && token.accessToken && token.refreshToken) {
       setCookie("accessToken", token.accessToken, {
         // httpOnly: true,
@@ -150,12 +148,12 @@ const Shipper = ({
     }
   };
 
-  const handleChangePage = (event: any, newPage: number) => {
+  const handleChangePage = (newDeliveries: deliveryItem[], newPage: number) => {
     // Tính toán chỉ số bắt đầu mới của danh sách danh mục dựa trên số trang mới
     const startIndex = newPage * rowsPerPage;
 
     // Tạo một mảng mới từ danh sách danh mục ban đầu, bắt đầu từ chỉ số mới
-    const newDeliveryList = deliveries.slice(
+    const newDeliveryList = newDeliveries.slice(
       startIndex,
       startIndex + rowsPerPage
     );
@@ -165,9 +163,12 @@ const Shipper = ({
     setDeliveryList(newDeliveryList);
   };
 
-  const handleChangeRowsPerPage = (event: { target: { value: string } }) => {
+  const handleChangeRowsPerPage = (
+    newDeliveries: deliveryItem[],
+    event: { target: { value: string } }
+  ) => {
     setRowsPerPage(() => {
-      setDeliveryList(deliveries.slice(0, +event.target.value));
+      setDeliveryList(newDeliveries.slice(0, +event.target.value));
       return +event.target.value;
     });
     setPage(0);
@@ -320,7 +321,7 @@ const Shipper = ({
           </h2>
           {deliveryDetail && deliveryDetail.orderItems.length > 0 ? (
             <>
-              <ul className="min-h-[21rem]">
+              <ul className="min-h-[19rem]">
                 {deliveryDetail.orderItems.map((productItem) => {
                   return (
                     <li className="w-full" key={productItem.orderItemId}>
@@ -473,7 +474,7 @@ const Shipper = ({
                 </TableHead>
                 <TableBody>
                   {deliveryList &&
-                    deliveryList.map((item) => (
+                    deliveryList.slice(0, rowsPerPage).map((item) => (
                       <TableRow key={item.orderId}>
                         <TableCell align="center">{item.orderId}</TableCell>
                         <TableCell align="center">
@@ -531,6 +532,20 @@ const Shipper = ({
                     ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={deliveries.length}
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(deliveries, newPage)
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(deliveries, e)
+                }
+              />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={1}>
               <Table size="medium">
@@ -553,6 +568,7 @@ const Shipper = ({
                           delivery.isReceived == false &&
                           delivery.isDelivered == false
                       )
+                      .slice(0, rowsPerPage)
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="center">{item.orderId}</TableCell>
@@ -614,6 +630,40 @@ const Shipper = ({
                       ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  deliveryList.filter(
+                    (delivery: any) =>
+                      delivery.isReceived == false &&
+                      delivery.isDelivered == false
+                  ).length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    deliveryList.filter(
+                      (delivery: any) =>
+                        delivery.isReceived == false &&
+                        delivery.isDelivered == false
+                    ),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    deliveryList.filter(
+                      (delivery: any) =>
+                        delivery.isReceived == false &&
+                        delivery.isDelivered == false
+                    ),
+                    e
+                  )
+                }
+              />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={2}>
               <Table size="medium">
@@ -636,6 +686,7 @@ const Shipper = ({
                           delivery.isReceived == true &&
                           delivery.isDelivered == false
                       )
+                      .slice(0, rowsPerPage)
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="center">{item.orderId}</TableCell>
@@ -696,6 +747,40 @@ const Shipper = ({
                       ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  deliveryList.filter(
+                    (delivery: any) =>
+                      delivery.isReceived == true &&
+                      delivery.isDelivered == false
+                  ).length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    deliveryList.filter(
+                      (delivery: any) =>
+                        delivery.isReceived == true &&
+                        delivery.isDelivered == false
+                    ),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    deliveryList.filter(
+                      (delivery: any) =>
+                        delivery.isReceived == true &&
+                        delivery.isDelivered == false
+                    ),
+                    e
+                  )
+                }
+              />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={3}>
               <Table size="medium">
@@ -717,6 +802,7 @@ const Shipper = ({
                           delivery.isReceived == true &&
                           delivery.isDelivered == true
                       )
+                      .slice(0, rowsPerPage)
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="center">{item.orderId}</TableCell>
@@ -760,17 +846,41 @@ const Shipper = ({
                       ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                sx={{ overflow: "visible" }}
+                component="div"
+                count={
+                  deliveryList.filter(
+                    (delivery: any) =>
+                      delivery.isReceived == true &&
+                      delivery.isDelivered == true
+                  ).length
+                }
+                page={page}
+                onPageChange={(e, newPage) =>
+                  handleChangePage(
+                    deliveryList.filter(
+                      (delivery: any) =>
+                        delivery.isReceived == true &&
+                        delivery.isDelivered == true
+                    ),
+                    newPage
+                  )
+                }
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) =>
+                  handleChangeRowsPerPage(
+                    deliveryList.filter(
+                      (delivery: any) =>
+                        delivery.isReceived == true &&
+                        delivery.isDelivered == true
+                    ),
+                    e
+                  )
+                }
+              />
             </CustomTabPanel>
-            <TablePagination
-              sx={{ overflow: "visible", width: "100%" }}
-              component="div"
-              count={deliveries.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
           </Paper>
         </Grid>
       </Container>

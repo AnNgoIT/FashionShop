@@ -98,8 +98,6 @@ const AdminBrand = (props: AdminBrandProps) => {
       nation: "",
       isActive: false,
     });
-    setPage(0);
-    setRowsPerPage(5);
   }
 
   const handleOpen = () => {

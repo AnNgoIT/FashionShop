@@ -209,7 +209,7 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
           </h2>
           {orderDetail && orderDetail.orderItems.length > 0 ? (
             <>
-              <ul className="min-h-[21rem]">
+              <ul className="min-h-[19rem]">
                 {orderDetail.orderItems.map((productItem) => {
                   return (
                     <li className="w-full" key={productItem.orderItemId}>
@@ -246,7 +246,8 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                 <div className="flex justify-between text-text-light-color text-base p-1">
                   <span> Phí vận chuyển: </span>
                   <strong className="font-black">
-                    {orderDetail && FormatPrice(orderDetail.order.shippingCost || 0)}{" "}
+                    {orderDetail &&
+                      FormatPrice(orderDetail.order.shippingCost || 0)}{" "}
                     VNĐ
                   </strong>
                 </div>

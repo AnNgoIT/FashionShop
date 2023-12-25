@@ -3,6 +3,7 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Height } from "@mui/icons-material";
 import { createTheme, styled } from "@mui/material/styles";
 
 export const imageLoader = ({ src, width }: { src: string; width: number }) => {
@@ -175,7 +176,7 @@ export const modalOrderDetailStyle = {
     xs: "80vw",
     lg: 500,
   },
-  height: "80vh",
+  maxHeight: "79vh",
   overflow: "auto",
   bgcolor: "background.paper",
   borderRadius: "0.25rem",

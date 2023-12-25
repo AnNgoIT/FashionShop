@@ -248,8 +248,6 @@ const AdminShipper = ({
       password: "",
       confirmPassword: "",
     });
-    setPage(0);
-    setRowsPerPage(5);
     setShowPassword(false);
   }
 

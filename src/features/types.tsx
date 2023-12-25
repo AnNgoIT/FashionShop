@@ -1,4 +1,3 @@
-import { OrderItem } from "@/app/(user)/cart/checkout/page";
 import { UUID } from "crypto";
 
 export type Category = {
@@ -139,6 +138,7 @@ export type orderItem = {
   createdAt?: Date;
   updateAt?: Date;
   customerId?: UUID;
+  isRated: boolean;
 };
 
 export type productItem = {
@@ -220,4 +220,16 @@ export type SaleBanner = {
   createdAt?: Date;
   updatedAt?: Date;
   isActive: boolean;
+};
+
+export type AllFeedBack = {
+  styleValueByStyles: {
+    Size: string;
+    Color: string;
+  };
+  content: string;
+  star: number;
+  fullname: string;
+  image: string;
+  createdAt?: Date;
 };

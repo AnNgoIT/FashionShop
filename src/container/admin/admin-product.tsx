@@ -382,8 +382,6 @@ const AdminProduct = (props: AdminProductProps) => {
       isSelling: false,
       isActive: false,
     });
-    setPage(0);
-    setRowsPerPage(5);
     setStyleValueList(undefined);
     setStyleValueNames([]);
     setImage("");

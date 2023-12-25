@@ -114,8 +114,6 @@ const AdminCategory = (props: AdminCategoryProps) => {
       styleNames: [],
       isActive: false,
     });
-    setPage(0);
-    setRowsPerPage(5);
     setImage("");
   }
 

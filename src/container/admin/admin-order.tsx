@@ -362,7 +362,7 @@ const AdminOrders = ({
           </h2>
           {orderDetail && orderDetail.orderItems.length > 0 ? (
             <>
-              <ul className="min-h-[21rem]">
+              <ul className="min-h-[19rem]">
                 {orderDetail.orderItems.map((productItem) => {
                   return (
                     <li className="w-full" key={productItem.orderItemId}>
@@ -593,14 +593,12 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "8rem" }} align="left">
-                      Tên
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Tên Người Nhận
                     </TableCell>
+                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
-                    </TableCell>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Địa chỉ
                     </TableCell>
                     <TableCell sx={{ minWidth: "12rem" }} align="left">
                       Phương thức thanh toán
@@ -617,18 +615,19 @@ const AdminOrders = ({
                     orderList.slice(0, rowsPerPage).map((item) => (
                       <TableRow key={item.orderId}>
                         <TableCell align="left">{item.fullName}</TableCell>
+                        <TableCell align="left">{item.orderId}</TableCell>
                         <TableCell align="left">
                           {dayjs(new Date(item.createdAt!)).format(
                             "DD/MM/YYYY"
                           )}
                         </TableCell>
-                        <TableCell align="left">
+                        {/* <TableCell align="left">
                           {item.address.split("-").length == 1
                             ? `${item.address}`
                             : `${item.address.split("-")[1]}, ${
                                 item.address.split("-")[2]
                               }`}
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell align="left">
                           {item.paymentMethod === "COD"
                             ? "Thanh toán khi nhận"
@@ -727,14 +726,12 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "8rem" }} align="left">
-                      Tên
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Tên Người Nhận
                     </TableCell>
+                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
-                    </TableCell>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Địa chỉ
                     </TableCell>
                     <TableCell sx={{ minWidth: "12rem" }} align="left">
                       Phương thức thanh toán
@@ -754,18 +751,19 @@ const AdminOrders = ({
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">{item.orderId}</TableCell>
                           <TableCell align="left">
                             {dayjs(new Date(item.createdAt!)).format(
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          <TableCell align="left">
+                          {/* <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -852,14 +850,12 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "8rem" }} align="left">
-                      Tên
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Tên Người Nhận
                     </TableCell>
+                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
-                    </TableCell>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Địa chỉ
                     </TableCell>
                     <TableCell sx={{ minWidth: "12rem" }} align="left">
                       Phương thức thanh toán
@@ -879,18 +875,19 @@ const AdminOrders = ({
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">{item.orderId}</TableCell>
                           <TableCell align="left">
                             {dayjs(new Date(item.createdAt!)).format(
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          <TableCell align="left">
+                          {/* <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -976,14 +973,12 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "8rem" }} align="left">
-                      Tên
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Tên Người Nhận
                     </TableCell>
+                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
-                    </TableCell>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Địa chỉ
                     </TableCell>
                     <TableCell sx={{ minWidth: "12rem" }} align="left">
                       Phương thức thanh toán
@@ -1003,18 +998,19 @@ const AdminOrders = ({
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">{item.orderId}</TableCell>
                           <TableCell align="left">
                             {dayjs(new Date(item.createdAt!)).format(
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          <TableCell align="left">
+                          {/* <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -1082,14 +1078,12 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "8rem" }} align="left">
-                      Tên
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Tên Người Nhận
                     </TableCell>
+                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
-                    </TableCell>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Địa chỉ
                     </TableCell>
                     <TableCell sx={{ minWidth: "12rem" }} align="left">
                       Phương thức thanh toán
@@ -1109,18 +1103,19 @@ const AdminOrders = ({
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">{item.orderId}</TableCell>
                           <TableCell align="left">
                             {dayjs(new Date(item.createdAt!)).format(
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          <TableCell align="left">
+                          {/* <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -1187,14 +1182,12 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "8rem" }} align="left">
-                      Tên
+                    <TableCell sx={{ minWidth: "9rem" }} align="left">
+                      Tên Người Nhận
                     </TableCell>
+                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
-                    </TableCell>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Địa chỉ
                     </TableCell>
                     <TableCell sx={{ minWidth: "12rem" }} align="left">
                       Phương thức thanh toán
@@ -1214,18 +1207,19 @@ const AdminOrders = ({
                       .map((item) => (
                         <TableRow key={item.orderId}>
                           <TableCell align="left">{item.fullName}</TableCell>
+                          <TableCell align="left">{item.orderId}</TableCell>
                           <TableCell align="left">
                             {dayjs(new Date(item.createdAt!)).format(
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          <TableCell align="left">
+                          {/* <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
