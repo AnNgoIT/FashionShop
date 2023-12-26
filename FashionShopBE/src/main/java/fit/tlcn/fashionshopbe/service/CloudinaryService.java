@@ -12,5 +12,11 @@ public interface CloudinaryService {
 
     String uploadUserAvatar(MultipartFile avatar) throws IOException;
 
+    String uploadBanner(MultipartFile banner) throws IOException;
+
     void deleteAvatar(String avatarUrl) throws IOException;
+
+    void deleteCategoryImage(String imageUrl) throws IOException;
+
+    void deleteProductImage(String imageUrl) throws IOException;
 }

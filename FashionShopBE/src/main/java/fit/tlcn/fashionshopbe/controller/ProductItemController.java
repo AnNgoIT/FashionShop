@@ -53,10 +53,13 @@ public class ProductItemController {
             productItemResponse.setPrice(productItem.getPrice());
             productItemResponse.setPromotionalPrice(productItem.getPromotionalPrice());
             List<String> styleValueNames = new ArrayList<>();
+            Map<String, Object> styleValueByStyles = new HashMap<>();
             for (StyleValue styleValue : productItem.getStyleValues()) {
                 styleValueNames.add(styleValue.getName());
+                styleValueByStyles.put(styleValue.getStyle().getName(), styleValue.getName());
             }
             productItemResponse.setStyleValueNames(styleValueNames);
+            productItemResponse.setStyleValueByStyles(styleValueByStyles);
             productItemResponse.setSku(productItem.getSku());
             productItemResponse.setCreatedAt(productItem.getCreatedAt());
             productItemResponse.setUpdatedAt(productItem.getUpdatedAt());
@@ -101,10 +104,13 @@ public class ProductItemController {
             productItemResponse.setPrice(productItem.getPrice());
             productItemResponse.setPromotionalPrice(productItem.getPromotionalPrice());
             List<String> styleValueNames = new ArrayList<>();
+            Map<String, Object> styleValueByStyles = new HashMap<>();
             for (StyleValue styleValue : productItem.getStyleValues()) {
                 styleValueNames.add(styleValue.getName());
+                styleValueByStyles.put(styleValue.getStyle().getName(), styleValue.getName());
             }
             productItemResponse.setStyleValueNames(styleValueNames);
+            productItemResponse.setStyleValueByStyles(styleValueByStyles);
             productItemResponse.setSku(productItem.getSku());
             productItemResponse.setCreatedAt(productItem.getCreatedAt());
             productItemResponse.setUpdatedAt(productItem.getUpdatedAt());

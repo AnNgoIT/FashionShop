@@ -3,15 +3,19 @@ package fit.tlcn.fashionshopbe.controller.AdminController;
 import fit.tlcn.fashionshopbe.dto.CreateProductRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.ProductResponse;
+import fit.tlcn.fashionshopbe.dto.UpdateProductRequest;
 import fit.tlcn.fashionshopbe.entity.*;
 import fit.tlcn.fashionshopbe.repository.BrandRepository;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
 import fit.tlcn.fashionshopbe.repository.ProductRepository;
+import fit.tlcn.fashionshopbe.service.CloudinaryService;
 import fit.tlcn.fashionshopbe.service.ProductService;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.method.P;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +36,9 @@ public class AdProductController {
     @Autowired
     ProductRepository productRepository;
 
+    @Autowired
+    CloudinaryService cloudinaryService;
+
     @PostMapping("")
     public ResponseEntity<GenericResponse> createProduct(@Valid @ModelAttribute CreateProductRequest request, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -49,7 +56,7 @@ public class AdProductController {
     }
 
     @GetMapping("")
-    public ResponseEntity<GenericResponse> getAllProducts(){
+    public ResponseEntity<GenericResponse> getAllProducts() {
         List<Product> productList = productRepository.findAllByOrderByCreatedAtDesc();
 
         List<ProductResponse> productResponseList = new ArrayList<>();
@@ -99,5 +106,104 @@ public class AdProductController {
                         .statusCode(HttpStatus.OK.value())
                         .build()
         );
+    }
+
+
+    @PatchMapping("/{productId}")
+    public ResponseEntity<GenericResponse> updateProduct(@PathVariable Integer productId,
+                                                         @ModelAttribute UpdateProductRequest request) {
+        try {
+            Optional<Product> productOptional = productRepository.findById(productId);
+            if (productOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Product does not exist")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            Product product = productOptional.get();
+            if (request.getName() != null) {
+                product.setName(request.getName());
+            }
+
+            if (request.getDescription() != null) {
+                product.setDescription(request.getDescription());
+            }
+
+            if (request.getBrandId() != null) {
+                Optional<Brand> brandOptional = brandRepository.findByBrandIdAndIsActiveIsTrue(request.getBrandId());
+                if (brandOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Brand does not exist")
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build());
+                }
+                product.setBrand(brandOptional.get());
+            }
+
+            if (request.getImage() != null) {
+                cloudinaryService.deleteProductImage(product.getImage());
+                product.setImage(cloudinaryService.uploadProductImage(request.getImage()));
+            }
+
+            productRepository.save(product);
+
+            ProductResponse productResponse = new ProductResponse();
+            productResponse.setProductId(product.getProductId());
+            productResponse.setName(product.getName());
+            productResponse.setDescription(product.getDescription());
+            productResponse.setImage(product.getImage());
+            productResponse.setCategoryId(product.getCategory().getCategoryId());
+            productResponse.setCategoryName(product.getCategory().getName());
+            productResponse.setBrandId(product.getBrand().getBrandId());
+            productResponse.setBrandName(product.getBrand().getName());
+            productResponse.setTotalQuantity(product.getTotalQuantity());
+            productResponse.setTotalSold(product.getTotalSold());
+            productResponse.setPriceMin(product.getPriceMin());
+            productResponse.setPromotionalPriceMin(product.getPromotionalPriceMin());
+            productResponse.setRating(product.getRating());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : product.getCategory().getStyles()) {
+                styleNames.add(style.getName());
+            }
+            productResponse.setStyleNames(styleNames);
+
+            List<String> styleValueNames = new ArrayList<>();
+            for (StyleValue styleValue : product.getStyleValues()) {
+                styleValueNames.add(styleValue.getName());
+            }
+            productResponse.setStyleValueNames(styleValueNames);
+
+            productResponse.setCreatedAt(product.getCreatedAt());
+            productResponse.setUpdatedAt(product.getUpdatedAt());
+            productResponse.setIsSelling(product.getIsSelling());
+            productResponse.setIsActive(product.getIsActive());
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Updated product successfully")
+                            .result(productResponse)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
     }
 }

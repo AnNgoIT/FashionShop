@@ -17,4 +17,6 @@ public interface StyleValueRepository extends JpaRepository<StyleValue, Integer>
     Optional<StyleValue> findByStyleValueIdAndIsActiveIsTrue(Integer styleValueId);
 
     List<StyleValue> findByStyle_NameAndIsActiveIsTrue(String styleName);
+
+    List<StyleValue> findByStyle(Style style);
 }

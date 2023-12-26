@@ -1,6 +1,8 @@
 package fit.tlcn.fashionshopbe.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fit.tlcn.fashionshopbe.constant.Gender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,7 +15,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,7 @@ public class User implements UserDetails {
     private String phone;
 
     @Column(columnDefinition = "varchar(max) not null")
+    @JsonBackReference
     private String password;
 
     private Boolean isVerified = false;
@@ -50,8 +52,13 @@ public class User implements UserDetails {
 
     @ManyToOne
     @JoinColumn(name = "roleId")
-    @JsonBackReference
+    @JsonIgnore
     private Role role;
+
+    @JsonGetter("role")
+    public String getUserRole(){
+        return this.role.getName();
+    }
 
     @Column(columnDefinition = "nvarchar(max)")
     private String address;
@@ -68,41 +75,49 @@ public class User implements UserDetails {
     @UpdateTimestamp
     private Date updatedAt;
 
+    @JsonBackReference
     private Date lastLoginAt;
 
     private Boolean isActive = true;
 
     @Override
+    @JsonBackReference
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.getName()));
     }
 
     @Override
+    @JsonBackReference
     public String getPassword() {
         return password;
     }
 
     @Override
+    @JsonBackReference
     public String getUsername() {
         return email;
     }
 
     @Override
+    @JsonBackReference
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
+    @JsonBackReference
     public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
+    @JsonBackReference
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
+    @JsonBackReference
     public boolean isEnabled() {
         return true;
     }

@@ -1,6 +1,6 @@
 package fit.tlcn.fashionshopbe.dto;
 
-import fit.tlcn.fashionshopbe.constant.TransactionType;
+import fit.tlcn.fashionshopbe.constant.PaymentMethod;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -27,5 +27,8 @@ public class OrderRequest {
     @NotBlank(message = "Address is required")
     private String address;
 
-    private TransactionType transactionType;
+    @NotNull(message = "Shipping Cost is required")
+    private Integer shippingCost;
+
+    private PaymentMethod paymentMethod;
 }

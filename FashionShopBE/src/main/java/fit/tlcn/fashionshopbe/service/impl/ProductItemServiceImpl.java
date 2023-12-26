@@ -3,6 +3,7 @@ package fit.tlcn.fashionshopbe.service.impl;
 import fit.tlcn.fashionshopbe.dto.CreateProductItemRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.ProductItemResponse;
+import fit.tlcn.fashionshopbe.dto.UpdateProductItemRequest;
 import fit.tlcn.fashionshopbe.entity.*;
 import fit.tlcn.fashionshopbe.repository.ProductItemRepository;
 import fit.tlcn.fashionshopbe.repository.ProductRepository;
@@ -54,25 +55,6 @@ public class ProductItemServiceImpl implements ProductItemService {
             //Khi nào làm phần Coupon thì quay lại tính toán promotionalPrice
             productItem.setPromotionalPrice(request.getPrice());
 
-            List<ProductItem> productItemList = productItemRepository.findAllByParent_ProductId(product.getProductId());
-            if (!productItemList.isEmpty()) {
-                Float priceMin = productItemList.get(0).getPrice();
-                Float promotionalPriceMin = productItemList.get(0).getPromotionalPrice();
-                for (ProductItem i : productItemList) {
-                    if (i.getPrice() < priceMin && i.getPromotionalPrice() < promotionalPriceMin) {
-                        priceMin = i.getPrice();
-                        promotionalPriceMin = i.getPromotionalPrice();
-                    }
-                }
-
-                product.setPriceMin(priceMin);
-                //Khi nào làm phần Coupon thì quay lại tính toán promotionalPriceMin
-                product.setPromotionalPriceMin(promotionalPriceMin);
-            } else {
-                product.setPriceMin(request.getPrice());
-                product.setPromotionalPriceMin(request.getPrice());
-            }
-
             Set<StyleValue> styleValueSet = new HashSet<>();
             for (Integer styleValueId : request.getStyleValueIds()
             ) {
@@ -115,6 +97,25 @@ public class ProductItemServiceImpl implements ProductItemService {
             productItem.setImage(image);
 
             productItemRepository.save(productItem);
+
+            List<ProductItem> productItemList = productItemRepository.findAllByParent_ProductId(product.getProductId());
+            if (!productItemList.isEmpty()) {
+                Float priceMin = productItemList.get(0).getPrice();
+                Float promotionalPriceMin = productItemList.get(0).getPromotionalPrice();
+                for (ProductItem i : productItemList) {
+                    if (i.getPrice() < priceMin && i.getPromotionalPrice() < promotionalPriceMin) {
+                        priceMin = i.getPrice();
+                        promotionalPriceMin = i.getPromotionalPrice();
+                    }
+                }
+
+                product.setPriceMin(priceMin);
+                //Khi nào làm phần Coupon thì quay lại tính toán promotionalPriceMin
+                product.setPromotionalPriceMin(promotionalPriceMin);
+            } else {
+                product.setPriceMin(request.getPrice());
+                product.setPromotionalPriceMin(request.getPrice());
+            }
             productRepository.save(product);
 
             ProductItemResponse productItemResponse = new ProductItemResponse();
@@ -144,6 +145,112 @@ public class ProductItemServiceImpl implements ProductItemService {
                             .build()
             );
 
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> updateProductItem(Integer productItemId, UpdateProductItemRequest request) {
+        try {
+            Optional<ProductItem> productItemOptional = productItemRepository.findById(productItemId);
+            if (productItemOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found product item")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            ProductItem productItem = productItemOptional.get();
+            Product product = productItem.getParent();
+
+            if (request.getQuantity() != null) {
+                if (request.getQuantity() < productItem.getSold()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("New quantity must greater than or equal sold")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+                Integer oldQuantity = productItem.getQuantity();
+                productItem.setQuantity(request.getQuantity());
+
+                Integer oldTotalQuantity = product.getTotalQuantity();
+
+                product.setTotalQuantity(oldTotalQuantity - oldQuantity + productItem.getQuantity());
+            }
+
+            if(request.getPrice() != null){
+                if(request.getPrice() <= 0){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Invalid input data")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                productItem.setPrice(request.getPrice());
+                //Khi nào làm phần Coupon thì quay lại tính toán promotionalPrice
+                productItem.setPromotionalPrice(request.getPrice());
+
+                if(productItem.getPrice()<product.getPriceMin()){
+                    product.setPriceMin(productItem.getPrice());
+                }
+
+                if(productItem.getPromotionalPrice()<product.getPromotionalPriceMin()){
+                    product.setPromotionalPriceMin(productItem.getPromotionalPrice());
+                }
+            }
+
+            if (request.getImage() != null) {
+                cloudinaryService.deleteProductImage(productItem.getImage());
+                productItem.setImage(cloudinaryService.uploadProductImage(request.getImage()));
+            }
+
+            productItemRepository.save(productItem);
+            productRepository.save(product);
+
+            ProductItemResponse productItemResponse = new ProductItemResponse();
+            productItemResponse.setProductItemId(productItem.getProductItemId());
+            productItemResponse.setParentId(productItem.getParent().getProductId());
+            productItemResponse.setParentName(productItem.getParent().getName());
+            productItemResponse.setQuantity(productItem.getQuantity());
+            productItemResponse.setSold(productItem.getSold());
+            productItemResponse.setImage(productItem.getImage());
+            productItemResponse.setPrice(productItem.getPrice());
+            productItemResponse.setPromotionalPrice(productItem.getPromotionalPrice());
+            List<String> styleValueNames = new ArrayList<>();
+            for (StyleValue styleValue : productItem.getStyleValues()) {
+                styleValueNames.add(styleValue.getName());
+            }
+            productItemResponse.setStyleValueNames(styleValueNames);
+            productItemResponse.setSku(productItem.getSku());
+            productItemResponse.setCreatedAt(productItem.getCreatedAt());
+            productItemResponse.setUpdatedAt(productItem.getUpdatedAt());
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Updated product item successfully")
+                            .result(productItemResponse)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     GenericResponse.builder()

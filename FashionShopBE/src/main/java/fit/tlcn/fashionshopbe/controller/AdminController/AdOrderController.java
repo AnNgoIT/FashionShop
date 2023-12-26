@@ -13,13 +13,34 @@ public class AdOrderController {
     @Autowired
     OrderService orderService;
 
+    @GetMapping("")
+    public ResponseEntity<GenericResponse> GetAllOrders(){
+        return orderService.getAllOrders();
+    }
+
     @GetMapping("/statuses")
-    public ResponseEntity<GenericResponse> GetOrdersByStatus(@RequestParam(required = false) Status status){
-        return orderService.getOrderByStatus(status);
+    public ResponseEntity<GenericResponse> GetOrdersByStatus(@RequestParam Status status){
+        return orderService.getOrdersByStatus(status);
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<GenericResponse> GetOrderByOrderId(@PathVariable Integer orderId){
         return orderService.getOrderByOrderId(orderId);
+    }
+
+    @PatchMapping("/toProcessing/{orderId}")
+    public ResponseEntity<GenericResponse> UpdateOrderStatusToProcessing(@PathVariable Integer orderId){
+        return orderService.updateOrderStatusToProcessing(orderId);
+    }
+
+    @PatchMapping("/toShipping/{orderId}")
+    public ResponseEntity<GenericResponse> UpdateOrderStatusToShipping(@PathVariable Integer orderId,
+                                                                       @RequestParam String shipperEmail){
+        return  orderService.updateOrderStatusToShipping(orderId, shipperEmail);
+    }
+
+    @GetMapping("/{orderId}/delivery")
+    public ResponseEntity<GenericResponse> GetDeliveryByOrder(@PathVariable Integer orderId){
+        return  orderService.getDeliveryByOrder(orderId);
     }
 }

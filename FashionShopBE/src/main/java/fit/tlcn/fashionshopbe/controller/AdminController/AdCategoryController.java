@@ -3,7 +3,6 @@ package fit.tlcn.fashionshopbe.controller.AdminController;
 import fit.tlcn.fashionshopbe.dto.CreateCategoryRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.UpdateCategoryRequest;
-import fit.tlcn.fashionshopbe.dto.UpdateCategoryStatusRequest;
 import fit.tlcn.fashionshopbe.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,33 +35,18 @@ public class AdCategoryController {
         return categoryService.createCategory(request);
     }
 
-    @PutMapping("/{categoryId}")
-    public ResponseEntity<GenericResponse> updateCategory(@PathVariable Integer categoryId, @Valid @RequestBody UpdateCategoryRequest updateCategoryRequest, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    GenericResponse.builder()
-                            .success(false)
-                            .message("Invalid input data")
-                            .result(bindingResult.getFieldError().getDefaultMessage())
-                            .statusCode(HttpStatus.BAD_REQUEST.value())
-                            .build()
-            );
-        }
+    @PatchMapping("/{categoryId}")
+    public ResponseEntity<GenericResponse> updateCategory(@PathVariable Integer categoryId, @ModelAttribute UpdateCategoryRequest updateCategoryRequest, BindingResult bindingResult) {
         return categoryService.updateCategory(categoryId, updateCategoryRequest);
     }
 
-    @PatchMapping("/{categoryId}")
-    public ResponseEntity<GenericResponse> updateCategoryStatus(@PathVariable Integer categoryId, @Valid @RequestBody UpdateCategoryStatusRequest updateCategoryStatusRequest, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    GenericResponse.builder()
-                            .success(false)
-                            .message("Invalid input data")
-                            .result(bindingResult.getFieldError().getDefaultMessage())
-                            .statusCode(HttpStatus.BAD_REQUEST.value())
-                            .build()
-            );
-        }
-        return categoryService.updateCategoryStatus(categoryId, updateCategoryStatusRequest);
+    @GetMapping("")
+    public ResponseEntity<GenericResponse> getAllCategories() {
+        return categoryService.getAllCategories();
+    }
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<GenericResponse> getCategory(@PathVariable Integer categoryId) {
+        return categoryService.getCategory(categoryId);
     }
 }

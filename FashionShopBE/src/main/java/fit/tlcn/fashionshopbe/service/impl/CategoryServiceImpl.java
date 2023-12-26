@@ -134,8 +134,51 @@ public class CategoryServiceImpl implements CategoryService {
             }
 
             Category category = categoryOptional.get();
-            category.setName(updateCategoryRequest.getName());
+            if (updateCategoryRequest.getName() != null) {
+                if (category.getName().equals(updateCategoryRequest.getName())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("New category's name must difference from category's name in the present")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+                Optional<Category> categoryNameOptional = categoryRepository.findByName(updateCategoryRequest.getName());
+                if (categoryNameOptional.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("This category name already exists")
+                                    .result("Conflict")
+                                    .statusCode(HttpStatus.CONFLICT.value())
+                                    .build()
+                    );
+                }
+                category.setName(updateCategoryRequest.getName());
+            }
+
             if (updateCategoryRequest.getParentId() != null) {
+                if (category.getCategoryId().equals(updateCategoryRequest.getParentId())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Category parent must difference from it")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+
+                if(category.getParent().getCategoryId().equals(updateCategoryRequest.getParentId())){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("New category's parent must difference from category's parent in the present")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+
                 Optional<Category> parent = categoryRepository.findByCategoryIdAndIsActiveIsTrue(updateCategoryRequest.getParentId());
                 if (parent.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -148,16 +191,43 @@ public class CategoryServiceImpl implements CategoryService {
                 }
                 category.setParent(parent.get());
             }
-            category.setParent(null);
 
-            category.setImage(updateCategoryRequest.getIcon());
+            if (updateCategoryRequest.getImageFile() != null) {
+                if (category.getImage() != null) {
+                    cloudinaryService.deleteCategoryImage(category.getImage());
+                }
+                String imagUrl = cloudinaryService.uploadCategoryImage(updateCategoryRequest.getImageFile());
+                category.setImage(imagUrl);
+            }
 
             categoryRepository.save(category);
+
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setCategoryId(category.getCategoryId());
+            categoryResponse.setName(category.getName());
+            if (category.getParent() != null) {
+                categoryResponse.setParentName(category.getParent().getName());
+            } else {
+                categoryResponse.setParentName(null);
+            }
+            categoryResponse.setImage(category.getImage());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : category.getStyles()) {
+                String styleName = style.getName();
+                styleNames.add(styleName);
+            }
+            categoryResponse.setStyleNames(styleNames);
+
+            categoryResponse.setCreatedAt(category.getCreatedAt());
+            categoryResponse.setUpdatedAt(category.getUpdatedAt());
+            categoryResponse.setIsActive(category.getIsActive());
+
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Category is updated successfully")
-                            .result(category)
+                            .message("Category was updated successfully")
+                            .result(categoryResponse)
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );
@@ -175,7 +245,49 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public ResponseEntity<GenericResponse> updateCategoryStatus(Integer categoryId, UpdateCategoryStatusRequest updateCategoryStatusRequest) {
+    public ResponseEntity<GenericResponse> getAllCategories() {
+        List<Category> categoryList = categoryRepository.findAll();
+
+        List<CategoryResponse> categoryResponseList = new ArrayList<>();
+        for (Category category : categoryList) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setCategoryId(category.getCategoryId());
+            categoryResponse.setName(category.getName());
+            if (category.getParent() != null) {
+                categoryResponse.setParentName(category.getParent().getName());
+            } else {
+                categoryResponse.setParentName(null);
+            }
+            categoryResponse.setImage(category.getImage());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : category.getStyles()) {
+                String styleName = style.getName();
+                styleNames.add(styleName);
+            }
+            categoryResponse.setStyleNames(styleNames);
+
+            categoryResponse.setCreatedAt(category.getCreatedAt());
+            categoryResponse.setUpdatedAt(category.getUpdatedAt());
+            categoryResponse.setIsActive(category.getIsActive());
+
+            categoryResponseList.add(categoryResponse);
+        }
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("content", categoryResponseList);
+        map.put("totalElements", categoryList.size());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                GenericResponse.builder()
+                        .success(true)
+                        .message("Get all categories successfully")
+                        .result(map)
+                        .statusCode(HttpStatus.OK.value())
+                        .build()
+        );
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getCategory(Integer categoryId) {
         try {
             Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
             if (categoryOptional.isEmpty()) {
@@ -187,16 +299,34 @@ public class CategoryServiceImpl implements CategoryService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
-
             Category category = categoryOptional.get();
-            category.setIsActive(updateCategoryStatusRequest.getIsActive());
 
-            categoryRepository.save(category);
+            CategoryResponse categoryResponse = new CategoryResponse();
+            categoryResponse.setCategoryId(category.getCategoryId());
+            categoryResponse.setName(category.getName());
+            if (category.getParent() != null) {
+                categoryResponse.setParentName(category.getParent().getName());
+            } else {
+                categoryResponse.setParentName(null);
+            }
+            categoryResponse.setImage(category.getImage());
+
+            List<String> styleNames = new ArrayList<>();
+            for (Style style : category.getStyles()) {
+                String styleName = style.getName();
+                styleNames.add(styleName);
+            }
+            categoryResponse.setStyleNames(styleNames);
+
+            categoryResponse.setCreatedAt(category.getCreatedAt());
+            categoryResponse.setUpdatedAt(category.getUpdatedAt());
+            categoryResponse.setIsActive(category.getIsActive());
+
             return ResponseEntity.status(HttpStatus.OK).body(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Status's category is updated successfully")
-                            .result(category)
+                            .message("This is category's information")
+                            .result(categoryResponse)
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );

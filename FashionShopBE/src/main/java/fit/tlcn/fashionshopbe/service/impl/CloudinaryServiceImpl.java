@@ -78,6 +78,26 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         return (String) uploadResult.get("secure_url");
     }
 
+    @Override
+    public String uploadBanner(MultipartFile banner) throws IOException {
+        if (banner == null) {
+            throw new IllegalArgumentException("File is null. Please upload a valid file.");
+        }
+
+        // Kiểm tra định dạng file sử dụng Apache Tika
+        Tika tika = new Tika();
+        String contentType = tika.detect(banner.getInputStream());
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed.");
+        }
+
+        Map<String, String> params = ObjectUtils.asMap(
+                "folder", "FashionShop/Banner",
+                "resource_type", "image");
+        Map uploadResult = cloudinary.uploader().upload(banner.getBytes(), params);
+        return (String) uploadResult.get("secure_url");
+    }
+
     public String getPublicIdAvatar(String avatarUrl) {
         String avatarName = avatarUrl.substring(avatarUrl.lastIndexOf("/") + 1, avatarUrl.lastIndexOf("."));
         String publicId = "FashionShop/User/" + avatarName;
@@ -90,5 +110,33 @@ public class CloudinaryServiceImpl implements CloudinaryService {
                 "folder", "FashionShop/User",
                 "resource_type", "image");
         Map result = cloudinary.uploader().destroy(getPublicIdAvatar(avatarUrl), params);
+    }
+
+    public String getPublicIdCategoryImage(String imageUrl) {
+        String imageName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1, imageUrl.lastIndexOf("."));
+        String publicId = "FashionShop/Category/" + imageName;
+        return publicId;
+    }
+
+    @Override
+    public void deleteCategoryImage(String imageUrl) throws IOException{
+        Map<String, String> params = ObjectUtils.asMap(
+                "folder", "FashionShop/Category",
+                "resource_type", "image");
+        Map result = cloudinary.uploader().destroy(getPublicIdCategoryImage(imageUrl), params);
+    }
+
+    public String getPublicIdProductImage(String imageUrl) {
+        String imageName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1, imageUrl.lastIndexOf("."));
+        String publicId = "FashionShop/Product/" + imageName;
+        return publicId;
+    }
+
+    @Override
+    public void deleteProductImage(String imageUrl) throws IOException {
+        Map<String, String> params = ObjectUtils.asMap(
+                "folder", "FashionShop/Product",
+                "resource_type", "image");
+        Map result = cloudinary.uploader().destroy(getPublicIdProductImage(imageUrl), params);
     }
 }

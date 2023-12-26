@@ -1,5 +1,6 @@
 package fit.tlcn.fashionshopbe.controller.CustomerController;
 
+import fit.tlcn.fashionshopbe.constant.Status;
 import fit.tlcn.fashionshopbe.dto.*;
 import fit.tlcn.fashionshopbe.security.JwtTokenProvider;
 import fit.tlcn.fashionshopbe.service.UserService;
@@ -19,43 +20,6 @@ public class CustomerController {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
-
-    @GetMapping("/profile")
-    public ResponseEntity<GenericResponse> getUserProfile(@RequestHeader("Authorization") String authorizationHeader) {
-        String token = authorizationHeader.substring(7);
-        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
-
-        return userService.getUserProfile(emailFromToken);
-    }
-
-    @PutMapping("/profile")
-    public ResponseEntity<GenericResponse> updateUserProfile(@ModelAttribute UserProfileUpdateRequest request,
-                                                             @RequestHeader("Authorization") String authorizationHeader) {
-        String token = authorizationHeader.substring(7);
-        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
-
-        return userService.updateUserProfile(request, emailFromToken);
-    }
-
-    @PatchMapping("/change-password")
-    public ResponseEntity<GenericResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request,
-                                                          @RequestHeader("Authorization") String authorizationHeader,
-                                                          BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    GenericResponse.builder()
-                            .success(false)
-                            .message("Invalid input data")
-                            .result(bindingResult.getFieldError().getDefaultMessage())
-                            .statusCode(HttpStatus.BAD_REQUEST.value())
-                            .build()
-            );
-        }
-
-        String token = authorizationHeader.substring(7);
-        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
-        return userService.changePassword(request, emailFromToken);
-    }
 
     @PostMapping("/carts/cartItems")
     public ResponseEntity<GenericResponse> addToCart(@Valid @RequestBody AddToCartRequest request,
@@ -114,7 +78,7 @@ public class CustomerController {
 
     @Transactional
     @DeleteMapping("/carts/cartItems")
-    public ResponseEntity<GenericResponse> deleteAllCartItemsInCart(@RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<GenericResponse> deleteAllCartItemsInCart(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
 
@@ -124,7 +88,7 @@ public class CustomerController {
     @PostMapping("/orders")
     public ResponseEntity<GenericResponse> order(@RequestHeader("Authorization") String authorizationHeader,
                                                  @Valid @RequestBody OrderRequest request,
-                                                 BindingResult bindingResult){
+                                                 BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     GenericResponse.builder()
@@ -143,19 +107,83 @@ public class CustomerController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<GenericResponse> getAllOrdersOfCustomer(@RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<GenericResponse> getAllOrdersOfCustomer(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
 
         return userService.getAllOrdersOfCustomer(emailFromToken);
     }
 
+    @GetMapping("orders/statuses")
+    public ResponseEntity<GenericResponse> GetOrdersByStatusOfCustomer(@RequestParam Status status,
+                                                                       @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.getOrdersByStatusOfCustomer(status, emailFromToken);
+    }
+
     @GetMapping("/orders/{orderId}")
     public ResponseEntity<GenericResponse> getOneOrderOfCustomer(@PathVariable Integer orderId,
-                                                        @RequestHeader("Authorization") String authorizationHeader){
+                                                                 @RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
 
         return userService.getOneOrderOfCustomer(orderId, emailFromToken);
+    }
+
+    @PatchMapping("/orders/cancel/{orderId}")
+    public ResponseEntity<GenericResponse> cancelOrderWithStatusNOT_PROCESSED(@PathVariable Integer orderId,
+                                                                              @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.cancelOrderWithStatusNOT_PROCESSED(orderId, emailFromToken);
+    }
+
+    @GetMapping("/orders/{orderId}/checkout-eWallet")
+    public ResponseEntity<GenericResponse> checkoutEWallet(@PathVariable Integer orderId,
+                                                           @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.checkoutEWallet(emailFromToken, orderId);
+    }
+
+    @PatchMapping("/products/follow-product/{productId}")
+    public ResponseEntity<GenericResponse> FollowProduct(@PathVariable Integer productId,
+                                                         @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.followProduct(emailFromToken, productId);
+    }
+
+    @PatchMapping("/products/unfollow-product/{productId}")
+    public ResponseEntity<GenericResponse> UnfollowProduct(@PathVariable Integer productId,
+                                                         @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.unfollowProduct(emailFromToken, productId);
+    }
+
+    @GetMapping("/products/check-follow/{productId}")
+    public ResponseEntity<GenericResponse> checkFollow(@PathVariable Integer productId,
+                                                           @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.checkFollow(emailFromToken, productId);
+    }
+
+    @PostMapping("/ratings/{orderItemId}")
+    public ResponseEntity<GenericResponse> RatingOrderItem(@PathVariable Integer orderItemId,
+                                                           @RequestBody CreateRatingRequest request,
+                                                           @RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.ratingOrderItem(emailFromToken, orderItemId, request);
     }
 }

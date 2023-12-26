@@ -1,5 +1,9 @@
 package fit.tlcn.fashionshopbe.security;
 
+import fit.tlcn.fashionshopbe.security.oauth2.CustomOAuth2UserService;
+import fit.tlcn.fashionshopbe.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import fit.tlcn.fashionshopbe.security.oauth2.OAuth2AuthenticationFailureHandler;
+import fit.tlcn.fashionshopbe.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +41,14 @@ public class WebSecurityConfig {
     @Autowired
     MyBasicAuthenticationEntryPoint myBasicAuthenticationEntryPoint;
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -48,6 +60,10 @@ public class WebSecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -71,11 +87,31 @@ public class WebSecurityConfig {
                 .hasAuthority("ADMIN")
                 .requestMatchers(antMatcher("/api/v1/users/customers/**"))
                 .hasAuthority("CUSTOMER")
+                .requestMatchers((antMatcher("/api/v1/users/shippers/**")))
+                .hasAuthority("SHIPPER")
+                .requestMatchers(antMatcher("/api/v1/users/role"),
+                        antMatcher("/api/v1/users/profile"),
+                        antMatcher("/api/v1/users/change-password"))
+                .hasAnyAuthority("ADMIN", "CUSTOMER", "SHIPPER")
                 .anyRequest()
                 .permitAll()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorize")
+                .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                .and()
+                .redirectionEndpoint()
+                .baseUri("/api/v1/oauth2/callback/*")
+                .and()
+                .userInfoEndpoint()
+                .userService(customOAuth2UserService)
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
                 .and()
                 .httpBasic()
                 .authenticationEntryPoint(myBasicAuthenticationEntryPoint)
@@ -91,7 +127,10 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000",
+                "https://fashion-shop-anngoit.vercel.app",
+                "https://fashion-shop-git-main-anngoit.vercel.app",
+                "https://fashion-shop-4vjplc5vq-anngoit.vercel.app"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowCredentials(true); // Cho phép chia sẻ cookie và tiêu đề xác thực
         configuration.setExposedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));

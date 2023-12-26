@@ -18,7 +18,7 @@ public class CartItemResponse {
     private String image;
     private List<String> styleValues;
     private Integer quantity;
-    private Float productPrice;
-    private Float productPromotionalPrice;
+    private Float productPrice;//productItemPrice
+    private Float productPromotionalPrice;//productItemPromotionalPrice
     private Float amount;
 }

@@ -2,11 +2,13 @@ package fit.tlcn.fashionshopbe.controller;
 
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.ProductResponse;
+import fit.tlcn.fashionshopbe.dto.RatingResponse;
 import fit.tlcn.fashionshopbe.dto.StyleValueResponse;
 import fit.tlcn.fashionshopbe.entity.*;
 import fit.tlcn.fashionshopbe.repository.BrandRepository;
 import fit.tlcn.fashionshopbe.repository.CategoryRepository;
 import fit.tlcn.fashionshopbe.repository.ProductRepository;
+import fit.tlcn.fashionshopbe.repository.RatingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +30,9 @@ public class ProductController {
 
     @Autowired
     BrandRepository brandRepository;
+
+    @Autowired
+    RatingRepository ratingRepository;
 
     @GetMapping("")
     public ResponseEntity<GenericResponse> getAll(@RequestParam(defaultValue = "") String productName,
@@ -284,6 +289,109 @@ public class ProductController {
                             .success(true)
                             .message("This is related products")
                             .result(productResponseList)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @GetMapping("/{productId}/ratings")
+    public ResponseEntity<GenericResponse> getAllRatingsOfProducts(@PathVariable Integer productId) {
+        try {
+            Optional<Product> productOptional = productRepository.findByProductIdAndIsActiveIsTrueAndIsSellingIsTrue(productId);
+            if (productOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found product")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            Product product = productOptional.get();
+            if (product.getRating() == null) {
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("This is ratings of product")
+                                .result("This product does not have any rating")
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+            }
+
+            List<Rating> ratingList = ratingRepository.findByOrderItem_ProductItem_Parent(product);
+            List<RatingResponse> ratingResponseList = new ArrayList<>();
+            for (Rating r : ratingList) {
+                RatingResponse ratingResponse = new RatingResponse();
+                Map<String, Object> styleValueByStyles = new HashMap<>();
+                for (StyleValue styleValue : r.getOrderItem().getProductItem().getStyleValues()) {
+                    styleValueByStyles.put(styleValue.getStyle().getName(), styleValue.getName());
+                }
+                ratingResponse.setStyleValueByStyles(styleValueByStyles);
+                ratingResponse.setContent(r.getContent());
+                ratingResponse.setStar(r.getStar());
+                ratingResponse.setFullname(r.getOrderItem().getOrder().getCustomer().getFullname());
+                ratingResponse.setImage(r.getOrderItem().getOrder().getCustomer().getAvatar());
+                ratingResponse.setCreatedAt(r.getCreatedAt());
+
+                ratingResponseList.add(ratingResponse);
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("This is ratings of product")
+                            .result(ratingResponseList)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @GetMapping("/{productId}/count-follows")
+    public ResponseEntity<GenericResponse> CountFollowsOfProduct(@PathVariable Integer productId){
+        try {
+            Optional<Product> productOptional = productRepository.findByProductIdAndIsActiveIsTrueAndIsSellingIsTrue(productId);
+            if (productOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Not found product")
+                                .result("Not found")
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            Product product = productOptional.get();
+            Integer follows = product.getFollowers().size();
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Count follows of product")
+                            .result(follows)
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );

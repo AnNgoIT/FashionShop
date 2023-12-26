@@ -2,6 +2,8 @@ package fit.tlcn.fashionshopbe.controller.AdminController;
 
 import fit.tlcn.fashionshopbe.dto.CreateProductItemRequest;
 import fit.tlcn.fashionshopbe.dto.GenericResponse;
+import fit.tlcn.fashionshopbe.dto.UpdateProductItemRequest;
+import fit.tlcn.fashionshopbe.dto.UpdateProductRequest;
 import fit.tlcn.fashionshopbe.service.ProductItemService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,5 +32,11 @@ public class AdProductItemController {
         }
 
         return productItemService.createProductItem(request);
+    }
+
+    @PatchMapping("/{productItemId}")
+    public ResponseEntity<GenericResponse> updateProductItem(@PathVariable Integer productItemId,
+                                                             @ModelAttribute UpdateProductItemRequest request){
+        return productItemService.updateProductItem(productItemId, request);
     }
 }

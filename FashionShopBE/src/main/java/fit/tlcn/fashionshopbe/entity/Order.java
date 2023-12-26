@@ -3,7 +3,7 @@ package fit.tlcn.fashionshopbe.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import fit.tlcn.fashionshopbe.constant.Status;
-import fit.tlcn.fashionshopbe.constant.TransactionType;
+import fit.tlcn.fashionshopbe.constant.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -30,6 +30,8 @@ public class Order {
     @Column(columnDefinition = "float not null")
     private Float totalAmount;
 
+    private Float shippingCost;
+
     private Boolean checkout = false;
 
     @Column(columnDefinition = "nvarchar(max) not null")
@@ -47,7 +49,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionType transactionType;
+    private PaymentMethod paymentMethod;
 
     @CreationTimestamp
     private Date createdAt;

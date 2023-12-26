@@ -24,10 +24,10 @@ public class BrandController {
 
     @GetMapping("")
     public ResponseEntity<GenericResponse> getAll() {
-        List<Brand> styleList = brandRepository.findAllByIsActiveIsTrue();
+        List<Brand> brandList = brandRepository.findAllByIsActiveIsTrue();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("content", styleList);
-        map.put("totalElements", styleList.size());
+        map.put("content", brandList);
+        map.put("totalElements", brandList.size());
         return ResponseEntity.status(HttpStatus.OK).body(
                 GenericResponse.builder()
                         .success(true)

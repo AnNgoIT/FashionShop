@@ -1,0 +1,45 @@
+image: openjdk:17-alpine
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  # Các biến môi trường cần thiết để triển khai
+  EB_ENVIRONMENT_NAME: "FashionShop-env"  # Tên môi trường Elastic Beanstalk
+  EB_APPLICATION_NAME: "FashionShop"     # Tên ứng dụng Elastic Beanstalk
+  AWS_REGION: "ap-southeast-1"         # Chỉ định vùng AWS (ở đây mình sử dụng ap-southeast-1)
+  JAR_FILE_NAME: "FashionShopBE-0.0.1-SNAPSHOT.jar"
+  ARTIFACT_NAME: "FashionShopBE-0.0.1-SNAPSHOT-v$CI_PIPELINE_IID.jar"
+
+before_script:
+  - apk add --no-cache maven
+
+build:
+  stage: build
+  script:
+    - mvn clean package            # Xây dựng ứng dụng Spring Boot và tạo file jar
+  artifacts:
+    paths:
+      - target/$JAR_FILE_NAME      # Lưu file jar vào artifacts để sử dụng trong bước triển khai
+
+test:
+  stage: test
+  script:
+    - mvn test                    # Chạy các bài kiểm tra (tests) của ứng dụng
+
+deploy:
+  stage: deploy
+  image: python:3                     # Sử dụng ảnh Docker với Python (để cài đặt AWS CLI)
+  before_script:
+    - pip install awscli              # Cài đặt AWS CLI
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set default.region $AWS_REGION
+  script:
+    - aws s3 cp ./target/$JAR_FILE_NAME s3://$S3_BUCKET/$ARTIFACT_NAME
+    - aws elasticbeanstalk create-application-version --application-name $EB_APPLICATION_NAME --version-label $CI_COMMIT_SHA --source-bundle S3Bucket=$S3_BUCKET,S3Key=$ARTIFACT_NAME
+    - aws elasticbeanstalk update-environment --environment-name $EB_ENVIRONMENT_NAME --version-label $CI_COMMIT_SHA
+  only:
+    - production  # Chỉ triển khai khi đẩy lên nhánh production

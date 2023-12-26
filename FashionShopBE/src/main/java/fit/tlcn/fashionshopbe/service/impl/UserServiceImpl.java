@@ -1,7 +1,9 @@
 package fit.tlcn.fashionshopbe.service.impl;
 
 import com.cloudinary.Cloudinary;
+import fit.tlcn.fashionshopbe.constant.PaymentMethod;
 import fit.tlcn.fashionshopbe.constant.Status;
+import fit.tlcn.fashionshopbe.constant.TransactionType;
 import fit.tlcn.fashionshopbe.dto.*;
 import fit.tlcn.fashionshopbe.entity.*;
 import fit.tlcn.fashionshopbe.repository.*;
@@ -9,6 +11,7 @@ import fit.tlcn.fashionshopbe.security.JwtTokenProvider;
 import fit.tlcn.fashionshopbe.service.CloudinaryService;
 import fit.tlcn.fashionshopbe.service.RefreshTokenService;
 import fit.tlcn.fashionshopbe.service.UserService;
+import fit.tlcn.fashionshopbe.service.VNPayService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +64,21 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     OrderItemRepository orderItemRepository;
+
+    @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
+    VNPayService vnPayService;
+
+    @Autowired
+    DeliveryRepository deliveryRepository;
+
+    @Autowired
+    TransactionRepository transactionRepository;
+
+    @Autowired
+    RatingRepository ratingRepository;
 
     private static final String PHONE_NUMBER_REGEX = "^(\\+\\d{1,3}[- ]?)?\\d{10}$";
 
@@ -263,7 +281,7 @@ public class UserServiceImpl implements UserService {
                 }
 
                 if (request.getAvatar() != null) {
-                    if (user.getAvatar() != null) {
+                    if (user.getAvatar() != null && user.getAvatar().contains("https://res.cloudinary.com/dhkkwz2fo/image/upload")) {
                         cloudinaryService.deleteAvatar(user.getAvatar());
                     }
                     String avatarUrl = cloudinaryService.uploadUserAvatar(request.getAvatar());
@@ -273,7 +291,6 @@ public class UserServiceImpl implements UserService {
                 if (request.getEWallet() != null) {
                     user.setEWallet(request.getEWallet());
                 }
-
 
 
                 userRepository.save(user);
@@ -487,9 +504,12 @@ public class UserServiceImpl implements UserService {
                     for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
                         styleValueNames.add(styleValue.getName());
                     }
-                    map.put("styleValueNames", styleValueNames);
+                    map.put("styleValues", styleValueNames);
                     map.put("productId", cartItem.getProductItem().getParent().getProductId());
                     map.put("productName", cartItem.getProductItem().getParent().getName());
+                    map.put("image", cartItem.getProductItem().getImage());
+                    map.put("productPrice", cartItem.getProductItem().getPrice());
+                    map.put("productPromotionalPrice", cartItem.getProductItem().getPromotionalPrice());
                     map.put("quantity", cartItem.getQuantity());
 
                     return ResponseEntity.status(HttpStatus.OK).body(
@@ -531,9 +551,12 @@ public class UserServiceImpl implements UserService {
                     for (StyleValue styleValue : cartItem.getProductItem().getStyleValues()) {
                         styleValueNames.add(styleValue.getName());
                     }
-                    map.put("styleValueNames", styleValueNames);
+                    map.put("styleValues", styleValueNames);
                     map.put("productId", cartItem.getProductItem().getParent().getProductId());
                     map.put("productName", cartItem.getProductItem().getParent().getName());
+                    map.put("image", cartItem.getProductItem().getImage());
+                    map.put("productPrice", cartItem.getProductItem().getPrice());
+                    map.put("productPromotionalPrice", cartItem.getProductItem().getPromotionalPrice());
                     map.put("quantity", cartItem.getQuantity());
 
                     return ResponseEntity.status(HttpStatus.OK).body(
@@ -863,11 +886,13 @@ public class UserServiceImpl implements UserService {
 
                 Order order = new Order();
                 order.setCustomer(userOptional.get());
+                order.setShippingCost(Float.valueOf(request.getShippingCost()));
 
                 Float totalAmount = Float.valueOf(0);
                 for (CartItem cartItem : cartItemList) {
                     totalAmount = totalAmount + (cartItem.getProductItem().getPromotionalPrice() * cartItem.getQuantity());
                 }
+                totalAmount = totalAmount + order.getShippingCost();
                 order.setTotalAmount(totalAmount);
 
                 Cart cart = cartItemList.get(0).getCart();//Để ở vị trí này sẽ giúp tránh lỗi không nhập bất kì cartItemId nào
@@ -876,7 +901,7 @@ public class UserServiceImpl implements UserService {
                 order.setPhone(request.getPhone());
                 order.setAddress(request.getAddress());
                 order.setStatus(Status.NOT_PROCESSED);
-                order.setTransactionType(request.getTransactionType());
+                order.setPaymentMethod(request.getPaymentMethod());
                 orderRepository.save(order);
 
                 for (CartItem cartItem : cartItemList) {
@@ -977,11 +1002,11 @@ public class UserServiceImpl implements UserService {
         try {
             Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
             if (userOptional.isPresent()) {
-                List<Order> orderList = orderRepository.findAllByCustomer(userOptional.get());
+                List<Order> orderList = orderRepository.findAllByCustomerOrderByUpdatedAtDesc(userOptional.get());
 
                 Map<String, Object> map = new HashMap<>();
-                map.put("customerId", userOptional.get().getUserId());
                 map.put("content", orderList);
+                map.put("totalElements", orderList.size());
 
                 return ResponseEntity.status(HttpStatus.OK).body(
                         GenericResponse.builder()
@@ -1077,6 +1102,991 @@ public class UserServiceImpl implements UserService {
                                 .statusCode(HttpStatus.UNAUTHORIZED.value())
                                 .build());
             }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> createShipperAccount(CreateShipperAccountRequest request) {
+        try {
+            Optional<User> userOptionalEmail = userRepository.findByEmail(request.getEmail());
+            if (userOptionalEmail.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Email already in use")
+                                .result("Conflict")
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .build()
+                );
+            }
+
+            if (!isValidPhoneNumber(request.getPhone())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Invalid phone number format")
+                                .result("Bad request")
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build()
+                );
+            }
+
+            Optional<User> userOptionalPhone = userRepository.findByPhone(request.getPhone());
+            if (userOptionalPhone.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Phone number already in use")
+                                .result("Conflict")
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .build()
+                );
+            }
+
+            if (!request.getConfirmPassword().equals(request.getPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Password and Confirm Password don't match")
+                                .result("Bad request")
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build()
+                );
+            }
+
+            User user = new User();
+            user.setFullname(request.getFullname());
+            user.setEmail(request.getEmail());
+            user.setPhone(request.getPhone());
+            user.setAddress(request.getAddress());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setRole(roleRepository.findByName("SHIPPER"));
+            user.setIsVerified(true);
+
+            userRepository.save(user);
+
+            UserResponse userResponse = new UserResponse();
+            userResponse.setUserId(user.getUserId());
+            userResponse.setFullname(user.getFullname());
+            userResponse.setEmail(user.getEmail());
+            userResponse.setPhone(user.getPhone());
+            userResponse.setIsVerified(user.getIsVerified());
+            userResponse.setDob(user.getDob());
+            userResponse.setGender(user.getGender());
+            userResponse.setRole(user.getRole().getName());
+            userResponse.setAddress(user.getAddress());
+            userResponse.setAvatar(user.getAvatar());
+            userResponse.setEWallet(user.getEWallet());
+            userResponse.setCreatedAt(user.getCreatedAt());
+            userResponse.setUpdatedAt(user.getUpdatedAt());
+            userResponse.setIsActive(user.getIsActive());
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Created shipper account successfully")
+                            .result(userResponse)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> cancelOrderWithStatusNOT_PROCESSED(Integer orderId, String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Order> orderOptional = orderRepository.findByOrderIdAndCustomer(orderId, userOptional.get());
+                if (orderOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have orderId: " + orderId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                Order order = orderOptional.get();
+
+                if (order.getStatus() != Status.NOT_PROCESSED) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Only orders with the status NOT_PROCESSED can be cancel order with status NOT_PROCESSED")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                order.setStatus(Status.CANCELLED);
+                orderRepository.save(order);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Cancel order successfully")
+                                .result(order)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getOrdersByStatusOfCustomer(Status status, String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                List<Order> orderList = orderRepository.findAllByCustomerAndStatusOrderByUpdatedAtDesc(userOptional.get(), status);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("content", orderList);
+                map.put("totalElements", orderList.size());
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Your orders with status " + status + ": ")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> checkoutEWallet(String emailFromToken, Integer orderId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Order> orderOptional = orderRepository.findByOrderIdAndCustomer(orderId, userOptional.get());
+                if (orderOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have orderId: " + orderId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                Order order = orderOptional.get();
+
+                if (order.getStatus() != Status.NOT_PROCESSED || order.getPaymentMethod() == PaymentMethod.COD) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Only orders with the status NOT_PROCESSED and payment method E_WALLET can be checkout eWallet")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+                String paymentUrl = vnPayService.getPaymentPayUrl(orderId, order.getTotalAmount());
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get paymentPayUrl successfully")
+                                .result(paymentUrl)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getAllDeliveriesOfShipper(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                List<Delivery> deliveryList = deliveryRepository.findAllByShipperOrderByUpdatedAtDesc(user);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("deliveryList", deliveryList);
+                map.put("totalElements", deliveryList.size());
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get all deliveries of shipper successfully")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getAllNotReceivedDeliveriesOfShipper(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                List<Delivery> deliveryList = deliveryRepository.findAllByShipperAndIsReceivedIsFalseAndIsDeliveredIsFalseOrderByCreatedAt(user);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("deliveryList", deliveryList);
+                map.put("totalElements", deliveryList.size());
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get all not received deliveries of shipper successfully")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> receive(String emailFromToken, Integer deliveryId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Optional<Delivery> deliveryOptional = deliveryRepository.findByDeliveryIdAndShipper(deliveryId, user);
+                if (deliveryOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have deliveryId: " + deliveryId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                Delivery delivery = deliveryOptional.get();
+                if (delivery.getIsReceived().equals(true)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Delivery was received")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                delivery.setIsReceived(true);
+                deliveryRepository.save(delivery);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Shipper received delivery successfully")
+                                .result(delivery)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getAllReceivedAndNotDeliveredDeliveriesOfShipper(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                List<Delivery> deliveryList = deliveryRepository.findAllByShipperAndIsReceivedIsTrueAndIsDeliveredIsFalseOrderByUpdatedAt(user);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("deliveryList", deliveryList);
+                map.put("totalElements", deliveryList.size());
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get all received and not delivered deliveries of shipper successfully")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> deliver(String emailFromToken, Integer deliveryId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Optional<Delivery> deliveryOptional = deliveryRepository.findByDeliveryIdAndShipper(deliveryId, user);
+                if (deliveryOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have deliveryId: " + deliveryId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                Delivery delivery = deliveryOptional.get();
+                if (delivery.getIsReceived().equals(false)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Only delivery was received can be deliver")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                if (delivery.getIsDelivered().equals(true)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Delivery was delivered")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                Order order = delivery.getOrder();
+                if (order.getPaymentMethod() == PaymentMethod.COD) { //COD là chưa thanh toán trc, E_WALLET thì rồi
+                    Transaction transaction = new Transaction();
+                    transaction.setTransactionId("COD00" + order.getOrderId());
+                    transaction.setOrder(order);
+                    transaction.setTransactionType(TransactionType.PAY);
+                    transaction.setAmount(order.getTotalAmount());
+                    transaction.setContent("Thanh toan don hang: " + order.getOrderId());
+                    transactionRepository.save(transaction);
+
+                    order.setCheckout(true);
+                }
+                delivery.setIsDelivered(true);
+                deliveryRepository.save(delivery);
+
+                order.setStatus(Status.DELIVERED);
+                orderRepository.save(order);
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("The customer has successfully received the order")
+                                .result(delivery)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getOneDeliveryOfShipper(String emailFromToken, Integer deliveryId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Optional<Delivery> deliveryOptional = deliveryRepository.findByDeliveryIdAndShipper(deliveryId, user);
+                if (deliveryOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have deliveryId: " + deliveryId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                Delivery delivery = deliveryOptional.get();
+                Order order = delivery.getOrder();
+                List<OrderItem> orderItemList = orderItemRepository.findAllByOrder(order);
+
+                List<OrderItemResponse> orderItemResponseList = new ArrayList<>();
+                for (OrderItem orderItem : orderItemList) {
+                    OrderItemResponse orderItemResponse = new OrderItemResponse();
+                    orderItemResponse.setOrderItemId(orderItem.getOrderItemId());
+                    orderItemResponse.setProductItemId(orderItem.getProductItem().getProductItemId());
+                    orderItemResponse.setProductName(orderItem.getProductItem().getParent().getName());
+                    orderItemResponse.setImage(orderItem.getProductItem().getImage());
+                    List<String> styleValueNames = new ArrayList<>();
+                    for (StyleValue styleValue : orderItem.getProductItem().getStyleValues()) {
+                        styleValueNames.add(styleValue.getName());
+                    }
+                    orderItemResponse.setStyleValues(styleValueNames);
+                    orderItemResponse.setQuantity(orderItem.getQuantity());
+                    orderItemResponse.setProductPrice(orderItem.getProductItem().getPrice());
+                    orderItemResponse.setProductPromotionalPrice(orderItem.getProductItem().getPromotionalPrice());
+                    orderItemResponse.setAmount(orderItem.getAmount());
+
+                    orderItemResponseList.add(orderItemResponse);
+                }
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("delivery", delivery);
+                map.put("order", order);
+                map.put("orderItems", orderItemResponseList);
+                map.put("totalOrderItems", orderItemResponseList.size());
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get delivery successfully")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getAllDeliveredDeliveriesOfShipper(String emailFromToken) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                List<Delivery> deliveryList = deliveryRepository.findAllByShipperAndIsReceivedIsTrueAndIsDeliveredIsTrueOrderByUpdatedAtDesc(user);
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("deliveryList", deliveryList);
+                map.put("totalElements", deliveryList.size());
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get all delivered deliveries of shipper successfully")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getAllUsersByRoleName(String roleName) {
+        try {
+            Role role = roleRepository.findByName(roleName);
+            if (role == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        GenericResponse.builder()
+                                .success(false)
+                                .message("Invalid input data")
+                                .result("Bad request")
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
+
+            List<User> userList = userRepository.findAllByRole_NameOrderByCreatedAtDesc(roleName);
+            Map<String, Object> map = new HashMap<>();
+            map.put("userList", userList);
+            map.put("totalElements", userList.size());
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Get all users by role " + roleName + " successfully")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getUserByUserId(String userId) {
+        try {
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get user by userId: " + userId + " successfully")
+                                .result(userOptional.get())
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Invalid input data")
+                                .result("Bad request")
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> followProduct(String emailFromToken, Integer productId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Product> productOptional = productRepository.findById(productId);
+                if (productOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Not found product")
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+                User user = userOptional.get();
+                Product product = productOptional.get();
+                Set<User> userSet = product.getFollowers();
+                userSet.add(user);
+                product.setFollowers(userSet);
+                productRepository.save(product);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Follow product successfully")
+                                .result("OK")
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> unfollowProduct(String emailFromToken, Integer productId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Product> productOptional = productRepository.findById(productId);
+                if (productOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Not found product")
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+                User user = userOptional.get();
+                Product product = productOptional.get();
+                Set<User> userSet = product.getFollowers();
+                userSet.remove(user);
+                product.setFollowers(userSet);
+                productRepository.save(product);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Unfollow product successfully")
+                                .result("OK")
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> ratingOrderItem(String emailFromToken, Integer orderItemId, CreateRatingRequest request) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Optional<OrderItem> orderItemOptional = orderItemRepository.findByOrderItemIdAndOrder_Customer(orderItemId, user);
+                if (orderItemOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have orderItemId: " + orderItemId)
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                OrderItem orderItem = orderItemOptional.get();
+
+                Rating rating = new Rating();
+                rating.setOrderItem(orderItem);
+                rating.setContent(request.getContent());
+                rating.setStar(request.getStar());
+                ratingRepository.save(rating);
+
+                Product product = orderItem.getProductItem().getParent();
+                List<Rating> ratingList = ratingRepository.findByOrderItem_ProductItem_Parent(product);
+                if(!ratingList.isEmpty()){
+                    Float productRating = Float.valueOf(0);
+                    for(Rating r: ratingList){
+                        productRating += r.getStar();
+                    }
+                    productRating = productRating/ratingList.size();
+                    product.setRating(productRating);
+                }else {
+                    product.setRating(Float.valueOf(rating.getStar()));
+                }
+                productRepository.save(product);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Rating for orderItem successfully")
+                                .result("OK")
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> checkFollow(String emailFromToken, Integer productId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Product> productOptional = productRepository.findById(productId);
+                if (productOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Not found product")
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                User user = userOptional.get();
+                Product product = productOptional.get();
+                Set<User> userSet = product.getFollowers();
+                Boolean check = userSet.contains(user);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Check follow")
+                                .result(check)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getAllShippersByAddress(String address) {
+        try {
+            List<User> userList = userRepository.findAllByRole_NameAndAddress("SHIPPER", address);
+            Map<String, Object> map = new HashMap<>();
+            map.put("userList", userList);
+            map.put("totalElement", userList.size());
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Get all shippers in " + address + " successfully")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     GenericResponse.builder()

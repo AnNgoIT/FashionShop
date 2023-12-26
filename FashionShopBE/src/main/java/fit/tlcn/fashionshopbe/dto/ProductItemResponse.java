@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -27,6 +28,8 @@ public class ProductItemResponse {
     private Float promotionalPrice;
 
     private List<String> styleValueNames;
+
+    private Map<String, Object> styleValueByStyles;
 
     private String sku;
 
