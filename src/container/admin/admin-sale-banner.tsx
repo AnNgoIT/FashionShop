@@ -130,11 +130,15 @@ const AdminSaleBanner = (props: AdminSaleBannerProps) => {
   };
 
   const openInfoModal = async (item: SaleBanner) => {
-    setOpenDetail(true);
-    const bannerRes = await getData(
-      `${HTTP_PORT}/api/v1/banners/${item.bannerId}`
-    );
-    setBannerDetail(bannerRes.success ? bannerRes.result : null);
+    try {
+      setOpenDetail(true);
+      const bannerRes = await getData(
+        `${HTTP_PORT}/api/v1/banners/${item.bannerId}`
+      );
+      setBannerDetail(bannerRes.success ? bannerRes.result : null);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleChangePage = (event: any, newPage: number) => {
@@ -176,6 +180,7 @@ const AdminSaleBanner = (props: AdminSaleBannerProps) => {
   //   }
   // }
 
+  let isCreating = false;
   async function handleCreateSaleBanner(e: { preventDefault: () => void }) {
     e.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -188,41 +193,48 @@ const AdminSaleBanner = (props: AdminSaleBannerProps) => {
       router.refresh();
       return;
     }
+    if (isCreating) return;
+    isCreating = true;
 
     const formData = new FormData();
     if (image !== "") {
       formData.append("image", image);
     }
-
-    const id = toast.loading("Đang tạo...");
-    const res = await createData(
-      "/api/v1/users/admin/banners",
-      getCookie("accessToken")!,
-      formData
-    );
-    if (res.success) {
-      toast.update(id, {
-        render: `Tạo mới banner quảng cáo thành công`,
-        type: "success",
-        autoClose: 500,
-        isLoading: false,
-      });
-      handleClose();
-      router.refresh();
-    } else if (res.statusCode == 403 || res.statusCode == 401) {
-      toast.update(id, {
-        render: `Vui lòng đăng nhập`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else {
-      toast.update(id, {
-        render: "Lỗi hệ thống",
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
+    try {
+      const id = toast.loading("Đang tạo...");
+      const res = await createData(
+        "/api/v1/users/admin/banners",
+        getCookie("accessToken")!,
+        formData
+      );
+      if (res.success) {
+        toast.update(id, {
+          render: `Tạo mới banner quảng cáo thành công`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+        handleClose();
+        router.refresh();
+      } else if (res.statusCode == 403 || res.statusCode == 401) {
+        toast.update(id, {
+          render: `Vui lòng đăng nhập`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else {
+        toast.update(id, {
+          render: "Lỗi hệ thống",
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      isCreating = false;
     }
   }
 

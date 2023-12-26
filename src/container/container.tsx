@@ -65,7 +65,7 @@ const Container = ({
 
       {/* <Blogs /> */}
       <StoreAddress />
-      <Newsletter />
+      {/* <Newsletter /> */}
     </>
   );
 };

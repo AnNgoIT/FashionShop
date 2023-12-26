@@ -158,6 +158,7 @@ const AdminStyle = (props: AdminStyleProps) => {
     setPage(0);
   };
 
+  let isUpdating = false;
   async function handleUpdateStyle(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -170,41 +171,53 @@ const AdminStyle = (props: AdminStyleProps) => {
       router.refresh();
       return;
     }
+    if (isUpdating) return;
+    isUpdating = true;
 
     const updatePayload: UpdateStyle = {
       name: style ? style.name : null,
     };
-    const update = await patchData(
-      `/api/v1/users/admin/styles/${updateId}`,
-      getCookie("accessToken")!,
-      updatePayload
-    );
-    if (update.success) {
-      successMessage("Đổi thuộc tính thành công");
-      // setOrderList((prevOrderItems) =>
-      //   prevOrderItems.map((item) =>
-      //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
-      //   )
-      // );
-      router.refresh();
-      resetStyle();
-      setUpdateId(-1);
-      handleClose();
-    } else if (update.statusCode == 401) {
-      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
-      router.refresh();
-    } else if (update.status == 500) {
-      errorMessage("Lỗi hệ thống");
-      resetStyle();
-      setUpdateId(-1);
-      handleClose();
-      router.refresh();
-    } else if (update.status == 404) {
-      errorMessage("Không tìm thấy thuộc tính này");
-      router.refresh();
-    } else
-      errorMessage("Tên thuộc tính mới phải khác với các tên thuộc tính cũ");
+    try {
+      const update = await patchData(
+        `/api/v1/users/admin/styles/${updateId}`,
+        getCookie("accessToken")!,
+        updatePayload
+      );
+      if (update.success) {
+        successMessage("Đổi thuộc tính thành công");
+        // setOrderList((prevOrderItems) =>
+        //   prevOrderItems.map((item) =>
+        //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
+        //   )
+        // );
+        router.refresh();
+        resetStyle();
+        setUpdateId(-1);
+        handleClose();
+      } else if (update.statusCode == 401) {
+        warningMessage(
+          "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+        );
+        router.refresh();
+      } else if (update.status == 500) {
+        errorMessage("Lỗi hệ thống");
+        resetStyle();
+        setUpdateId(-1);
+        handleClose();
+        router.refresh();
+      } else if (update.status == 404) {
+        errorMessage("Không tìm thấy thuộc tính này");
+        router.refresh();
+      } else
+        errorMessage("Tên thuộc tính mới phải khác với các tên thuộc tính cũ");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      isUpdating = false;
+    }
   }
+
+  let isCreating = false;
   async function handleCreateStyle(e: { preventDefault: () => void }) {
     e.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -217,47 +230,56 @@ const AdminStyle = (props: AdminStyleProps) => {
       router.refresh();
       return;
     }
+    if (isCreating) return;
+    isCreating = true;
+
     const payload = {
       name: style.name,
     };
-    const id = toast.loading("Đang tạo...");
-    const res = await createData(
-      "/api/v1/users/admin/styles",
-      getCookie("accessToken")!,
-      payload,
-      "application/json"
-    );
-    if (res.success) {
-      toast.update(id, {
-        render: `Tạo thuộc tính mới thành công`,
-        type: "success",
-        autoClose: 500,
-        isLoading: false,
-      });
-      handleClose();
-      router.refresh();
-    } else if (res.statusCode == 403 || res.statusCode == 401) {
-      toast.update(id, {
-        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-      router.refresh();
-    } else if (res.statusCode == 409) {
-      toast.update(id, {
-        render: "thuộc tính sản phẩm này đã tồn tại",
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else {
-      toast.update(id, {
-        render: "Lỗi hệ thống",
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
+    try {
+      const id = toast.loading("Đang tạo...");
+      const res = await createData(
+        "/api/v1/users/admin/styles",
+        getCookie("accessToken")!,
+        payload,
+        "application/json"
+      );
+      if (res.success) {
+        toast.update(id, {
+          render: `Tạo thuộc tính mới thành công`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+        handleClose();
+        router.refresh();
+      } else if (res.statusCode == 403 || res.statusCode == 401) {
+        toast.update(id, {
+          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else if (res.statusCode == 409) {
+        toast.update(id, {
+          render: "thuộc tính sản phẩm này đã tồn tại",
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else {
+        toast.update(id, {
+          render: "Lỗi hệ thống",
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      isCreating = false;
     }
   }
 

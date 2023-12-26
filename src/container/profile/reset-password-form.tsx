@@ -81,6 +81,8 @@ const ResetPasswordForm = () => {
     return true; // Nếu tất cả giá trị đều không trống, trả về false
   };
 
+  let isProcessing = false;
+
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
 
@@ -95,42 +97,50 @@ const ResetPasswordForm = () => {
     const formErrors = validateResetPasswordForm(password);
 
     if (isError(formErrors)) {
-      const id = toast.loading("Đang đặt lại...");
-      const res = await resetPassword(password);
-      if (res.success) {
-        toast.update(id, {
-          render: `Mật khẩu của bạn đã được thay đổi`,
-          type: "success",
-          autoClose: 2000,
-          isLoading: false,
-        });
-        router.push("/login");
-      } else if (res.statusCode == 400) {
-        toast.update(id, {
-          render: `Sai OTP`,
-          type: "error",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        setErrors({ ...formErrors, otp: "Sai OTP" });
-      } else if (res.statusCode == 401) {
-        toast.update(id, {
-          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
-          type: "warning",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        router.refresh();
-      } else if (res.statusCode == 500) {
-        toast.update(id, {
-          render: `Lỗi hệ thống`,
-          type: "error",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        router.refresh();
+      if (isProcessing) return;
+      isProcessing = true;
+      try {
+        const id = toast.loading("Đang đặt lại...");
+        const res = await resetPassword(password);
+        if (res.success) {
+          toast.update(id, {
+            render: `Mật khẩu của bạn đã được thay đổi`,
+            type: "success",
+            autoClose: 2000,
+            isLoading: false,
+          });
+          router.push("/login");
+        } else if (res.statusCode == 400) {
+          toast.update(id, {
+            render: `Sai OTP`,
+            type: "error",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          setErrors({ ...formErrors, otp: "Sai OTP" });
+        } else if (res.statusCode == 401) {
+          toast.update(id, {
+            render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+            type: "warning",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          router.refresh();
+        } else if (res.statusCode == 500) {
+          toast.update(id, {
+            render: `Lỗi hệ thống`,
+            type: "error",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          router.refresh();
+        }
+        // Reset trạng thái trường nhập liệu sau khi xử lý
+      } catch (error) {
+        console.error(error);
+      } finally {
+        isProcessing = false;
       }
-      // Reset trạng thái trường nhập liệu sau khi xử lý
     } else setErrors(formErrors);
   };
 

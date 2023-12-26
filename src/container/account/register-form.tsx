@@ -81,6 +81,8 @@ const RegisterForm = () => {
     }
     return true; // Nếu tất cả giá trị đều không trống, trả về false
   };
+
+  let isProcessing = false;
   const handleRegister = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
 
@@ -98,48 +100,56 @@ const RegisterForm = () => {
     if (isError(formErrors)) {
       // Xử lý logic đăng ký ở đây
 
-      const id = toast.loading("Vui lòng đợi...");
-      const response = await register(newAccount);
+      if (isProcessing) return;
+      isProcessing = true;
+      try {
+        const id = toast.loading("Vui lòng đợi...");
+        const response = await register(newAccount);
 
-      if (response.success) {
-        setVerifyEmail({
-          email: newAccount.email,
-        });
-        const sendEmail = await sendOTP({ email: newAccount.email });
-        if (sendEmail.success) {
+        if (response.success) {
+          setVerifyEmail({
+            email: newAccount.email,
+          });
+          const sendEmail = await sendOTP({ email: newAccount.email });
+          if (sendEmail.success) {
+            toast.update(id, {
+              render: `Một tin xác nhận được được gửi tới email ${newAccount.email}`,
+              type: "success",
+              autoClose: 3000,
+              isLoading: false,
+            });
+            router.push("/register/verify-email");
+          } else {
+            const unverify = await deleteUnverifyEmail(verifyEmail.email);
+            if (unverify.success) {
+              setVerifyEmail({
+                email: "",
+              });
+            }
+          }
+        } else {
           toast.update(id, {
-            render: `Một tin xác nhận được được gửi tới email ${newAccount.email}`,
-            type: "success",
-            autoClose: 3000,
+            render: response.message,
+            type: "error",
+            autoClose: 2000,
             isLoading: false,
           });
-          router.push("/register/verify-email");
-        } else {
-          const unverify = await deleteUnverifyEmail(verifyEmail.email);
-          if (unverify.success) {
-            setVerifyEmail({
-              email: "",
+          if (response.message === "Tài khoản đã được sử dụng") {
+            setErrors({
+              ...errors,
+              email: response.message,
+            });
+          } else if (response.message === "Số điện thoại đã được sử dụng") {
+            setErrors({
+              ...errors,
+              phone: response.message,
             });
           }
         }
-      } else {
-        toast.update(id, {
-          render: response.message,
-          type: "error",
-          autoClose: 2000,
-          isLoading: false,
-        });
-        if (response.message === "Tài khoản đã được sử dụng") {
-          setErrors({
-            ...errors,
-            email: response.message,
-          });
-        } else if (response.message === "Số điện thoại đã được sử dụng") {
-          setErrors({
-            ...errors,
-            phone: response.message,
-          });
-        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        isProcessing = false;
       }
     } else setErrors(formErrors);
   };

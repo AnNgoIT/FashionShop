@@ -103,13 +103,17 @@ const OrderTracking = ({ orders }: { orders: orderItem[] }) => {
       router.refresh();
       return;
     }
-    setOpen(true);
-    const res = await getUserOrder(item.orderId, getCookie("accessToken")!);
-    if (res.success) {
-      setOrderDetail(res.result);
-    } else if (res.statusCode == 401) {
-      warningMessage("Đang tải lại trang");
-      router.refresh();
+    try {
+      setOpen(true);
+      const res = await getUserOrder(item.orderId, getCookie("accessToken")!);
+      if (res.success) {
+        setOrderDetail(res.result);
+      } else if (res.statusCode == 401) {
+        warningMessage("Đang tải lại trang");
+        router.refresh();
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -142,32 +146,35 @@ const OrderTracking = ({ orders }: { orders: orderItem[] }) => {
       router.refresh();
       return;
     }
-
-    if (orderItem.status === "NOT_PROCESSED") {
-      const res = await cancelOrder(
-        orderItem.orderId,
-        getCookie("accessToken")!
-      );
-      if (res.success) {
-        successMessage("Hủy đơn hàng thành công");
-        handleCloseDialog();
-        setOrderList((prevItems: orderItem[]) =>
-          prevItems.map((item: orderItem) =>
-            item.orderId === res.result.orderId
-              ? { ...item, status: res.result.status }
-              : item
-          )
+    try {
+      if (orderItem.status === "NOT_PROCESSED") {
+        const res = await cancelOrder(
+          orderItem.orderId,
+          getCookie("accessToken")!
         );
-        router.refresh();
-      } else if (res.statusCode == 401) {
-        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-        handleCloseDialog();
-        router.refresh();
-      } else if (res.statusCode == 500) {
-        handleCloseDialog();
-        errorMessage("Lỗi hệ thống");
+        if (res.success) {
+          successMessage("Hủy đơn hàng thành công");
+          handleCloseDialog();
+          setOrderList((prevItems: orderItem[]) =>
+            prevItems.map((item: orderItem) =>
+              item.orderId === res.result.orderId
+                ? { ...item, status: res.result.status }
+                : item
+            )
+          );
+          router.refresh();
+        } else if (res.statusCode == 401) {
+          warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+          handleCloseDialog();
+          router.refresh();
+        } else if (res.statusCode == 500) {
+          handleCloseDialog();
+          errorMessage("Lỗi hệ thống");
+        }
+      } else if (orderItem.status === "PROCESSING") {
       }
-    } else if (orderItem.status === "PROCESSING") {
+    } catch (err) {
+      console.log(err);
     }
   };
 

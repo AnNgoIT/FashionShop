@@ -4,7 +4,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import FormHelperText from "@mui/material/FormHelperText";
-import { deleteCookie, getCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie } from "cookies-next";
 import { changePassword } from "@/hooks/useAuth";
 import { validateChangePasswordForm } from "@/features/validation";
 import { toast } from "react-toastify";
@@ -57,8 +57,20 @@ const ChangePassword = () => {
     });
   };
 
+  let isProcessing = false;
+
   const handleResetPassword = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
+    if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
+      warningMessage("Đang tạo lại phiên đăng nhập mới");
+      router.refresh();
+      return;
+    } else if (!hasCookie("accessToken") && !hasCookie("refreshToken")) {
+      warningMessage("Vui lòng đăng nhập để sử dụng chức năng này");
+      router.push("/login");
+      router.refresh();
+      return;
+    }
 
     const reset = {
       currentPassword: userPassword.currentPassword.trim(),
@@ -68,35 +80,44 @@ const ChangePassword = () => {
     const formErrors = validateChangePasswordForm(reset);
 
     if (isError(formErrors)) {
-      // Xử lý logic reset mật khẩu ở đây
-      const id = toast.loading("Đang đổi...");
-      const response = await changePassword(getCookie("accessToken")!, reset);
-      if (response.success) {
-        toast.update(id, {
-          render: "Đổi mật khẩu thành công",
-          type: "success",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        deleteCookie("accessToken");
-        deleteCookie("refreshToken");
-        router.push("/login");
-        router.refresh();
-      }
-      if (response.statusCode == 401) {
-        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-        router.refresh();
-      } else if (response.statusCode == 400) {
-        toast.update(id, {
-          render: "Sai mật khẩu",
-          type: "error",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        setErrors({
-          ...formErrors,
-          currentPassword: "Sai mật khẩu",
-        });
+      if (isProcessing) return;
+      isProcessing = true;
+
+      try {
+        // Xử lý logic reset mật khẩu ở đây
+        const id = toast.loading("Đang đổi...");
+        const response = await changePassword(getCookie("accessToken")!, reset);
+        if (response.success) {
+          toast.update(id, {
+            render: "Đổi mật khẩu thành công",
+            type: "success",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          deleteCookie("accessToken");
+          deleteCookie("refreshToken");
+          router.push("/login");
+          router.refresh();
+        }
+        if (response.statusCode == 401) {
+          warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+          router.refresh();
+        } else if (response.statusCode == 400) {
+          toast.update(id, {
+            render: "Sai mật khẩu",
+            type: "error",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          setErrors({
+            ...formErrors,
+            currentPassword: "Sai mật khẩu",
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        isProcessing = false;
       }
     } else setErrors(formErrors);
   };

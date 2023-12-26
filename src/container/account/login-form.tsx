@@ -50,35 +50,47 @@ const LoginForm = () => {
     setError("");
   };
 
+  let isProcessing = false; // Biến cờ để kiểm tra xem có đang xử lý hay không
+
   const handleLogin = async () => {
     const loginAccount: Login = {
       email: account.email,
       password: account.password,
     };
-    const response = await login(loginAccount);
-    if (response.success) {
-      setCookie("accessToken", response.result.accessToken, {
-        expires: decodeToken(response.result.accessToken)!,
-      });
-      setCookie("refreshToken", response.result.refreshToken, {
-        expires: decodeToken(response.result.refreshToken)!,
-      });
-      const isAdmin = await getUserRole(response.result.accessToken);
-      if (isAdmin.success) {
-        if (isAdmin.result === "ADMIN") {
-          router.push("/admin");
-        } else if (isAdmin.result === "SHIPPER") {
-          router.push("/shipper");
-        } else {
-          local.setItem("viewedProducts", JSON.stringify([]));
-          successMessage("Đăng nhập thành công");
-          router.push("/");
-          router.refresh();
+
+    if (isProcessing) return; // Nếu đang xử lý, không cho phép gọi API mới
+    isProcessing = true; // Đánh dấu đang xử lý
+
+    try {
+      const response = await login(loginAccount);
+      if (response.success) {
+        setCookie("accessToken", response.result.accessToken, {
+          expires: decodeToken(response.result.accessToken)!,
+        });
+        setCookie("refreshToken", response.result.refreshToken, {
+          expires: decodeToken(response.result.refreshToken)!,
+        });
+        const isAdmin = await getUserRole(response.result.accessToken);
+        if (isAdmin.success) {
+          if (isAdmin.result === "ADMIN") {
+            router.push("/admin");
+          } else if (isAdmin.result === "SHIPPER") {
+            router.push("/shipper");
+          } else {
+            local.setItem("viewedProducts", JSON.stringify([]));
+            successMessage("Đăng nhập thành công");
+            router.push("/");
+            router.refresh();
+          }
         }
+      } else {
+        toast.dismiss();
+        setError("Tài khoản hoặc mật khẩu chưa chính xác, vui lòng thử lại!");
       }
-    } else {
-      toast.dismiss();
-      setError("Tài khoản hoặc mật khẩu chưa chính xác, vui lòng thử lại!");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      isProcessing = false;
     }
   };
 

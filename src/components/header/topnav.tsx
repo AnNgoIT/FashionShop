@@ -151,6 +151,8 @@ const TopNav = (props: NavProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  let isProcessing = false;
+
   const handleLogout = async () => {
     // if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
     //   warningMessage("Đang tạo lại phiên đăng nhập mới");
@@ -163,45 +165,40 @@ const TopNav = (props: NavProps) => {
     //   return;
     // }
 
-    const id = toast.loading("Đang đăng xuất...");
-    const res = await logout(cookies.accessToken!, cookies.refreshToken!);
-    if (res.success) {
+    if (isProcessing) return; // Nếu đang xử lý, không cho phép gọi API mới
+    isProcessing = true; // Đánh dấu đang xử lý
+
+    try {
+      const res = await logout(cookies.accessToken!, cookies.refreshToken!);
+      if (res.success) {
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        successMessage("Đăng xuất thành công");
+        local.removeItem("viewedProducts");
+        // Refresh the current route and fetch new data from the server without
+        // losing client-side browser or React state.
+        // setUser({
+        //   fullname: null,
+        //   email: "",
+        //   phone: "",
+        //   dob: null,
+        //   gender: null,
+        //   address: null,
+        //   avatar: "",
+        //   ewallet: 0,
+        //   role: "GUEST",
+        // });
+        // setCartItems([]);
+        router.push("/login");
+        router.refresh();
+      }
+    } catch (error) {
       deleteCookie("accessToken");
       deleteCookie("refreshToken");
-      toast.update(id, {
-        render: `Đăng xuất thành công`,
-        type: "success",
-        autoClose: 1000,
-        isLoading: false,
-      });
-      local.removeItem("viewedProducts");
-      // Refresh the current route and fetch new data from the server without
-      // losing client-side browser or React state.
-      // setUser({
-      //   fullname: null,
-      //   email: "",
-      //   phone: "",
-      //   dob: null,
-      //   gender: null,
-      //   address: null,
-      //   avatar: "",
-      //   ewallet: 0,
-      //   role: "GUEST",
-      // });
-      // setCartItems([]);
       router.push("/login");
       router.refresh();
-    } else {
-      deleteCookie("accessToken");
-      deleteCookie("refreshToken");
-      toast.update(id, {
-        render: `Đang đăng xuất...`,
-        type: "warning",
-        autoClose: 1000,
-        isLoading: false,
-      });
-      router.push("/login");
-      router.refresh();
+    } finally {
+      isProcessing = false;
     }
   };
 

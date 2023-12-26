@@ -19,42 +19,52 @@ const ForgotPasswordForm = () => {
     const value = e.target.value.trim();
     setEmail(value.trim());
   };
+  let isProcessing = false;
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
+
+    if (isProcessing) return;
+    isProcessing = true;
     // Xử lý logic ở đây
     // Ví dụ: gửi yêu cầu đến máy chủ
-    const id = toast.loading("Vui lòng đợi...");
-    const res = await forgotPassword({ email: email });
-    if (res.success) {
-      setVerifyEmail({
-        email: email,
-      });
-      toast.update(id, {
-        render: `Một tin xác nhận đã được gửi tới email ${email}`,
-        type: "success",
-        autoClose: 2000,
-        isLoading: false,
-      });
-      router.push("/forgot-password/verify");
-    } else if (res.statusCode == 400) {
-      toast.update(id, {
-        render: `Email phải đúng định dạng @*.*`,
-        type: "error",
-        autoClose: 1500,
-        isLoading: false,
-      });
-      setError(`Email phải đúng định dạng @*.*`);
-    } else if (res.statusCode == 404) {
-      toast.update(id, {
-        render: `Tài khoản này chưa được đăng ký`,
-        type: "error",
-        autoClose: 1500,
-        isLoading: false,
-      });
-      setError(`Tài khoản này chưa được đăng ký`);
+    try {
+      const id = toast.loading("Vui lòng đợi...");
+      const res = await forgotPassword({ email: email });
+      if (res.success) {
+        setVerifyEmail({
+          email: email,
+        });
+        toast.update(id, {
+          render: `Một tin xác nhận đã được gửi tới email ${email}`,
+          type: "success",
+          autoClose: 2000,
+          isLoading: false,
+        });
+        router.push("/forgot-password/verify");
+      } else if (res.statusCode == 400) {
+        toast.update(id, {
+          render: `Email phải đúng định dạng @*.*`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        setError(`Email phải đúng định dạng @*.*`);
+      } else if (res.statusCode == 404) {
+        toast.update(id, {
+          render: `Tài khoản này chưa được đăng ký`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        // Reset trạng thái trường nhập liệu sau khi xử lý
+        setError(`Tài khoản này chưa được đăng ký`);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      isProcessing = false;
     }
-    // Reset trạng thái trường nhập liệu sau khi xử lý
   };
 
   return (

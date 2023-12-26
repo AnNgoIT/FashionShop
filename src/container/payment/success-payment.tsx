@@ -17,12 +17,12 @@ const SuccessPayment = () => {
       <h2 className="text-2xl font-semibold text-green-500">
         Thanh toán thành công
       </h2>
-      <Link href="/">
+      <Link href="/profile/order-tracking">
         <button
           className="px-6 py-3 text-white hover:bg-text-color hover:cursor-pointer transition-colors
      rounded-4xl bg-green-500"
         >
-          <span>Trở lại trang chủ</span>
+          <span>Theo dõi đơn hàng</span>
         </button>
       </Link>
     </div>

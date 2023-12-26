@@ -128,31 +128,31 @@ const AdminUser = ({
     ) as `${string}-${string}-${string}-${string}-${string}`;
   }
 
-  function handleCreateUser(e: { preventDefault: () => void }) {
-    e.preventDefault();
-    const newId = generateUUID();
-    const result: User = {
-      userId: newId,
-      fullname,
-      email,
-      phone,
-      isVerified: false,
-      role,
-      password,
-      avatar,
-      ewallet: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      dob: null,
-      gender: null,
-      address: null,
-      isActive: false,
-    };
-    const newUserList: User[] = [...userList, result];
-    setUserList(newUserList);
-    resetUser();
-    handleClose();
-  }
+  // function handleCreateUser(e: { preventDefault: () => void }) {
+  //   e.preventDefault();
+  //   const newId = generateUUID();
+  //   const result: User = {
+  //     userId: newId,
+  //     fullname,
+  //     email,
+  //     phone,
+  //     isVerified: false,
+  //     role,
+  //     password,
+  //     avatar,
+  //     ewallet: 0,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //     dob: null,
+  //     gender: null,
+  //     address: null,
+  //     isActive: false,
+  //   };
+  //   const newUserList: User[] = [...userList, result];
+  //   setUserList(newUserList);
+  //   resetUser();
+  //   handleClose();
+  // }
 
   const handleSearchUsers = (
     e: { preventDefault: () => void },

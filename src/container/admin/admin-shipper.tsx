@@ -166,6 +166,7 @@ const AdminShipper = ({
     setPage(0);
   };
 
+  let isCreating = false;
   async function handleCreateUser(e: { preventDefault: () => void }) {
     e.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -178,6 +179,8 @@ const AdminShipper = ({
       router.refresh();
       return;
     }
+    if (isCreating) return;
+    isCreating = true;
 
     const newAccount: Account = {
       fullname: shipper.fullname,
@@ -190,32 +193,38 @@ const AdminShipper = ({
 
     const formErrors = validateCreateAccountForm(newAccount);
     if (isError(formErrors)) {
-      const res = await createData(
-        "/api/v1/users/admin/user-management/shippers",
-        getCookie("accessToken")!,
-        newAccount,
-        "application/json"
-      );
-      resetUser();
-      handleClose();
-      if (res.success) {
-        successMessage("Tạo người vận chuyển mới thành công");
-        router.refresh();
-      } else if (res.statusCode == 401) {
-        warningMessage(
-          "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+      try {
+        const res = await createData(
+          "/api/v1/users/admin/user-management/shippers",
+          getCookie("accessToken")!,
+          newAccount,
+          "application/json"
         );
         resetUser();
         handleClose();
-        router.refresh();
-      } else if (res.status == 500) {
-        errorMessage("Lỗi hệ thống");
-        resetUser();
-        handleClose();
-        router.refresh();
-      } else if (res.statusCode == 400) {
-        errorMessage("Tài khoản này đã tồn tại");
-        router.refresh();
+        if (res.success) {
+          successMessage("Tạo người vận chuyển mới thành công");
+          router.refresh();
+        } else if (res.statusCode == 401) {
+          warningMessage(
+            "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+          );
+          resetUser();
+          handleClose();
+          router.refresh();
+        } else if (res.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          resetUser();
+          handleClose();
+          router.refresh();
+        } else if (res.statusCode == 400) {
+          errorMessage("Tài khoản này đã tồn tại");
+          router.refresh();
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        isCreating = false;
       }
     } else setErrors(formErrors);
   }

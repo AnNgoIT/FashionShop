@@ -235,6 +235,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     return true; // Nếu tất cả giá trị đều không trống, trả về false
   };
 
+  let isCreating = false;
   async function handleCreateProductItem(e: { preventDefault: () => void }) {
     e.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -247,6 +248,8 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       router.refresh();
       return;
     }
+    if (isCreating) return;
+    isCreating = true;
 
     const formData = new FormData();
     formData.append("productId", productItem.parentId.toString());
@@ -261,47 +264,54 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     const formErrors = validateProductItemForm(productItem);
 
     if (isError(formErrors)) {
-      const id = toast.loading("Tạo sản phẩm mới...");
-      const res = await createData(
-        "/api/v1/users/admin/productItems",
-        getCookie("accessToken")!,
-        formData
-      );
-      if (res.success) {
-        toast.update(id, {
-          render: `Tạo sản phẩm mới thành công`,
-          type: "success",
-          autoClose: 500,
-          isLoading: false,
-        });
-        resetProductItem();
-        productItemList && setProductItemList([...productItemList, res.result]);
-        // handleClose();
-        router.refresh();
-      } else if (res.statusCode == 403 || res.statusCode == 401) {
-        toast.update(id, {
-          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
-          type: "warning",
-          autoClose: 500,
-          isLoading: false,
-        });
-        router.refresh();
-        handleClose();
-      } else if (res.statusCode == 409) {
-        toast.update(id, {
-          render: `Phân loại này của sản phẩm đã tồn tại`,
-          type: "error",
-          autoClose: 500,
-          isLoading: false,
-        });
-      } else if (res.status == 500) {
-        handleClose();
-        toast.update(id, {
-          render: `Lỗi hệ thống`,
-          type: "error",
-          autoClose: 500,
-          isLoading: false,
-        });
+      try {
+        const id = toast.loading("Tạo sản phẩm mới...");
+        const res = await createData(
+          "/api/v1/users/admin/productItems",
+          getCookie("accessToken")!,
+          formData
+        );
+        if (res.success) {
+          toast.update(id, {
+            render: `Tạo sản phẩm mới thành công`,
+            type: "success",
+            autoClose: 500,
+            isLoading: false,
+          });
+          resetProductItem();
+          productItemList &&
+            setProductItemList([...productItemList, res.result]);
+          // handleClose();
+          router.refresh();
+        } else if (res.statusCode == 403 || res.statusCode == 401) {
+          toast.update(id, {
+            render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+            type: "warning",
+            autoClose: 500,
+            isLoading: false,
+          });
+          router.refresh();
+          handleClose();
+        } else if (res.statusCode == 409) {
+          toast.update(id, {
+            render: `Phân loại này của sản phẩm đã tồn tại`,
+            type: "error",
+            autoClose: 500,
+            isLoading: false,
+          });
+        } else if (res.status == 500) {
+          handleClose();
+          toast.update(id, {
+            render: `Lỗi hệ thống`,
+            type: "error",
+            autoClose: 500,
+            isLoading: false,
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        isCreating = false;
       }
     } else setErrors(formErrors);
   }
@@ -330,6 +340,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     setProductItem(productItem);
   }
 
+  let isUpdating = false;
   async function handleUpdateProductItem(event: any) {
     event.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -342,6 +353,8 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       router.refresh();
       return;
     }
+    if (isUpdating) return;
+    isUpdating = true;
 
     const formData = new FormData();
     formData.append("quantity", productItem.quantity.toString());
@@ -353,49 +366,55 @@ const AdminProductItem = (props: AdminProductItemProps) => {
     const formErrors = validateProductItemForm(productItem);
 
     if (isError(formErrors)) {
-      const id = toast.loading("Đang cập nhật...");
-      const res = await patchData(
-        `/api/v1/users/admin/productItems/${productItem?.productItemId}`,
-        getCookie("accessToken")!,
-        formData,
-        "multipart/form-data"
-      );
-      setProductItemList((productList: productItem[]) =>
-        productList.map((item: productItem) =>
-          item.productItemId === productItem.productItemId
-            ? {
-                ...item,
-                image: res.result.image,
-                quantity: res.result.quantity,
-                price: res.result.price,
-              }
-            : item
-        )
-      );
-      resetProductItem();
-      if (res.success) {
-        toast.update(id, {
-          render: `Cập nhật thành công`,
-          type: "success",
-          autoClose: 500,
-          isLoading: false,
-        });
+      try {
+        const id = toast.loading("Đang cập nhật...");
+        const res = await patchData(
+          `/api/v1/users/admin/productItems/${productItem?.productItemId}`,
+          getCookie("accessToken")!,
+          formData,
+          "multipart/form-data"
+        );
+        setProductItemList((productList: productItem[]) =>
+          productList.map((item: productItem) =>
+            item.productItemId === productItem.productItemId
+              ? {
+                  ...item,
+                  image: res.result.image,
+                  quantity: res.result.quantity,
+                  price: res.result.price,
+                }
+              : item
+          )
+        );
+        resetProductItem();
+        if (res.success) {
+          toast.update(id, {
+            render: `Cập nhật thành công`,
+            type: "success",
+            autoClose: 500,
+            isLoading: false,
+          });
 
-        router.refresh();
-      } else if (res.statusCode == 409) {
-        toast.update(id, {
-          render: `Sản phẩm cập nhật đã trùng với một sản phẩm khác`,
-          type: "error",
-          autoClose: 500,
-          isLoading: false,
-        });
-      } else
-        toast.update(id, {
-          render: `Lỗi hệ thống`,
-          type: "error",
-          autoClose: 500,
-          isLoading: false,
-        });
+          router.refresh();
+        } else if (res.statusCode == 409) {
+          toast.update(id, {
+            render: `Sản phẩm cập nhật đã trùng với một sản phẩm khác`,
+            type: "error",
+            autoClose: 500,
+            isLoading: false,
+          });
+        } else
+          toast.update(id, {
+            render: `Lỗi hệ thống`,
+            type: "error",
+            autoClose: 500,
+            isLoading: false,
+          });
+      } catch (e) {
+        console.error(e);
+      } finally {
+        isUpdating = false;
+      }
     } else setErrors(formErrors);
   }
 

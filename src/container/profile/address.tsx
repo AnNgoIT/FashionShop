@@ -235,6 +235,8 @@ const Address = () => {
     return true;
   };
 
+  let isProcessing = false;
+
   async function handleAddress(newAddressList: string[]) {
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
       warningMessage("Đang tạo lại phiên đăng nhập mới");
@@ -249,16 +251,24 @@ const Address = () => {
     const formData = new FormData();
     formData.append("address", newAddressList.join(","));
 
-    const res = await updateProfile(getCookie("accessToken")!, formData);
-    if (res.success) {
-      resetAddress();
-    } else if (res.status == 500) {
-      errorMessage("Lỗi hệ thống");
-    } else if (res.statusCode == 401) {
-      warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-      router.refresh();
+    if (isProcessing) return;
+    isProcessing = true;
+    try {
+      const res = await updateProfile(getCookie("accessToken")!, formData);
+      if (res.success) {
+        resetAddress();
+      } else if (res.status == 500) {
+        errorMessage("Lỗi hệ thống");
+      } else if (res.statusCode == 401) {
+        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+        router.refresh();
+      }
+      setUser({ ...user, address: newAddressList.join(",") });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isProcessing = false;
     }
-    setUser({ ...user, address: newAddressList.join(",") });
   }
 
   const handleDeleteAddress = async (_thisId?: number) => {
@@ -453,7 +463,7 @@ const Address = () => {
                   }}
                   options={provinceList}
                   renderInput={(params) => (
-                    <TextField required {...params} label="Thành phố/vịnh" />
+                    <TextField required {...params} label="Thành phố/tỉnh" />
                   )}
                   renderOption={(props, option) => {
                     return (

@@ -111,61 +111,64 @@ const AdminDashBoard = (props: DashBoardProps) => {
         filterValue.year !== "Chọn"
           ? "year=" + filterValue.year
           : "year=" + new Date().getFullYear();
-
-    if (type == "day" && filterValue.day != "Chọn") {
-      const [revenueRes, userRes] = await Promise.all([
-        getAuthenticated(
-          `/api/v1/users/admin/statistics/revenue-days?${year}${month}${day}`,
-          getCookie("accessToken")!
-        ),
-        getAuthenticated(
-          `/api/v1/users/admin/statistics/new-users/days?${year}${month}${day}`,
-          getCookie("accessToken")!
-        ),
-      ]);
-      setFilterRevenues(
-        revenueRes?.success ? revenueRes.result.revenuesByDay : 0
-      );
-      setTransactionList(
-        revenueRes?.success ? revenueRes.result.transactionList : []
-      );
-      setFilterUsers(userRes?.success ? userRes.result : 0);
-    } else if (type == "month" && filterValue.month != "Chọn") {
-      const [revenueRes, userRes] = await Promise.all([
-        getAuthenticated(
-          `/api/v1/users/admin/statistics/revenue-months?${year}${month}`,
-          getCookie("accessToken")!
-        ),
-        getAuthenticated(
-          `/api/v1/users/admin/statistics/new-users/months?${year}${month}`,
-          getCookie("accessToken")!
-        ),
-      ]);
-      setFilterRevenues(
-        revenueRes?.success ? revenueRes.result.revenuesByMonth : 0
-      );
-      setTransactionList(
-        revenueRes?.success ? revenueRes.result.transactionList : []
-      );
-      setFilterUsers(userRes?.success ? userRes.result : 0);
-    } else if (type == "year" && filterValue.year != "Chọn") {
-      const [revenueRes, userRes] = await Promise.all([
-        getAuthenticated(
-          `/api/v1/users/admin/statistics/revenue-years?${year}`,
-          getCookie("accessToken")!
-        ),
-        getAuthenticated(
-          `/api/v1/users/admin/statistics/new-users/years?${year}`,
-          getCookie("accessToken")!
-        ),
-      ]);
-      setFilterRevenues(
-        revenueRes?.success ? revenueRes.result.revenuesByYear : 0
-      );
-      setTransactionList(
-        revenueRes?.success ? revenueRes.result.transactionList : []
-      );
-      setFilterUsers(userRes?.success ? userRes.result : 0);
+    try {
+      if (type == "day" && filterValue.day != "Chọn") {
+        const [revenueRes, userRes] = await Promise.all([
+          getAuthenticated(
+            `/api/v1/users/admin/statistics/revenue-days?${year}${month}${day}`,
+            getCookie("accessToken")!
+          ),
+          getAuthenticated(
+            `/api/v1/users/admin/statistics/new-users/days?${year}${month}${day}`,
+            getCookie("accessToken")!
+          ),
+        ]);
+        setFilterRevenues(
+          revenueRes?.success ? revenueRes.result.revenuesByDay : 0
+        );
+        setTransactionList(
+          revenueRes?.success ? revenueRes.result.transactionList : []
+        );
+        setFilterUsers(userRes?.success ? userRes.result : 0);
+      } else if (type == "month" && filterValue.month != "Chọn") {
+        const [revenueRes, userRes] = await Promise.all([
+          getAuthenticated(
+            `/api/v1/users/admin/statistics/revenue-months?${year}${month}`,
+            getCookie("accessToken")!
+          ),
+          getAuthenticated(
+            `/api/v1/users/admin/statistics/new-users/months?${year}${month}`,
+            getCookie("accessToken")!
+          ),
+        ]);
+        setFilterRevenues(
+          revenueRes?.success ? revenueRes.result.revenuesByMonth : 0
+        );
+        setTransactionList(
+          revenueRes?.success ? revenueRes.result.transactionList : []
+        );
+        setFilterUsers(userRes?.success ? userRes.result : 0);
+      } else if (type == "year" && filterValue.year != "Chọn") {
+        const [revenueRes, userRes] = await Promise.all([
+          getAuthenticated(
+            `/api/v1/users/admin/statistics/revenue-years?${year}`,
+            getCookie("accessToken")!
+          ),
+          getAuthenticated(
+            `/api/v1/users/admin/statistics/new-users/years?${year}`,
+            getCookie("accessToken")!
+          ),
+        ]);
+        setFilterRevenues(
+          revenueRes?.success ? revenueRes.result.revenuesByYear : 0
+        );
+        setTransactionList(
+          revenueRes?.success ? revenueRes.result.transactionList : []
+        );
+        setFilterUsers(userRes?.success ? userRes.result : 0);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
   const handleChangeFilter = (e: any) => {

@@ -35,8 +35,8 @@ const Footer = () => {
             </div>
 
             <p className="max-w-[100%] justify-self-center">
-              Chào mừng đến với cửa hàng của chúng tôi.Chúc bạn có buổi mua hàng
-              thành công
+              Chào mừng đến với cửa hàng của chúng tôi. Chúc bạn có buổi mua
+              hàng thành công
             </p>
           </div>
           <div className="col-span-12 md:col-span-4 p-4 grid items-center">
