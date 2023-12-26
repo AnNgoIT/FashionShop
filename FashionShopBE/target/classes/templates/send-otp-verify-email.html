@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo {
+      max-width: 250px;
+    }
+    .message {
+      margin-bottom: 15px; /* Reduced margin between paragraphs */
+    }
+    .otp {
+      text-align: center;
+      font-size: 40px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .verify-text {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .verify-link {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      background-color: #FF6600;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      max-width: 300px;
+      margin: 0 auto;
+      border: none;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <img class="logo" src="https://res.cloudinary.com/dhkkwz2fo/image/upload/v1700032043/FashionShop/Common/looy5vvkijnmmhubqbfg.png" alt="ATShop Logo">
+  </div>
+  <div class="message">
+    <p>Hi,</p>
+    <p>Thank you for registering a ATShop account. We appreciate your interest in joining our platform.</p>
+    <p>Your One-Time-Password code is valid for 2 minutes:</p>
+  </div>
+  <div class="otp">
+    <span th:text="${otpCode}"></span>
+  </div>
+<!--  <div class="verify-text">-->
+<!--    <p>Please enter the code above onto the following URL to verify your account.</p>-->
+<!--  </div>-->
+<!--  <a  th:href="@{'http://localhost:3000/otp?email=' + ${verifyEmail}}"><button class="verify-link">-->
+<!--    GO TO VERIFY PAGE</button>-->
+<!--  </a>-->
+  <div class="footer">
+    <p>If you did not sign up for a ATShop account, please ignore this email.</p>
+    <p>&copy; 2023 ATShop. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>
