@@ -111,6 +111,7 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
     setIsUpdating(false);
   }
 
+  let isProcessing = false; // Biến cờ để kiểm tra xem có đang xử lý hay không
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
 
@@ -124,8 +125,9 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
       router.refresh();
       return;
     }
+    if (isProcessing) return; // Nếu đang xử lý, không cho phép gọi API mới
+    isProcessing = true; // Đánh dấu đang xử lý
 
-    if (!isUpdating) return;
     // Xử lý dữ liệu form ở đây (gửi đến server, lưu vào cơ sở dữ liệu, vv.)
     const formData = new FormData();
     formData.append(
@@ -141,72 +143,78 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
     if (avatar instanceof File) {
       formData.append("avatar", avatar || "");
     }
-    const id = toast.loading("Đang cập nhật...");
-    const profile = await updateProfile(getCookie("accessToken")!, formData);
-    if (profile.success) {
-      toast.update(id, {
-        render: `Cập nhật thành công`,
-        type: "success",
-        autoClose: 1500,
-        isLoading: false,
-      });
-      router.refresh();
-    } else {
-      if (profile.statusCode == 401) {
+    try {
+      const id = toast.loading("Đang cập nhật...");
+      const profile = await updateProfile(getCookie("accessToken")!, formData);
+      if (profile.success) {
         toast.update(id, {
-          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
-          type: "warning",
+          render: `Cập nhật thành công`,
+          type: "success",
           autoClose: 1500,
           isLoading: false,
         });
-        setAvatar("");
-        setIsUpdating(false);
         router.refresh();
-      } else if (profile.statusCode == 400) {
-        toast.update(id, {
-          render: `Định dạng số điện thoại chưa chính xác`,
-          type: "warning",
-          autoClose: 1500,
-          isLoading: false,
-        });
-        setAvatar("");
-        setIsUpdating(false);
-        router.refresh();
-      } else if (profile.statusCode == 409) {
-        toast.update(id, {
-          render: `Số điện thoại đã tồn tại`,
-          type: "warning",
-          autoClose: 1500,
-          isLoading: false,
-        });
+      } else {
+        if (profile.statusCode == 401) {
+          toast.update(id, {
+            render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+            type: "warning",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          setAvatar("");
+          setIsUpdating(false);
+          router.refresh();
+        } else if (profile.statusCode == 400) {
+          toast.update(id, {
+            render: `Định dạng số điện thoại chưa chính xác`,
+            type: "warning",
+            autoClose: 1500,
+            isLoading: false,
+          });
+          setAvatar("");
+          setIsUpdating(false);
+          router.refresh();
+        } else if (profile.statusCode == 409) {
+          toast.update(id, {
+            render: `Số điện thoại đã tồn tại`,
+            type: "warning",
+            autoClose: 1500,
+            isLoading: false,
+          });
 
-        setAvatar("");
-        setIsUpdating(false);
-        router.refresh();
-      } else if (profile.statusCode == 500) {
-        toast.update(id, {
-          render: `Không thể tải ảnh nếu sử dụng tài khoản google hoặc facebook`,
-          type: "warning",
-          autoClose: 1500,
-          isLoading: false,
-        });
+          setAvatar("");
+          setIsUpdating(false);
+          router.refresh();
+        } else if (profile.statusCode == 500) {
+          toast.update(id, {
+            render: `Chỉ hỗ trợ định dạng tệp PNG,JPG,JPEG`,
+            type: "warning",
+            autoClose: 1500,
+            isLoading: false,
+          });
 
-        setAvatar("");
-        setIsUpdating(false);
-        router.refresh();
+          setAvatar("");
+          setIsUpdating(false);
+          router.refresh();
+        }
+        if (profile.status == 500) {
+          toast.update(id, {
+            render: `Không thể tải ảnh nếu sử dụng tài khoản mạng xã hội`,
+            type: "warning",
+            autoClose: 1500,
+            isLoading: false,
+          });
+
+          setAvatar("");
+          setIsUpdating(false);
+          router.refresh();
+        }
       }
-      if (profile.status == 500) {
-        toast.update(id, {
-          render: `Chỉ hỗ trợ định dạng tệp PNG,JPG,JPEG`,
-          type: "warning",
-          autoClose: 1500,
-          isLoading: false,
-        });
-
-        setAvatar("");
-        setIsUpdating(false);
-        router.refresh();
-      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      isProcessing = false;
     }
   };
 

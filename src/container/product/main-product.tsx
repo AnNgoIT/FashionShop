@@ -182,7 +182,7 @@ const MainProduct = (props: MainProductProps) => {
           : ""
       }`;
       const price = filterValues.price || [0, 240000];
-      const id = toast.loading("Đang đăng xuất...");
+      const id = toast.loading("Đang tìm kiếm...");
       try {
         const res = await getData(
           `${HTTP_PORT}/api/v1/products?priceFrom=${price[0]}&priceTo=${price[1]}&${name}

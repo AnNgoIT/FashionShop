@@ -191,6 +191,8 @@ const OrderInfo = (props: OrderInfoProps) => {
     // setAddress()
   };
 
+  let isProcessing = false;
+
   const handleAddress = async (newAddressList: string[]) => {
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
       warningMessage("Đang tạo lại phiên đăng nhập mới");
@@ -202,46 +204,53 @@ const OrderInfo = (props: OrderInfoProps) => {
       router.refresh();
       return;
     }
-
     const formData = new FormData();
     formData.append("address", newAddressList.join(","));
 
-    const id = toast.loading("Đang tạo mới...");
-    const res = await updateProfile(getCookie("accessToken")!, formData);
-    if (res.success) {
-      toast.update(id, {
-        render: `Tạo địa chỉ mới thành công`,
-        type: "success",
-        autoClose: 1500,
-        isLoading: false,
-      });
-      // router.refresh();
-    } else if (res.statusCode == 500) {
-      toast.update(id, {
-        render: `Lỗi hệ thống`,
-        type: "error",
-        autoClose: 1500,
-        isLoading: false,
-      });
-      router.refresh();
-    } else if (res.statusCode == 401) {
-      toast.update(id, {
-        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
-        type: "warning",
-        autoClose: 1500,
-        isLoading: false,
-      });
-      router.refresh();
-    } else {
-      toast.update(id, {
-        render: `${res.message}`,
-        type: "error",
-        autoClose: 1500,
-        isLoading: false,
-      });
-      router.refresh();
+    if (isProcessing) return;
+    isProcessing = true;
+    try {
+      const id = toast.loading("Đang tạo mới...");
+      const res = await updateProfile(getCookie("accessToken")!, formData);
+      if (res.success) {
+        toast.update(id, {
+          render: `Tạo địa chỉ mới thành công`,
+          type: "success",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        // router.refresh();
+      } else if (res.statusCode == 500) {
+        toast.update(id, {
+          render: `Lỗi hệ thống`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else if (res.statusCode == 401) {
+        toast.update(id, {
+          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+          type: "warning",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else {
+        toast.update(id, {
+          render: `${res.message}`,
+          type: "error",
+          autoClose: 1500,
+          isLoading: false,
+        });
+        router.refresh();
+      }
+      setUser({ ...user, address: newAddressList.join(",") });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      isProcessing = false;
     }
-    setUser({ ...user, address: newAddressList.join(",") });
   };
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -383,7 +392,7 @@ const OrderInfo = (props: OrderInfoProps) => {
                     }}
                     options={provinceList}
                     renderInput={(params) => (
-                      <TextField required {...params} label="Thành phố/vịnh" />
+                      <TextField required {...params} label="Thành phố/tỉnh" />
                     )}
                     renderOption={(props, option) => {
                       return (

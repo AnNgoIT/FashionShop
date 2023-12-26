@@ -175,21 +175,25 @@ const AdminOrders = ({
       router.refresh();
       return;
     }
-    setOrder(changeOrder);
-    setOpenShippingModal(true);
-    const res = await getAuthenticated(
-      `/api/v1/users/admin/user-management/users/address?address=${changeOrder.address
-        .split("-")[1]
-        .trim()}`,
-      getCookie("accessToken")!
-    );
-    if (res.success) {
-      setShipperList(res.result.userList);
-    } else if (res.statusCode == 400) {
-      errorMessage("Địa chỉ không hợp lệ");
-      setShipperList([]);
-    } else if (res.statusCode == 500) {
-      errorMessage("Lỗi hệ thống");
+    try {
+      setOrder(changeOrder);
+      setOpenShippingModal(true);
+      const res = await getAuthenticated(
+        `/api/v1/users/admin/user-management/users/address?address=${changeOrder.address
+          .split("-")[1]
+          .trim()}`,
+        getCookie("accessToken")!
+      );
+      if (res.success) {
+        setShipperList(res.result.userList);
+      } else if (res.statusCode == 400) {
+        errorMessage("Địa chỉ không hợp lệ");
+        setShipperList([]);
+      } else if (res.statusCode == 500) {
+        errorMessage("Lỗi hệ thống");
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -209,21 +213,26 @@ const AdminOrders = ({
       router.refresh();
       return;
     }
-    setOpen(true);
-    const [orderDetailRes, shipperRes] = await Promise.all([
-      getDataAdmin(
-        `/api/v1/users/admin/orders/${item.orderId}`,
-        getCookie("accessToken")!
-      ),
-      getDataAdmin(
-        `/api/v1/users/admin/orders/${item.orderId}/delivery`,
-        getCookie("accessToken")!
-      ),
-    ]);
-    setOrderDetail(orderDetailRes.success ? orderDetailRes.result : null);
-    setDeliveryDetail(shipperRes.success ? shipperRes.result : null);
+    try {
+      setOpen(true);
+      const [orderDetailRes, shipperRes] = await Promise.all([
+        getDataAdmin(
+          `/api/v1/users/admin/orders/${item.orderId}`,
+          getCookie("accessToken")!
+        ),
+        getDataAdmin(
+          `/api/v1/users/admin/orders/${item.orderId}/delivery`,
+          getCookie("accessToken")!
+        ),
+      ]);
+      setOrderDetail(orderDetailRes.success ? orderDetailRes.result : null);
+      setDeliveryDetail(shipperRes.success ? shipperRes.result : null);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
+  let isUpdating = false;
   async function handleUpdateOrder(event: any, order: orderItem) {
     event.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -236,6 +245,8 @@ const AdminOrders = ({
       router.refresh();
       return;
     }
+    if (isUpdating) return;
+    isUpdating = true;
 
     const newStatus =
       order.status === "NOT_PROCESSED"
@@ -245,65 +256,68 @@ const AdminOrders = ({
         : order.status === "SHIPPING"
         ? "DELIVERED"
         : order.status;
-
-    if (newStatus == "PROCESSING") {
-      const changeOrderStatusToProcessing = await patchData(
-        `/api/v1/users/admin/orders/toProcessing/${order.orderId}`,
-        getCookie("accessToken")!,
-        {}
-      );
-      if (changeOrderStatusToProcessing.success) {
-        successMessage("Đổi trạng thái thành công");
-        setOrderList((prevOrderItems) =>
-          prevOrderItems.map((item) =>
-            item.orderId === order.orderId
-              ? { ...item, status: newStatus }
-              : item
-          )
+    try {
+      if (newStatus == "PROCESSING") {
+        const changeOrderStatusToProcessing = await patchData(
+          `/api/v1/users/admin/orders/toProcessing/${order.orderId}`,
+          getCookie("accessToken")!,
+          {}
         );
-        router.refresh();
-        handleCloseDialog();
-      } else if (changeOrderStatusToProcessing.statusCode == 401) {
-        warningMessage(
-          "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+        if (changeOrderStatusToProcessing.success) {
+          successMessage("Đổi trạng thái thành công");
+          setOrderList((prevOrderItems) =>
+            prevOrderItems.map((item) =>
+              item.orderId === order.orderId
+                ? { ...item, status: newStatus }
+                : item
+            )
+          );
+          router.refresh();
+          handleCloseDialog();
+        } else if (changeOrderStatusToProcessing.statusCode == 401) {
+          warningMessage(
+            "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+          );
+          router.refresh();
+        } else if (changeOrderStatusToProcessing.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (changeOrderStatusToProcessing.status == 404) {
+          errorMessage("Không tìm thấy đơn hàng này");
+        } else errorMessage("Lỗi sai dữ liệu truyền");
+      } else if (newStatus == "SHIPPING") {
+        const changeOrderStatusToShipping = await patchData(
+          `/api/v1/users/admin/orders/toShipping/${order.orderId}?shipperEmail=${shipper.email}`,
+          getCookie("accessToken")!,
+          {}
         );
-        router.refresh();
-      } else if (changeOrderStatusToProcessing.status == 500) {
-        errorMessage("Lỗi hệ thống");
-        router.refresh();
-      } else if (changeOrderStatusToProcessing.status == 404) {
-        errorMessage("Không tìm thấy đơn hàng này");
-      } else errorMessage("Lỗi sai dữ liệu truyền");
-    } else if (newStatus == "SHIPPING") {
-      const changeOrderStatusToShipping = await patchData(
-        `/api/v1/users/admin/orders/toShipping/${order.orderId}?shipperEmail=${shipper.email}`,
-        getCookie("accessToken")!,
-        {}
-      );
-      if (changeOrderStatusToShipping.success) {
-        successMessage("Đổi trạng thái thành công");
-        setOrderList((prevOrderItems) =>
-          prevOrderItems.map((item) =>
-            item.orderId === order.orderId
-              ? { ...item, status: newStatus }
-              : item
-          )
-        );
-        handeCloseShipperForm();
-        router.refresh();
-        handleCloseDialog();
-      } else if (changeOrderStatusToShipping.statusCode == 401) {
-        warningMessage(
-          "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
-        );
-        router.refresh();
-      } else if (changeOrderStatusToShipping.status == 500) {
-        errorMessage("Lỗi hệ thống");
-        router.refresh();
-      } else if (changeOrderStatusToShipping.status == 404) {
-        errorMessage("Không tìm thấy đơn hàng này");
-        router.refresh();
-      } else errorMessage("Lỗi sai dữ liệu truyền");
+        if (changeOrderStatusToShipping.success) {
+          successMessage("Đổi trạng thái thành công");
+          setOrderList((prevOrderItems) =>
+            prevOrderItems.map((item) =>
+              item.orderId === order.orderId
+                ? { ...item, status: newStatus }
+                : item
+            )
+          );
+          handeCloseShipperForm();
+          router.refresh();
+          handleCloseDialog();
+        } else if (changeOrderStatusToShipping.statusCode == 401) {
+          warningMessage(
+            "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+          );
+          router.refresh();
+        } else if (changeOrderStatusToShipping.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (changeOrderStatusToShipping.status == 404) {
+          errorMessage("Không tìm thấy đơn hàng này");
+          router.refresh();
+        } else errorMessage("Lỗi sai dữ liệu truyền");
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 

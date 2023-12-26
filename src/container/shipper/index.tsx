@@ -194,17 +194,20 @@ const Shipper = ({
       router.refresh();
       return;
     }
-    setOpen(true);
-
-    const res = await getDataAdmin(
-      `/api/v1/users/shippers/deliveries/${item.deliveryId}`,
-      getCookie("accessToken")!
-    );
-    if (res.success) {
-      setDeliveryDetail(res.result);
-    } else if (res.statusCode == 401) {
-      warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-      router.refresh();
+    try {
+      setOpen(true);
+      const res = await getDataAdmin(
+        `/api/v1/users/shippers/deliveries/${item.deliveryId}`,
+        getCookie("accessToken")!
+      );
+      if (res.success) {
+        setDeliveryDetail(res.result);
+      } else if (res.statusCode == 401) {
+        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+        router.refresh();
+      }
+    } catch (err) {
+      console.log(err);
     }
   }
 
@@ -220,63 +223,70 @@ const Shipper = ({
       router.refresh();
       return;
     }
-
     if (delivery.isReceived === false && delivery.isDelivered === false) {
-      const shipperReceived = await patchData(
-        `/api/v1/users/shippers/deliveries/${delivery.deliveryId}/receive`,
-        getCookie("accessToken")!,
-        {}
-      );
-      if (shipperReceived.success) {
-        successMessage("Đổi tình trạng thành công");
-        setDeliveryList((prevdeliveryItems) =>
-          prevdeliveryItems.map((item) =>
-            item.deliveryId === delivery.deliveryId
-              ? { ...item, isReceived: true }
-              : item
-          )
+      try {
+        const shipperReceived = await patchData(
+          `/api/v1/users/shippers/deliveries/${delivery.deliveryId}/receive`,
+          getCookie("accessToken")!,
+          {}
         );
-        router.refresh();
-        handleCloseDialog();
-      } else if (shipperReceived.statusCode == 401) {
-        warningMessage(
-          "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
-        );
-        router.refresh();
-      } else if (shipperReceived.status == 500) {
-        errorMessage("Lỗi hệ thống");
-        router.refresh();
-      } else if (shipperReceived.status == 404) {
-        errorMessage("Không tìm thấy đơn giao này");
-      } else errorMessage("Lỗi sai dữ liệu truyền");
+        if (shipperReceived.success) {
+          successMessage("Đổi tình trạng thành công");
+          setDeliveryList((prevdeliveryItems) =>
+            prevdeliveryItems.map((item) =>
+              item.deliveryId === delivery.deliveryId
+                ? { ...item, isReceived: true }
+                : item
+            )
+          );
+          router.refresh();
+          handleCloseDialog();
+        } else if (shipperReceived.statusCode == 401) {
+          warningMessage(
+            "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+          );
+          router.refresh();
+        } else if (shipperReceived.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (shipperReceived.status == 404) {
+          errorMessage("Không tìm thấy đơn giao này");
+        } else errorMessage("Lỗi sai dữ liệu truyền");
+      } catch (e) {
+        console.error(e);
+      }
     } else if (delivery.isReceived === true && delivery.isDelivered === false) {
-      const shipperDelivered = await patchData(
-        `/api/v1/users/shippers/deliveries/${delivery.deliveryId}/deliver`,
-        getCookie("accessToken")!,
-        {}
-      );
-      if (shipperDelivered.success) {
-        successMessage("Đổi tình trạng thành công");
-        setDeliveryList((prevdeliveryItems) =>
-          prevdeliveryItems.map((item) =>
-            item.deliveryId === delivery.deliveryId
-              ? { ...item, isDelivered: true }
-              : item
-          )
+      try {
+        const shipperDelivered = await patchData(
+          `/api/v1/users/shippers/deliveries/${delivery.deliveryId}/deliver`,
+          getCookie("accessToken")!,
+          {}
         );
-        router.refresh();
-        handleCloseDialog();
-      } else if (shipperDelivered.statusCode == 401) {
-        warningMessage(
-          "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
-        );
-        router.refresh();
-      } else if (shipperDelivered.status == 500) {
-        errorMessage("Lỗi hệ thống");
-        router.refresh();
-      } else if (shipperDelivered.status == 404) {
-        errorMessage("Không tìm thấy đơn giao này");
-      } else errorMessage("Lỗi sai dữ liệu truyền");
+        if (shipperDelivered.success) {
+          successMessage("Đổi tình trạng thành công");
+          setDeliveryList((prevdeliveryItems) =>
+            prevdeliveryItems.map((item) =>
+              item.deliveryId === delivery.deliveryId
+                ? { ...item, isDelivered: true }
+                : item
+            )
+          );
+          router.refresh();
+          handleCloseDialog();
+        } else if (shipperDelivered.statusCode == 401) {
+          warningMessage(
+            "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+          );
+          router.refresh();
+        } else if (shipperDelivered.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (shipperDelivered.status == 404) {
+          errorMessage("Không tìm thấy đơn giao này");
+        } else errorMessage("Lỗi sai dữ liệu truyền");
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 

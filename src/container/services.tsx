@@ -35,7 +35,7 @@ const Services = () => {
               Miễn phí vận chuyển
             </h1>
             <p className="text-[#999] text-sm">
-              Miễn phí vận chuyển đơn hàng từ 200k VNĐ
+              Miễn phí vận chuyển đơn hàng dưới 10km
             </p>
           </article>
         </div>

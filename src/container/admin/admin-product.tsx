@@ -262,6 +262,7 @@ const AdminProduct = (props: AdminProductProps) => {
     setPage(newPage);
     setProductList(newProductList);
   };
+  let isCreating = false;
 
   async function handleCreateProduct(e: { preventDefault: () => void }) {
     e.preventDefault();
@@ -275,6 +276,8 @@ const AdminProduct = (props: AdminProductProps) => {
       router.refresh();
       return;
     }
+    if (isCreating) return;
+    isCreating = true;
 
     const formData = new FormData();
     formData.append("name", productItem.name);
@@ -300,44 +303,50 @@ const AdminProduct = (props: AdminProductProps) => {
     //   branId: productItem.brandName,
     //   styleValueIds: Object.values(changeStyleNameToId()).join(","),
     // };
-    const id = toast.loading("Tạo sản phẩm mới...");
-    const res = await createData(
-      "/api/v1/users/admin/products",
-      getCookie("accessToken")!,
-      formData
-    );
-    if (res.success) {
-      toast.update(id, {
-        render: `Tạo sản phẩm mới thành công`,
-        type: "success",
-        autoClose: 500,
-        isLoading: false,
-      });
-      resetProductItem();
-      handleClose();
-      router.refresh();
-    } else if (res.statusCode == 403 || res.statusCode == 401) {
-      toast.update(id, {
-        render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-      router.refresh();
-    } else if (res.statusCode == 409) {
-      toast.update(id, {
-        render: "Sản phẩm đã tồn tại",
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else {
-      toast.update(id, {
-        render: "Lỗi hệ thống",
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
+    try {
+      const id = toast.loading("Tạo sản phẩm mới...");
+      const res = await createData(
+        "/api/v1/users/admin/products",
+        getCookie("accessToken")!,
+        formData
+      );
+      if (res.success) {
+        toast.update(id, {
+          render: `Tạo sản phẩm mới thành công`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+        resetProductItem();
+        handleClose();
+        router.refresh();
+      } else if (res.statusCode == 403 || res.statusCode == 401) {
+        toast.update(id, {
+          render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else if (res.statusCode == 409) {
+        toast.update(id, {
+          render: "Sản phẩm đã tồn tại",
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else {
+        toast.update(id, {
+          render: "Lỗi hệ thống",
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      isCreating = false;
     }
   }
 
@@ -397,6 +406,7 @@ const AdminProduct = (props: AdminProductProps) => {
     handleOpen();
   }
 
+  let isUpdating = false;
   async function handleUpdateProduct(event: any) {
     event.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -409,6 +419,9 @@ const AdminProduct = (props: AdminProductProps) => {
       router.refresh();
       return;
     }
+    if (isUpdating) return;
+    isUpdating = true;
+
     const formData = new FormData();
     formData.append("name", productItem.name);
     if (image !== "") {
@@ -421,45 +434,52 @@ const AdminProduct = (props: AdminProductProps) => {
         .find((brand) => brand.name === productItem.brandName)
         ?.brandId.toString() || ""
     );
-    const id = toast.loading("Đang cập nhật...");
-    const res = await patchData(
-      `/api/v1/users/admin/products/${productDetail?.productId}`,
-      getCookie("accessToken")!,
-      formData,
-      "multipart/form-data"
-    );
-    const newProductList = productList.map((item) => {
-      if (item.productId == productDetail?.productId) {
-      }
-      return item;
-    });
 
-    handleClose();
-    setProductList(newProductList);
-    resetProductItem();
-    setProductItemId(-1);
-    if (res.success) {
-      toast.update(id, {
-        render: `Cập nhật thành công`,
-        type: "success",
-        autoClose: 500,
-        isLoading: false,
+    try {
+      const id = toast.loading("Đang cập nhật...");
+      const res = await patchData(
+        `/api/v1/users/admin/products/${productDetail?.productId}`,
+        getCookie("accessToken")!,
+        formData,
+        "multipart/form-data"
+      );
+      const newProductList = productList.map((item) => {
+        if (item.productId == productDetail?.productId) {
+        }
+        return item;
       });
-      router.refresh();
-    } else if (res.statusCode == 409) {
-      toast.update(id, {
-        render: `Sản phẩm cập nhật đã trùng với một sản phẩm khác`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else
-      toast.update(id, {
-        render: `Lỗi hệ thống`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
+
+      handleClose();
+      setProductList(newProductList);
+      resetProductItem();
+      setProductItemId(-1);
+      if (res.success) {
+        toast.update(id, {
+          render: `Cập nhật thành công`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else if (res.statusCode == 409) {
+        toast.update(id, {
+          render: `Sản phẩm cập nhật đã trùng với một sản phẩm khác`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else
+        toast.update(id, {
+          render: `Lỗi hệ thống`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      isUpdating = false;
+    }
   }
 
   return (

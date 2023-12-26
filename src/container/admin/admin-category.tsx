@@ -122,6 +122,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
   };
   const handleClose = () => {
     resetCategory();
+    setUpdateCategory(null);
     setUpdate(false);
     setOpen(false);
   };
@@ -230,6 +231,7 @@ const AdminCategory = (props: AdminCategoryProps) => {
     });
   };
 
+  let isUpdating = false;
   async function handleUpdateCategory(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -242,7 +244,8 @@ const AdminCategory = (props: AdminCategoryProps) => {
       router.refresh();
       return;
     }
-
+    if (isUpdating) return;
+    isUpdating = true;
     const updatePayload: UpdateCategory = {
       name: category?.name,
       parentId:
@@ -259,35 +262,43 @@ const AdminCategory = (props: AdminCategoryProps) => {
     if (image instanceof File) {
       formData.append("imageFile", updatePayload.imageFile);
     }
-    const update = await patchData(
-      `/api/v1/users/admin/categories/${updateCategory?.categoryId}`,
-      getCookie("accessToken")!,
-      updatePayload,
-      "multipart/form-data"
-    );
-    resetCategory();
-    setUpdateCategory(null);
-    handleClose();
-    if (update.success) {
-      successMessage("Đổi danh mục thành công");
-      // setOrderList((prevOrderItems) =>
-      //   prevOrderItems.map((item) =>
-      //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
-      //   )
-      // );
-      router.refresh();
-    } else if (update.statusCode == 401) {
-      warningMessage("Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới");
-      router.refresh();
-    } else if (update.status == 500) {
-      errorMessage("Lỗi hệ thống");
-      router.refresh();
-    } else if (update.status == 404) {
-      errorMessage("Không tìm thấy danh mục này");
-      router.refresh();
-    } else
-      errorMessage("Tên danh mục và danh mục cha mới phải khác với các tên cũ");
+    try {
+      const update = await patchData(
+        `/api/v1/users/admin/categories/${updateCategory?.categoryId}`,
+        getCookie("accessToken")!,
+        updatePayload,
+        "multipart/form-data"
+      );
+      handleClose();
+      if (update.success) {
+        successMessage("Đổi danh mục thành công");
+        // setOrderList((prevOrderItems) =>
+        //   prevOrderItems.map((item) =>
+        //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
+        //   )
+        // );
+        router.refresh();
+      } else if (update.statusCode == 401) {
+        warningMessage(
+          "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
+        );
+        router.refresh();
+      } else if (update.status == 500) {
+        errorMessage("Lỗi hệ thống");
+        router.refresh();
+      } else if (update.status == 404) {
+        errorMessage("Không tìm thấy danh mục này");
+        router.refresh();
+      } else
+        errorMessage(
+          "Tên danh mục và danh mục cha mới phải khác với các tên cũ"
+        );
+    } catch (e) {
+      console.error(e);
+    }
   }
+
+  let isCreating = false;
   async function handleCreateCategory(e: { preventDefault: () => void }) {
     e.preventDefault();
     if (!hasCookie("accessToken") && hasCookie("refreshToken")) {
@@ -306,43 +317,51 @@ const AdminCategory = (props: AdminCategoryProps) => {
     formData.append("parentId", category.parentName!);
     formData.append("imageFile", image);
     formData.append("styleIds", changeStyleNameToId().join(","));
+    if (isCreating) return;
+    isCreating = true;
 
-    handleClose();
-    const id = toast.loading("Đang tạo...");
-    const res = await createData(
-      "/api/v1/users/admin/categories",
-      getCookie("accessToken")!,
-      formData
-    );
-    if (res.success) {
-      toast.update(id, {
-        render: `Tạo mới danh mục thành công`,
-        type: "success",
-        autoClose: 500,
-        isLoading: false,
-      });
-      router.refresh();
-    } else if (res.statusCode == 403 || res.statusCode == 401) {
-      toast.update(id, {
-        render: `Vui lòng đăng nhập`,
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else if (res.statusCode == 409) {
-      toast.update(id, {
-        render: "Danh mục này đã tồn tại",
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
-    } else {
-      toast.update(id, {
-        render: "Lỗi hệ thống",
-        type: "error",
-        autoClose: 500,
-        isLoading: false,
-      });
+    try {
+      const id = toast.loading("Đang tạo...");
+      const res = await createData(
+        "/api/v1/users/admin/categories",
+        getCookie("accessToken")!,
+        formData
+      );
+      handleClose();
+      if (res.success) {
+        toast.update(id, {
+          render: `Tạo mới danh mục thành công`,
+          type: "success",
+          autoClose: 500,
+          isLoading: false,
+        });
+        router.refresh();
+      } else if (res.statusCode == 403 || res.statusCode == 401) {
+        toast.update(id, {
+          render: `Vui lòng đăng nhập`,
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else if (res.statusCode == 409) {
+        toast.update(id, {
+          render: "Danh mục này đã tồn tại",
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      } else {
+        toast.update(id, {
+          render: "Lỗi hệ thống",
+          type: "error",
+          autoClose: 500,
+          isLoading: false,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      isCreating = false;
     }
   }
 

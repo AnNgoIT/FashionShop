@@ -182,15 +182,19 @@ const ProductDetail = (props: ProductDetailProps) => {
   useEffect(() => {
     async function checkUserFollow() {
       if (user.email !== "") {
-        const checkFollow = await getAuthenticated(
-          `/api/v1/users/customers/products/check-follow/${productDetail.productId}`,
-          getCookie("accessToken")!
-        );
-        if (checkFollow.success) {
-          setCheckFollow(checkFollow.result);
-        } else {
-          setCheckFollow(false);
-          router.refresh();
+        try {
+          const checkFollow = await getAuthenticated(
+            `/api/v1/users/customers/products/check-follow/${productDetail.productId}`,
+            getCookie("accessToken")!
+          );
+          if (checkFollow.success) {
+            setCheckFollow(checkFollow.result);
+          } else {
+            setCheckFollow(false);
+            router.refresh();
+          }
+        } catch (err) {
+          console.error(err);
         }
       }
     }
@@ -265,6 +269,8 @@ const ProductDetail = (props: ProductDetailProps) => {
     );
   };
 
+  let isAddingToCart = false; // Biến cờ để kiểm tra xem có đang xử lý hay không
+
   const handleAddToCart = async (
     event: { preventDefault: () => void },
     productItemId: number
@@ -291,37 +297,46 @@ const ProductDetail = (props: ProductDetailProps) => {
         router.refresh();
         return;
       }
-      console.log(getCookie("accessToken"));
-      const res = await addProductItemToCart(
-        getCookie("accessToken") || "",
-        payload
-      );
-      console.log(res);
-      if (res.success) {
-        successMessage("Thêm vào giỏ hàng thành công");
-        setSelected(false);
-        resetProductItem();
-        const currCart = await getUserCart(getCookie("accessToken")!);
-        if (currCart.success) {
-          setCartItems(currCart.result.cartItems);
+      if (isAddingToCart) return; // Nếu đang xử lý, không cho phép gọi API mới
+      isAddingToCart = true; // Đánh dấu đang xử lý
+
+      try {
+        const res = await addProductItemToCart(
+          getCookie("accessToken") || "",
+          payload
+        );
+        if (res.success) {
+          successMessage("Thêm vào giỏ hàng thành công");
+          setSelected(false);
+          resetProductItem();
+          const currCart = await getUserCart(getCookie("accessToken")!);
+          if (currCart.success) {
+            setCartItems(currCart.result.cartItems);
+          }
+        } else if (res.statusCode === 401) {
+          if (hasCookie("refreshToken")) {
+            warningMessage("Đang tạo lại phiên đăng nhập mới");
+            router.refresh();
+          } else {
+            warningMessage("Cần đăng nhập để sử dụng chức năng này");
+            router.push("/login");
+          }
+        } else if (res.status == 400) {
+          warningMessage("Số lượng phải lớn hơn 0");
+          resetProductItem();
+        } else if (res.status == 500) {
+          //   warningMessage("Lỗi hệ thống");
+          //   router.refresh();
         }
-      } else if (res.statusCode === 401) {
-        if (hasCookie("refreshToken")) {
-          warningMessage("Đang tạo lại phiên đăng nhập mới");
-          router.refresh();
-        } else {
-          warningMessage("Cần đăng nhập để sử dụng chức năng này");
-          router.push("/login");
-        }
-      } else if (res.status == 400) {
-        warningMessage("Số lượng phải lớn hơn 0");
-        resetProductItem();
-      } else if (res.status == 500) {
-        //   warningMessage("Lỗi hệ thống");
-        //   router.refresh();
+      } catch (e) {
+        console.log(e);
+      } finally {
+        isAddingToCart = false;
       }
     } else setSelected(true);
   };
+
+  let isCheckouting = false; // Biến cờ để kiểm tra xem có đang xử lý hay không
 
   const handleCheckout = async (e: any, productItem: productItem) => {
     e.preventDefault();
@@ -342,38 +357,43 @@ const ProductDetail = (props: ProductDetailProps) => {
         router.refresh();
         return;
       }
-
+      if (isCheckouting) return; // Nếu đang xử lý, không cho phép gọi API mới
+      isCheckouting = true; // Đánh dấu đang xử lý
       const payload = {
         productItemId: productItem.productItemId,
         quantity: qty,
       };
-      const res = await addProductItemToCart(
-        getCookie("accessToken")!,
-        payload
-      );
-      if (res.success) {
-        setSelected(false);
-        resetProductItem();
-        console.log(res);
-        const currCart = await getUserCart(getCookie("accessToken")!);
-        if (currCart.success) {
-          console.log(currCart);
-          if (currCart.result.cartItems.length >= 1) {
-            setCartItems([currCart.result.cartItems.at(-1)]);
-          } else setCartItems([]);
-          router.push("/cart/checkout");
-        }
-        // router.refresh();
-      } else if (res.statusCode === 401) {
-        if (hasCookie("refreshToken")) {
-          router.refresh();
+      try {
+        const res = await addProductItemToCart(
+          getCookie("accessToken")!,
+          payload
+        );
+        if (res.success) {
+          setSelected(false);
+          resetProductItem();
+          const currCart = await getUserCart(getCookie("accessToken")!);
+          if (currCart.success) {
+            if (currCart.result.cartItems.length >= 1) {
+              setCartItems([currCart.result.cartItems.at(-1)]);
+            } else setCartItems([]);
+            router.push("/cart/checkout");
+          }
+          // router.refresh();
+        } else if (res.statusCode === 401) {
+          if (hasCookie("refreshToken")) {
+            router.refresh();
+          } else {
+            warningMessage("Cần đăng nhập để sử dụng chức năng này");
+            router.push("/login");
+          }
         } else {
-          warningMessage("Cần đăng nhập để sử dụng chức năng này");
-          router.push("/login");
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
         }
-      } else {
-        errorMessage("Lỗi hệ thống");
-        router.refresh();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        isCheckouting = false;
       }
     } else setSelected(true);
   };
@@ -389,41 +409,44 @@ const ProductDetail = (props: ProductDetailProps) => {
       router.refresh();
       return;
     }
-
-    setLikeValue(newValue);
-    setCheckFollow(!checkFollow);
-    if (!checkFollow) {
-      const followingProduct = await followProduct(
-        `/api/v1/users/customers/products/follow-product/${productDetail.productId}`,
-        getCookie("accessToken")!
-      );
-      if (followingProduct.success) {
-        router.refresh();
-      } else if (followingProduct.statusCode == 401) {
-        warningMessage("Hết phiên đăng nhập, đang tạo phiên mới");
-        router.refresh();
-      } else if (followingProduct.status == 500) {
-        errorMessage("Lỗi hệ thống");
-        router.refresh();
-      } else if (followingProduct.statusCode == 400) {
-        errorMessage("Gặp vấn đề dữ liệu khi theo dõi sản phẩm");
+    try {
+      setLikeValue(newValue);
+      setCheckFollow(!checkFollow);
+      if (!checkFollow) {
+        const followingProduct = await followProduct(
+          `/api/v1/users/customers/products/follow-product/${productDetail.productId}`,
+          getCookie("accessToken")!
+        );
+        if (followingProduct.success) {
+          router.refresh();
+        } else if (followingProduct.statusCode == 401) {
+          warningMessage("Hết phiên đăng nhập, đang tạo phiên mới");
+          router.refresh();
+        } else if (followingProduct.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (followingProduct.statusCode == 400) {
+          errorMessage("Gặp vấn đề dữ liệu khi theo dõi sản phẩm");
+        }
+      } else {
+        const unFollowingProduct = await followProduct(
+          `/api/v1/users/customers/products/unfollow-product/${productDetail.productId}`,
+          getCookie("accessToken")!
+        );
+        if (unFollowingProduct.success) {
+          router.refresh();
+        } else if (unFollowingProduct.statusCode == 401) {
+          warningMessage("Hết phiên đăng nhập, đang tạo phiên mới");
+          router.refresh();
+        } else if (unFollowingProduct.status == 500) {
+          errorMessage("Lỗi hệ thống");
+          router.refresh();
+        } else if (unFollowingProduct.statusCode == 400) {
+          errorMessage("Gặp vấn đề dữ liệu khi theo dõi sản phẩm");
+        }
       }
-    } else {
-      const unFollowingProduct = await followProduct(
-        `/api/v1/users/customers/products/unfollow-product/${productDetail.productId}`,
-        getCookie("accessToken")!
-      );
-      if (unFollowingProduct.success) {
-        router.refresh();
-      } else if (unFollowingProduct.statusCode == 401) {
-        warningMessage("Hết phiên đăng nhập, đang tạo phiên mới");
-        router.refresh();
-      } else if (unFollowingProduct.status == 500) {
-        errorMessage("Lỗi hệ thống");
-        router.refresh();
-      } else if (unFollowingProduct.statusCode == 400) {
-        errorMessage("Gặp vấn đề dữ liệu khi theo dõi sản phẩm");
-      }
+    } catch (error) {
+      console.error(error);
     }
   };
 

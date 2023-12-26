@@ -181,14 +181,17 @@ const Cart = (props: CartProps) => {
       router.refresh();
       return;
     }
-
-    const res = await deleteCartItem(getCookie("accessToken")!, itemId);
-    if (res.success) {
-      successMessage("Xóa thành công");
-      setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
-      setCartItemChecked(
-        isCartItemChecked.filter((item) => item.cartItemId != itemId)
-      );
+    try {
+      const res = await deleteCartItem(getCookie("accessToken")!, itemId);
+      if (res.success) {
+        successMessage("Xóa thành công");
+        setCartItems(cartItems.filter((item) => item.cartItemId != itemId));
+        setCartItemChecked(
+          isCartItemChecked.filter((item) => item.cartItemId != itemId)
+        );
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
   const handleCheckout = () => {

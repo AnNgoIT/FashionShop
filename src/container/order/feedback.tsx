@@ -80,14 +80,17 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
       router.refresh();
       return;
     }
-
-    const res = await getUserOrder(item.orderId, getCookie("accessToken")!);
-    if (res.success) {
-      setOrderDetail(res.result);
-      return res.result.orderItems;
-    } else if (res.statusCode == 401) {
-      warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
-      router.refresh();
+    try {
+      const res = await getUserOrder(item.orderId, getCookie("accessToken")!);
+      if (res.success) {
+        setOrderDetail(res.result);
+        return res.result.orderItems;
+      } else if (res.statusCode == 401) {
+        warningMessage("Phiên đăng nhập hết hạn, đang tạo phiên mới");
+        router.refresh();
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -122,18 +125,22 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
       router.refresh();
       return;
     }
-    setOpenAllFeedBack(true);
-    const res = await getAuthenticated(
-      `/api/v1/users/customers/ratings/${item.orderId}`,
-      getCookie("accessToken")!
-    );
-    if (res.success) {
-      setAllFeedBack(res.result);
-      router.refresh();
-    } else if (res.statusCode == 500) {
-      errorMessage("Lỗi hệ thống");
-    } else if (res.statusCode == 400) {
-      errorMessage("Truyền sai dữ liệu");
+    try {
+      setOpenAllFeedBack(true);
+      const res = await getAuthenticated(
+        `/api/v1/users/customers/ratings/${item.orderId}`,
+        getCookie("accessToken")!
+      );
+      if (res.success) {
+        setAllFeedBack(res.result);
+        router.refresh();
+      } else if (res.statusCode == 500) {
+        errorMessage("Lỗi hệ thống");
+      } else if (res.statusCode == 400) {
+        errorMessage("Truyền sai dữ liệu");
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -156,7 +163,6 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
       router.refresh();
       return;
     }
-
     const orderItems = orderDetail?.orderItems;
 
     if (orderItems) {
@@ -174,32 +180,39 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
           warningMessage(`Vui lòng nhập nội dung đánh giá cho sản phẩm`);
           break;
         }
-
-        const res = await postAuthenticatedData(
-          `/api/v1/users/customers/ratings/${item.orderItemId}`,
-          feedBack.find(
-            (feedBackItem) => feedBackItem.orderItemId === item.orderItemId
-          ),
-          getCookie("accessToken")!
-        );
-        if (res.status === 400 || res.statusCode === 500) {
-          warningMessage(`Sản phẩm ${item.productName} đã được đánh giá`);
-          break;
+        try {
+          const res = await postAuthenticatedData(
+            `/api/v1/users/customers/ratings/${item.orderItemId}`,
+            feedBack.find(
+              (feedBackItem) => feedBackItem.orderItemId === item.orderItemId
+            ),
+            getCookie("accessToken")!
+          );
+          if (res.status === 400 || res.statusCode === 500) {
+            warningMessage(`Sản phẩm ${item.productName} đã được đánh giá`);
+            break;
+          }
+        } catch (e) {
+          console.error(e);
         }
       }
     }
-    const changeRated = await patchData(
-      `/api/v1/users/customers/orders/${orderDetail?.order.orderId}/update-to-rated`,
-      getCookie("accessToken")!,
-      {}
-    );
-    handleCloseFeedBack();
-    setFeedBack([]);
-    if (changeRated.success) {
-      successMessage("Đánh giá thành công");
-      router.refresh();
-    } else if (changeRated.statusCode == 500) {
-      errorMessage("Lỗi hệ thống");
+    try {
+      const changeRated = await patchData(
+        `/api/v1/users/customers/orders/${orderDetail?.order.orderId}/update-to-rated`,
+        getCookie("accessToken")!,
+        {}
+      );
+      handleCloseFeedBack();
+      setFeedBack([]);
+      if (changeRated.success) {
+        successMessage("Đánh giá thành công");
+        router.refresh();
+      } else if (changeRated.statusCode == 500) {
+        errorMessage("Lỗi hệ thống");
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
   const handleFeedBackOrder = async (item: orderItem) => {
