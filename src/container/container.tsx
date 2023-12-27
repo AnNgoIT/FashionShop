@@ -6,7 +6,7 @@ import Blogs from "./blogs";
 import Services from "./services";
 import SubBanner from "./sub-banner";
 // import CategorySection from "./category";
-import { Category, Product } from "@/features/types";
+import { Category, Product, SaleBanner } from "@/features/types";
 import StoreAddress from "./store-address";
 import Newsletter from "./newsletter";
 import { hasCookie, deleteCookie } from "cookies-next";
@@ -32,9 +32,11 @@ const CategorySection = dynamic(() => import("./category"), {
 const Container = ({
   categories,
   products,
+  banners,
 }: {
   categories: Category[];
   products: Product[];
+  banners: SaleBanner[];
 }) => {
   useEffect(() => {
     return () => {
@@ -43,7 +45,7 @@ const Container = ({
   }, []);
   return (
     <>
-      <Banner />
+      <Banner banners={banners}/>
       {/* <SubBanner /> */}
       <CategorySection categories={categories} />
       <Products

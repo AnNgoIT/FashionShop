@@ -1,6 +1,12 @@
 "use client";
 import TopNav from "./topnav";
-import { Category, Product, UserInfo, cartItem } from "@/features/types";
+import {
+  Category,
+  Product,
+  SaleBanner,
+  UserInfo,
+  cartItem,
+} from "@/features/types";
 
 export type HeaderProps = {
   userInfo?: UserInfo;

@@ -233,3 +233,13 @@ export type AllFeedBack = {
   image: string;
   createdAt?: Date;
 };
+export type Coupon = {
+  couponId: string;
+  startAt?: Date;
+  expireAt?: Date;
+  discount: number;
+  checkCoupon: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isActive: boolean;
+};

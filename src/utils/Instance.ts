@@ -3,6 +3,11 @@
 // import { HTTP_PORT } from "@/hooks/useData";
 // import axios, { AxiosResponse, AxiosError } from "axios";
 // import { deleteCookie, getCookie } from "cookies-next";
+// import AxiosNextError from "./CustomError";
+
+// const ACCESS_TOKEN_COOKIE = "accessToken";
+// const REFRESH_TOKEN_COOKIE = "refreshToken";
+// const UNAUTHORIZED_ERROR_MESSAGE = "Tạo mới phiên đăng nhập thất bại";
 
 // const request = axios.create({
 //   baseURL: HTTP_PORT,
@@ -10,7 +15,7 @@
 // });
 
 // request.interceptors.request.use(async (config) => {
-//   const accessToken = getAccessToken(); // Hàm lấy access_token từ localStorage hoặc trạng thái ứng dụng
+//   const accessToken = getAccessToken();
 //   if (accessToken) {
 //     config.headers["Authorization"] = `Bearer ${accessToken}`;
 //   }
@@ -19,8 +24,8 @@
 // });
 
 // const handleRefreshError = (errorMessage: string) => {
-//   deleteCookie("accessToken");
-//   deleteCookie("refreshToken");
+//   deleteCookie(ACCESS_TOKEN_COOKIE);
+//   deleteCookie(REFRESH_TOKEN_COOKIE);
 //   return Promise.reject({ message: errorMessage });
 // };
 
@@ -35,41 +40,21 @@
 //         return Promise.reject({ message: "Không có cấu hình yêu cầu" });
 //       }
 //     } else {
-//       return handleRefreshError("Tạo mới phiên đăng nhập thất bại");
+//       return handleRefreshError(UNAUTHORIZED_ERROR_MESSAGE);
 //     }
 //   } catch (refreshError) {
 //     return Promise.reject(refreshError);
 //   }
 // };
 
-// request.interceptors.response.use(
-//   (response: AxiosResponse) => {
-//     return response.data;
-//   },
-//   async (error: AxiosError) => {
-//     if (error.response) {
-//       if (error.response.status === 401) {
-//         return handleUnauthorizedError(error);
-//       } else {
-//         return Promise.reject(error.response.data);
-//       }
-//     } else {
-//       return Promise.reject(error.message);
-//     }
-//   }
-// );
-
-// // Hàm lấy access_token từ cookie
-// export const getAccessToken = () => {
-//   const accessToken = getCookie("accessToken") || "";
-//   return accessToken;
+// export const getAccessToken = (): string => {
+//   return getCookie(ACCESS_TOKEN_COOKIE) || "";
 // };
 
-// export const refreshAccessToken = async () => {
-//   const refreshToken = getCookie("refreshToken") || "";
+// export const refreshAccessToken = async (): Promise<string | void> => {
+//   const refreshToken = getCookie(REFRESH_TOKEN_COOKIE) || "";
 
 //   try {
-//     // Thực hiện gọi API refresh access token và trả về access token mới
 //     const newLoginSession = await refreshLogin(refreshToken);
 //     if (
 //       newLoginSession &&
@@ -78,10 +63,14 @@
 //     ) {
 //       return newLoginSession.result.accessToken;
 //     } else {
-//       return Promise.reject(new Error("Lấy accessToken mới thất bại"));
+//       throw new AxiosNextError(
+//         "Lấy accessToken mới thất bại",
+//         null,
+//         newLoginSession.statusCode
+//       );
 //     }
 //   } catch (error: any) {
-//     return handleRefreshError("Tạo mới phiên đăng nhập thất bại");
+//     return handleRefreshError(UNAUTHORIZED_ERROR_MESSAGE);
 //   }
 // };
 
@@ -108,4 +97,26 @@
 //     }
 //   }
 // };
+
+// request.interceptors.response.use(
+//   (response: AxiosResponse) => {
+//     return response.data;
+//   },
+//   async (error: AxiosError) => {
+//     if (error.response) {
+//       if (error.response.status === 401) {
+//         return handleUnauthorizedError(error);
+//       } else {
+//         throw new AxiosNextError(
+//           error.message,
+//           error.response.data,
+//           error.response.status
+//         );
+//       }
+//     } else {
+//       throw new AxiosNextError(error.message, null, 500);
+//     }
+//   }
+// );
+
 // export default request;

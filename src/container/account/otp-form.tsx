@@ -34,33 +34,46 @@ const OTPForm = () => {
     redirect("/register");
   }
 
+  let isUpdating = false;
+
   const handleVerifyEmail = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     // Xử lý logic ở đây
     // Ví dụ: gửi yêu cầu đến máy chủ
-    const id = toast.loading("Đang xác nhận...");
-    const response = await verifyOTP({
-      email: verifyEmail.email,
-      otp: otp.trim(),
-    });
-    if (response.success) {
-      toast.update(id, {
-        render: `Xác nhận thành công`,
-        type: "success",
-        autoClose: 3000,
-        isLoading: false,
+
+    if (isUpdating) return;
+    isUpdating = true;
+
+    try {
+      const id = toast.loading("Đang xác nhận...");
+      const response = await verifyOTP({
+        email: verifyEmail.email,
+        otp: otp.trim(),
       });
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
-    } else {
-      toast.update(id, {
-        render: `Sai OTP`,
-        type: "error",
-        autoClose: 3000,
-        isLoading: false,
-      });
-      setError("Sai OTP");
+      if (response.success) {
+        toast.update(id, {
+          render: `Xác nhận thành công`,
+          type: "success",
+          autoClose: 3000,
+          isLoading: false,
+        });
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        toast.update(id, {
+          render: `Sai OTP`,
+          type: "error",
+          autoClose: 3000,
+          isLoading: false,
+        });
+        setError("Sai OTP");
+      }
+    } catch (error) {
+      toast.dismiss();
+      console.error(error);
+    } finally {
+      isUpdating = false;
     }
   };
   return (

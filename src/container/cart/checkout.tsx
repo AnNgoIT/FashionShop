@@ -192,6 +192,8 @@ const Checkout = (props: CheckOutProps) => {
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
                   transition-all duration-200 capitalize text-[18px]"
                             href={`/${value}`}
+                            prefetch={true}
+                            replace={true}
                           >
                             {value}
                           </Link>
@@ -204,6 +206,7 @@ const Checkout = (props: CheckOutProps) => {
                           <Link
                             className="group-hover:cursor-pointer group-hover:text-secondary-color
                   transition-all duration-200 capitalize text-[18px]"
+                            replace={true}
                             href={`/`}
                           >
                             {value}
@@ -288,9 +291,17 @@ const Checkout = (props: CheckOutProps) => {
                         <h2 className=" text-text-color font-bold text-lg text-ellipsis line-clamp-2">
                           {cartItem.productName}
                         </h2>
-                        <span className="text-text-light-color font-medium">{`Giá: ${FormatPrice(
-                          cartItem.productPrice
-                        )} VNĐ`}</span>
+                        <div className="text-secondary-color font-medium">
+                          {`Giá: ${FormatPrice(
+                            cartItem.productPromotionalPrice
+                          )} VNĐ`}
+                          {cartItem.productPrice >
+                            cartItem.productPromotionalPrice && (
+                            <span className="line-through text-text-light-color ml-2 text-sm">{`${FormatPrice(
+                              cartItem.productPrice
+                            )} VNĐ`}</span>
+                          )}
+                        </div>
                         <span className="text-text-light-color font-medium">
                           Số lượng: {cartItem.quantity} sản phẩm
                         </span>
@@ -300,7 +311,7 @@ const Checkout = (props: CheckOutProps) => {
                         <span className="text-secondary-color font-semibold text-[1.125rem] py-2">
                           Thành tiền:{" "}
                           {`${FormatPrice(
-                            cartItem.quantity * cartItem.productPrice
+                            cartItem.quantity * cartItem.productPromotionalPrice
                           )} VNĐ`}
                         </span>
                       </div>

@@ -11,6 +11,10 @@ import { fetchAllCategories } from "../../product/page";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
 
+export const metadata = {
+  title: "Category",
+};
+
 const fetchAllProductByCategoryName = async (categoryName: string) => {
   try {
     const res = await fetch(
@@ -18,12 +22,13 @@ const fetchAllProductByCategoryName = async (categoryName: string) => {
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "force-cache",
+        // cache: "no-cache",
         credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",
           // 'Content-Type': 'application/x-www-form-urlencoded',
         },
+        next: { revalidate: 100 },
         redirect: "follow", // manual, *follow, error
         referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       }

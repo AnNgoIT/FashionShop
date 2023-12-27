@@ -12,6 +12,7 @@ import {
 } from "@/assests/images";
 import { imageLoader } from "@/features/img-loading";
 import Image from "next/image";
+import { SaleBanner } from "@/features/types";
 export const MyArrowNext = (clickHandler: () => void, hasNext: boolean) => {
   return (
     <div
@@ -74,7 +75,7 @@ export const MyIndicator = (
     ></div>
   );
 };
-const Banner = () => {
+const Banner = ({ banners }: { banners: SaleBanner[] }) => {
   return (
     <section className="container grid grid-cols-12 p-4 max-md:px-4 gap-4 mt-[96px]">
       <div className="grid grid-cols-1 md:grid-cols-12 col-span-full gap-4">
@@ -90,7 +91,28 @@ const Banner = () => {
             renderIndicator={MyIndicator}
             className="grid grid-flow-col"
           >
-            <article className="grid grid-flow-col gap-x-4">
+            {banners &&
+              banners.slice(0, 5).map((banner) => {
+                return (
+                  <article
+                    key={banner.bannerId}
+                    className="grid grid-flow-col gap-x-4"
+                  >
+                    <Image
+                      loader={imageLoader}
+                      blurDataURL={banner.image}
+                      placeholder="blur"
+                      className="h-[190px] lg:h-[310px] w-full"
+                      alt="banner_thoi_trang_nam"
+                      src={banner.image}
+                      width={485}
+                      height={206}
+                      quality={100}
+                    />
+                  </article>
+                );
+              })}
+            {/* <article className="grid grid-flow-col gap-x-4">
               <Image
                 loader={imageLoader}
                 placeholder="blur"
@@ -113,7 +135,7 @@ const Banner = () => {
                 height={206}
                 quality={100}
               />
-            </article>
+            </article> */}
           </Carousel>
         </div>
         <div className="max-lg:hidden col-span-full grid grid-cols-12 gap-y-2 md:col-span-4">

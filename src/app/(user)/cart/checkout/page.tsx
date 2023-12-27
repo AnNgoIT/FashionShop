@@ -1,8 +1,11 @@
 import { fetchUserCredentials } from "@/app/page";
 import Checkout from "@/container/cart/checkout";
-import { refreshLogin } from "@/hooks/useAuth";
-import { getCookie, hasCookie } from "cookies-next";
+import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
+
+export const metadata = {
+  title: "Checkout",
+};
 
 export type OrderItem = {
   id: number;

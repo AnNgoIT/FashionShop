@@ -283,7 +283,10 @@ const Cart = (props: CartProps) => {
                     Phân loại
                   </th>
                   <th className=" border border-border-color min-w-[100px] p-3">
-                    Giá
+                    Giá mặc định
+                  </th>
+                  <th className=" border border-border-color min-w-[100px] p-3">
+                    Giá sale
                   </th>
                   <th className=" border border-border-color min-w-[100px] p-3">
                     Số lượng
@@ -292,7 +295,7 @@ const Cart = (props: CartProps) => {
                     Tổng
                   </th>
                   <th className=" border border-border-color min-w-[100px] p-3">
-                    Trạng thái
+                    Hành động
                   </th>
                 </tr>
               </thead>
@@ -336,8 +339,13 @@ const Cart = (props: CartProps) => {
                         {item.styleValues.join(" - ")}
                       </td>
                       <td className="min-w-[150px] p-3 border border-border-color  text-primary-color font-bold">{`${FormatPrice(
-                        item.productPromotionalPrice
+                        item.productPrice
                       )} VNĐ`}</td>
+                      <td className="min-w-[150px] p-3 border border-border-color  text-secondary-color font-bold">{`${
+                        item.productPrice > item.productPromotionalPrice
+                          ? `${FormatPrice(item.productPromotionalPrice)} VNĐ`
+                          : "Không giảm giá"
+                      }`}</td>
                       <td className=" min-w-[180px] p-3 border border-border-color">
                         <div className="w-full flex items-center justify-center">
                           <QuantityButton
