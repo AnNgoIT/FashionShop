@@ -1976,14 +1976,14 @@ public class UserServiceImpl implements UserService {
 
                 Product product = orderItem.getProductItem().getParent();
                 List<Rating> ratingList = ratingRepository.findByOrderItem_ProductItem_Parent(product);
-                if(!ratingList.isEmpty()){
+                if (!ratingList.isEmpty()) {
                     Float productRating = Float.valueOf(0);
-                    for(Rating r: ratingList){
+                    for (Rating r : ratingList) {
                         productRating += r.getStar();
                     }
-                    productRating = productRating/ratingList.size();
+                    productRating = productRating / ratingList.size();
                     product.setRating(productRating);
-                }else {
+                } else {
                     product.setRating(Float.valueOf(rating.getStar()));
                 }
                 productRepository.save(product);
@@ -2087,6 +2087,189 @@ public class UserServiceImpl implements UserService {
                             .statusCode(HttpStatus.OK.value())
                             .build()
             );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> updateOrderToRated(String emailFromToken, Integer orderId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Order> orderOptional = orderRepository.findByOrderIdAndCustomer(orderId, userOptional.get());
+
+                if (orderOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have orderId " + orderId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                Order order = orderOptional.get();
+
+                if (order.getStatus() != Status.DELIVERED) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Only orders with the status DELIVERED can be updated order to rated")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                if (order.getIsRated().equals(true)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Order has been updated to rated")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                List<OrderItem> orderItemList = orderItemRepository.findAllByOrder(order);
+
+                for (OrderItem orderItem : orderItemList) {
+                    Optional<Rating> ratingOptional = ratingRepository.findByOrderItem(orderItem);
+                    if (ratingOptional.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Exist order item doesn't rating")
+                                        .result("Bad request")
+                                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                                        .build()
+                        );
+                    }
+                }
+
+                order.setIsRated(true);
+                orderRepository.save(order);
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Updated order to rated successfully")
+                                .result(order)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal server error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity<GenericResponse> getRatingOfOrder(String emailFromToken, Integer orderId) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(emailFromToken);
+            if (userOptional.isPresent()) {
+                Optional<Order> orderOptional = orderRepository.findByOrderIdAndCustomer(orderId, userOptional.get());
+
+                if (orderOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("You don't have orderId " + orderId)
+                                    .result("Not found")
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build()
+                    );
+                }
+
+                Order order = orderOptional.get();
+
+                if (order.getStatus() != Status.DELIVERED) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Only orders with the status DELIVERED can be get rating of order")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                if (order.getIsRated().equals(false)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Order hasn't been updated to rated")
+                                    .result("Bad request")
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build()
+                    );
+                }
+
+                List<Rating> ratingList = ratingRepository.findAllByOrderItem_Order(order);
+
+                List<RatingResponse> ratingResponseList = new ArrayList<>();
+                for (Rating r : ratingList) {
+                    RatingResponse ratingResponse = new RatingResponse();
+                    Map<String, Object> styleValueByStyles = new HashMap<>();
+                    for (StyleValue styleValue : r.getOrderItem().getProductItem().getStyleValues()) {
+                        styleValueByStyles.put(styleValue.getStyle().getName(), styleValue.getName());
+                    }
+                    ratingResponse.setStyleValueByStyles(styleValueByStyles);
+                    ratingResponse.setContent(r.getContent());
+                    ratingResponse.setStar(r.getStar());
+                    //fullname lúc này là tên sản phẩm
+                    ratingResponse.setFullname(r.getOrderItem().getProductItem().getParent().getName());
+                    ratingResponse.setImage(r.getOrderItem().getOrder().getCustomer().getAvatar());
+                    ratingResponse.setCreatedAt(r.getCreatedAt());
+
+                    ratingResponseList.add(ratingResponse);
+                }
+
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Get rating of order successfully")
+                                .result(ratingResponseList)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+
+            } else {
+                return ResponseEntity.status(401)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Unauthorized")
+                                .result("Invalid token")
+                                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                                .build());
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     GenericResponse.builder()

@@ -73,4 +73,8 @@ public interface UserService {
     ResponseEntity<GenericResponse> checkFollow(String emailFromToken, Integer productId);
 
     ResponseEntity<GenericResponse> getAllShippersByAddress(String address);
+
+    ResponseEntity<GenericResponse> updateOrderToRated(String emailFromToken, Integer orderId);
+
+    ResponseEntity<GenericResponse> getRatingOfOrder(String emailFromToken, Integer orderId);
 }

@@ -1,5 +1,6 @@
 package fit.tlcn.fashionshopbe.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,6 +22,7 @@ public class Coupon {
 
     @ManyToOne
     @JoinColumn(name = "bannerId")
+    @JsonBackReference
     private Banner banner;
 
     @Column(nullable = false)
@@ -32,9 +34,12 @@ public class Coupon {
     @Column(columnDefinition = "float not null")
     private Float discount;
 
+    private Boolean checkCoupon = false;
+
     @ManyToMany
     @JoinTable(name = "coupon_category", joinColumns = @JoinColumn(name = "couponId"),
             inverseJoinColumns = @JoinColumn(name = "categoryId"))
+    @JsonBackReference
     private Set<Category> categories;
 
     @CreationTimestamp

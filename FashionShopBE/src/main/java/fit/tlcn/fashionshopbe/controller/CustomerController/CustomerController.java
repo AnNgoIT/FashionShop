@@ -186,4 +186,22 @@ public class CustomerController {
 
         return userService.ratingOrderItem(emailFromToken, orderItemId, request);
     }
+
+    @PatchMapping("orders/{orderId}/update-to-rated")
+    public ResponseEntity<GenericResponse> UpdateOrderToRated(@PathVariable Integer orderId,
+                                                           @RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.updateOrderToRated(emailFromToken, orderId);
+    }
+
+    @GetMapping("/ratings/{orderId}")
+    public ResponseEntity<GenericResponse> GetRatingOfOrder(@PathVariable Integer orderId,
+                                                           @RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring(7);
+        String emailFromToken = jwtTokenProvider.getEmailFromJwt(token);
+
+        return userService.getRatingOfOrder(emailFromToken, orderId);
+    }
 }

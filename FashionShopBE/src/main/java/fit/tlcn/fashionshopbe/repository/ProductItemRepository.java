@@ -1,5 +1,6 @@
 package fit.tlcn.fashionshopbe.repository;
 
+import fit.tlcn.fashionshopbe.entity.Category;
 import fit.tlcn.fashionshopbe.entity.Product;
 import fit.tlcn.fashionshopbe.entity.ProductItem;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,6 @@ public interface ProductItemRepository extends JpaRepository<ProductItem, Intege
     Optional<ProductItem> findBySku(String sku);
 
     List<ProductItem> findAllByParent(Product product);
+
+    List<ProductItem> findAllByParent_Category(Category category);
 }

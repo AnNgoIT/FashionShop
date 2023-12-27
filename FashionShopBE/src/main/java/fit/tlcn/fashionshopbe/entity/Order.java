@@ -57,6 +57,8 @@ public class Order {
     @UpdateTimestamp
     private Date updatedAt;
 
+    private Boolean isRated = false;
+
     @JsonGetter("customerId")
     public String getCustomerId(){
         return this.customer.getUserId();

@@ -5,6 +5,7 @@ import fit.tlcn.fashionshopbe.dto.GenericResponse;
 import fit.tlcn.fashionshopbe.dto.ProductItemResponse;
 import fit.tlcn.fashionshopbe.dto.UpdateProductItemRequest;
 import fit.tlcn.fashionshopbe.entity.*;
+import fit.tlcn.fashionshopbe.repository.CouponRepository;
 import fit.tlcn.fashionshopbe.repository.ProductItemRepository;
 import fit.tlcn.fashionshopbe.repository.ProductRepository;
 import fit.tlcn.fashionshopbe.repository.StyleValueRepository;
@@ -31,6 +32,9 @@ public class ProductItemServiceImpl implements ProductItemService {
     @Autowired
     StyleValueRepository styleValueRepository;
 
+    @Autowired
+    CouponRepository couponRepository;
+
     @Override
     public ResponseEntity<GenericResponse> createProductItem(CreateProductItemRequest request) {
         try {
@@ -52,8 +56,18 @@ public class ProductItemServiceImpl implements ProductItemService {
             product.setTotalQuantity(product.getTotalQuantity() + request.getQuantity());
 
             productItem.setPrice(request.getPrice());
-            //Khi nào làm phần Coupon thì quay lại tính toán promotionalPrice
-            productItem.setPromotionalPrice(request.getPrice());
+
+            Category category = product.getCategory();
+            Float cateDiscounts = Float.valueOf(0);
+            List<Coupon> couponList = couponRepository.findAllByCategoriesContainingAndCheckCouponIsTrue(category);
+            if (!couponList.isEmpty()) {
+                for (Coupon cateCoupon : couponList) {
+                    cateDiscounts += cateCoupon.getDiscount();
+                }
+            }
+
+            Float promote = productItem.getPrice() * cateDiscounts;
+            productItem.setPromotionalPrice(productItem.getPrice() - promote);
 
             Set<StyleValue> styleValueSet = new HashSet<>();
             for (Integer styleValueId : request.getStyleValueIds()
@@ -110,11 +124,10 @@ public class ProductItemServiceImpl implements ProductItemService {
                 }
 
                 product.setPriceMin(priceMin);
-                //Khi nào làm phần Coupon thì quay lại tính toán promotionalPriceMin
                 product.setPromotionalPriceMin(promotionalPriceMin);
             } else {
-                product.setPriceMin(request.getPrice());
-                product.setPromotionalPriceMin(request.getPrice());
+                product.setPriceMin(productItem.getPrice());
+                product.setPromotionalPriceMin(productItem.getPromotionalPrice());
             }
             productRepository.save(product);
 
@@ -192,8 +205,8 @@ public class ProductItemServiceImpl implements ProductItemService {
                 product.setTotalQuantity(oldTotalQuantity - oldQuantity + productItem.getQuantity());
             }
 
-            if(request.getPrice() != null){
-                if(request.getPrice() <= 0){
+            if (request.getPrice() != null) {
+                if (request.getPrice() <= 0) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                             GenericResponse.builder()
                                     .success(false)
@@ -205,16 +218,30 @@ public class ProductItemServiceImpl implements ProductItemService {
                 }
 
                 productItem.setPrice(request.getPrice());
-                //Khi nào làm phần Coupon thì quay lại tính toán promotionalPrice
-                productItem.setPromotionalPrice(request.getPrice());
-
-                if(productItem.getPrice()<product.getPriceMin()){
-                    product.setPriceMin(productItem.getPrice());
+                Category category = product.getCategory();
+                Float cateDiscounts = Float.valueOf(0);
+                List<Coupon> couponList = couponRepository.findAllByCategoriesContainingAndCheckCouponIsTrue(category);
+                if (!couponList.isEmpty()) {
+                    for (Coupon cateCoupon : couponList) {
+                        cateDiscounts += cateCoupon.getDiscount();
+                    }
                 }
 
-                if(productItem.getPromotionalPrice()<product.getPromotionalPriceMin()){
-                    product.setPromotionalPriceMin(productItem.getPromotionalPrice());
+                Float promote = productItem.getPrice() * cateDiscounts;
+                productItem.setPromotionalPrice(productItem.getPrice() - promote);
+
+                List<ProductItem> productItemList = productItemRepository.findAllByParent_ProductId(product.getProductId());
+                Float priceMin = productItemList.get(0).getPrice();
+                Float promotionalPriceMin = productItemList.get(0).getPromotionalPrice();
+                for (ProductItem i : productItemList) {
+                    if (i.getPrice() < priceMin && i.getPromotionalPrice() < promotionalPriceMin) {
+                        priceMin = i.getPrice();
+                        promotionalPriceMin = i.getPromotionalPrice();
+                    }
                 }
+
+                product.setPriceMin(priceMin);
+                product.setPromotionalPriceMin(promotionalPriceMin);
             }
 
             if (request.getImage() != null) {
