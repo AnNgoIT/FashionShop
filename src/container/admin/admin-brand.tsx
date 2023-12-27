@@ -282,6 +282,7 @@ const AdminBrand = (props: AdminBrandProps) => {
         });
       }
     } catch (e) {
+      toast.dismiss();
       console.error(e);
     } finally {
       isCreating = false;

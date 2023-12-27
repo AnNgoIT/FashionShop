@@ -33,14 +33,19 @@ const Products = ({
                   <div className="relative outline-1 outline outline-border-color group-hover:outline-none">
                     {diffInHours(new Date(product.createdAt!), new Date()) <=
                       72 && (
-                      <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-primary-color">
+                      <label className="absolute top-3 left-3 px-1.5 py-0.5 text-[1rem] uppercase text-white bg-primary-color">
                         Mới
                       </label>
                     )}
 
                     {product.priceMin != product.promotionalPriceMin && (
-                      <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[0.75rem] uppercase text-white bg-secondary-color">
-                        Giảm giá
+                      <label className="absolute top-3 right-3 px-1.5 py-0.5 text-[1rem] uppercase text-white bg-secondary-color">
+                        Giảm{" "}
+                        {`${Math.round(
+                          ((product.priceMin - product.promotionalPriceMin) /
+                            product.priceMin) *
+                            100
+                        )}%`}
                       </label>
                     )}
 

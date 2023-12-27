@@ -175,7 +175,7 @@ const CartDropdown = (props: CartProps) => {
                           </button>
                         </div>
                         <p className="font-bold">{`${FormatPrice(
-                          item.productPrice
+                          item.productPromotionalPrice
                         )} VNĐ`}</p>
                         <p className="font-bold mb-1">
                           {item.styleValues.join("-")}
@@ -207,11 +207,9 @@ const CartDropdown = (props: CartProps) => {
               })}
           </ul>
           <div className="flex justify-between text-text-light-color text-sm">
-            <span>Thành tiền:</span>
+            <span>Tiền sản phẩm:</span>
             <strong className="font-black">
-              {`${FormatPrice(
-                Total(cartItems) + (cartItems.length !== 0 ? 45000 : 0)
-              )} VNĐ`}
+              {`${FormatPrice(Total(cartItems))} VNĐ`}
             </strong>
           </div>
           <div className="mt-3 flex justify-end items-center font-bold">

@@ -175,6 +175,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       quantity: "",
       price: "",
     });
+    setUpdate(false);
   }
 
   const handleProductItem = (e: any) => {
@@ -309,6 +310,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
           });
         }
       } catch (err) {
+        toast.dismiss();
         console.error(err);
       } finally {
         isCreating = false;
@@ -411,6 +413,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             isLoading: false,
           });
       } catch (e) {
+        toast.dismiss();
         console.error(e);
       } finally {
         isUpdating = false;
@@ -501,14 +504,15 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                     overflow: "auto",
                   }}
                 >
-                  <Table size="small">
+                  <Table size="medium">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Image</TableCell>
-                        <TableCell>Style</TableCell>
-                        <TableCell>Quantity</TableCell>
-                        <TableCell>Price</TableCell>
-                        <TableCell>Sold</TableCell>
+                        <TableCell>Ảnh</TableCell>
+                        <TableCell>Thuộc tính</TableCell>
+                        <TableCell>Số lượng</TableCell>
+                        <TableCell>Giá Mặc Định</TableCell>
+                        <TableCell>Giá Sale</TableCell>
+                        <TableCell>Đã bán</TableCell>
                         <TableCell></TableCell>
                       </TableRow>
                     </TableHead>
@@ -533,8 +537,8 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                             </TableCell>
                             <TableCell
                               sx={{
-                                minWidth: "12rem",
-                                maxWidth: "13rem",
+                                minWidth: "7rem",
+                                maxWidth: "8rem",
                                 overflow: "hidden",
                                 whiteSpace: "nowrap",
                                 textOverflow: "ellipsis",
@@ -548,6 +552,13 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                             <TableCell>
                               <span className="max-md:block max-md:w-max">
                                 {FormatPrice(item.price)} VNĐ
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="max-md:block max-md:w-max">
+                                {item.price > item.promotionalPrice
+                                  ? `${FormatPrice(item.promotionalPrice)} VNĐ`
+                                  : "Không giảm giá"}
                               </span>
                             </TableCell>
                             <TableCell>{item.sold}</TableCell>

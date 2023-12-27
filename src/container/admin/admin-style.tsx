@@ -277,6 +277,7 @@ const AdminStyle = (props: AdminStyleProps) => {
         });
       }
     } catch (e) {
+      toast.dismiss();
       console.error(e);
     } finally {
       isCreating = false;

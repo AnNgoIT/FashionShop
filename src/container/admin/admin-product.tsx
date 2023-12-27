@@ -148,7 +148,6 @@ const AdminProduct = (props: AdminProductProps) => {
     setOpenProductItem(false);
   };
 
-  const [productItemId, setProductItemId] = useState<number>(-1);
   const [page, setPage] = useState(0);
 
   const handleOpen = () => {
@@ -344,6 +343,7 @@ const AdminProduct = (props: AdminProductProps) => {
         });
       }
     } catch (e) {
+      toast.dismiss();
       console.error(e);
     } finally {
       isCreating = false;
@@ -452,7 +452,6 @@ const AdminProduct = (props: AdminProductProps) => {
       handleClose();
       setProductList(newProductList);
       resetProductItem();
-      setProductItemId(-1);
       if (res.success) {
         toast.update(id, {
           render: `Cập nhật thành công`,
@@ -476,6 +475,7 @@ const AdminProduct = (props: AdminProductProps) => {
           isLoading: false,
         });
     } catch (error) {
+      toast.dismiss();
       console.error(error);
     } finally {
       isUpdating = false;
@@ -855,11 +855,12 @@ const AdminProduct = (props: AdminProductProps) => {
                 <TableRow>
                   <TableCell>Tên</TableCell>
                   <TableCell>Hình ảnh</TableCell>
-                  <TableCell>Giá</TableCell>
+                  <TableCell>Giá Mặc Định</TableCell>
+                  <TableCell>Giá Sale</TableCell>
                   <TableCell>Tổng số lượng</TableCell>
                   <TableCell>Đã bán</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-x-4">
+                    <div className="flex items-center gap-x-2">
                       <span>Quản lý phân loại </span>
                       <span>Sửa</span>
                     </div>
@@ -874,7 +875,7 @@ const AdminProduct = (props: AdminProductProps) => {
                       <TableCell
                         onClick={() => handleOpenDetail(item)}
                         className="hover:cursor-pointer hover:bg-primary-color hover:text-white transition-colors truncate"
-                        sx={{ minWidth: "16rem", maxWidth: "19rem" }}
+                        sx={{ minWidth: "14rem", maxWidth: "16rem" }}
                       >
                         <span>{item.name}</span>
                       </TableCell>
@@ -893,10 +894,17 @@ const AdminProduct = (props: AdminProductProps) => {
                           {FormatPrice(item.priceMin)} VNĐ
                         </span>
                       </TableCell>
+                      <TableCell>
+                        <span className="max-md:block max-md:w-max">
+                          {item.priceMin > item.promotionalPriceMin
+                            ? `${FormatPrice(item.promotionalPriceMin)} VNĐ`
+                            : "Không giảm giá"}
+                        </span>
+                      </TableCell>
                       <TableCell>{item.totalQuantity}</TableCell>
                       <TableCell>{item.totalSold}</TableCell>
                       <TableCell>
-                        <div className="flex items-center justify-around">
+                        <div className="flex items-center gap-x-4 justify-around">
                           <Button
                             onClick={() => handleOpenProductItem(item)}
                             sx={{

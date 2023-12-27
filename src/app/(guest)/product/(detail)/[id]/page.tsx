@@ -2,7 +2,7 @@ import { HTTP_PORT } from "@/app/page";
 import ProductDetail from "@/container/product/detail";
 import { Product } from "@/features/types";
 import React from "react";
-import { fetchAllCategories, prefetchAllProducts } from "../../page";
+import { prefetchAllProducts } from "../../page";
 import { notFound } from "next/navigation";
 // import dynamic from "next/dynamic";
 
@@ -12,6 +12,10 @@ import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true; // true | false,
+
+export const metadata = {
+  title: "Product Detail",
+};
 
 const fetchStyleVluesById = async (id: string, type: string) => {
   const res = await fetch(

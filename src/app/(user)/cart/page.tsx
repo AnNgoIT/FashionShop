@@ -3,6 +3,10 @@ import Cart from "@/container/cart/cart";
 import { getCookie, hasCookie } from "cookies-next";
 import { cookies } from "next/headers";
 
+export const metadata = {
+  title: "Cart",
+};
+
 const userCart = async (accessToken: string) => {
   const res = await fetch(`${HTTP_PORT}/api/v1/users/customers/carts`, {
     method: "GET", // *GET, POST, PUT, DELETE, etc.

@@ -24,7 +24,7 @@ import blog_img3 from "./blogs/blog-img3.jpg";
 import empty_address from "./empty-address.png";
 import empty_order from "./empty-order.png";
 import empty_notify from "./empty-notify.png";
-import favico from "./favicon.ico";
+import favico from "./favico.ico";
 export {
   img1,
   img2,

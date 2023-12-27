@@ -631,11 +631,11 @@ const ProductDetail = (props: ProductDetailProps) => {
             </div>
             {showProductItem ? (
               <h1 className="text-primary-color font-bold">
-                {productItem && FormatPrice(productItem.price)} VNĐ
+                {productItem && FormatPrice(productItem.promotionalPrice)} VNĐ
                 {productItem &&
                   productItem.price != productItem.promotionalPrice && (
                     <span className="line-through text-text-light-color ml-2 text-sm">
-                      {FormatPrice(productItem.promotionalPrice)} VNĐ
+                      {FormatPrice(productItem.price)} VNĐ
                     </span>
                   )}
               </h1>

@@ -7,6 +7,9 @@ import { getCookie } from "cookies-next";
 
 import AccountHeader from "@/components/header/account-header";
 
+export const metadata = {
+  title: "Profile",
+};
 const AccountLayout = async ({ children }: { children: ReactNode }) => {
   const accessToken = getCookie("accessToken", { cookies })!;
   const refreshToken = getCookie("refreshToken", { cookies })!;

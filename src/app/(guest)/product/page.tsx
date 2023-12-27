@@ -8,6 +8,10 @@ const MainProduct = dynamic(() => import("@/container/product/main-product"), {
   loading: () => <MainProductLoading />,
 });
 
+export const metadata = {
+  title: "All Products",
+};
+
 export const prefetchAllProducts = async () => {
   try {
     const res = await fetch(`${HTTP_PORT}/api/v1/products`, {
@@ -36,12 +40,14 @@ export const findProductsByProductName = async (productName: string) => {
       {
         method: "GET", // *GET, POST, PUT, DELETE, etc.
         mode: "same-origin", // no-cors, *cors, same-origin
-        cache: "force-cache",
+        // cache: "force-cache",
         credentials: "include", // include, *same-origin, omit
         headers: {
           "Content-Type": "application/json",
           // 'Content-Type': 'application/x-www-form-urlencoded',
         },
+        next: { revalidate: 100 },
+
         redirect: "follow", // manual, *follow, error
         referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       }

@@ -11,6 +11,7 @@ import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
 import StyleIcon from "@mui/icons-material/Style";
 import FormatPaintIcon from "@mui/icons-material/FormatPaint";
 import Link from "next/link";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 
 export const mainListItems = (
   <>
@@ -76,6 +77,14 @@ export const mainListItems = (
           <ImageIcon />
         </ListItemIcon>
         <ListItemText primary="Banner Quảng Cáo" />
+      </ListItemButton>
+    </Link>
+    <Link href="/admin/coupons">
+      <ListItemButton>
+        <ListItemIcon>
+          <ConfirmationNumberIcon />
+        </ListItemIcon>
+        <ListItemText primary="Coupon giảm giá" />
       </ListItemButton>
     </Link>
     <Link href="/admin/styles">

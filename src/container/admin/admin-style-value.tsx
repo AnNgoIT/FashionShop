@@ -294,6 +294,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
         });
       }
     } catch (e) {
+      toast.dismiss();
       console.error(e);
     } finally {
       isCreating = false;
