@@ -92,7 +92,7 @@ const Banner = ({ banners }: { banners: SaleBanner[] }) => {
             className="grid grid-flow-col"
           >
             {banners &&
-              banners.slice(0, 5).map((banner) => {
+              banners.slice(2, 5).map((banner) => {
                 return (
                   <article
                     key={banner.bannerId}
