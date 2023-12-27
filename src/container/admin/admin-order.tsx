@@ -50,6 +50,9 @@ import MenuItem from "@mui/material/MenuItem";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import ListItemText from "@mui/material/ListItemText";
 import { getAuthenticated } from "@/hooks/useData";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import Chip from "@mui/material/Chip";
 
 export type DeliveryDetail = {
   deliveryId: number;
@@ -321,15 +324,14 @@ const AdminOrders = ({
     }
   }
 
-  // function handleSearchOrders(e: { preventDefault: () => void }, id: string) {
-  //   if (id == undefined) setOrderList(orders.slice(0, rowsPerPage));
-  //   else {
-  //     const newOrderList = orders.filter((item) =>
-  //       item.orderId.toString().includes(id)
-  //     );
-  //     setOrderList(newOrderList);
-  //   }
-  // }
+  function handleSearchOrders(e: { preventDefault: () => void }, id: number) {
+    setPage(0);
+    if (!id) setOrderList(orders.slice(0, rowsPerPage));
+    else {
+      const newOrderList = orders.filter((item) => item.orderId == id);
+      setOrderList(newOrderList);
+    }
+  }
 
   return (
     <Box
@@ -566,6 +568,46 @@ const AdminOrders = ({
             <Title>
               <div className="grid grid-cols-12 items-center">
                 <span className="col-span-4">Danh sách đơn hàng</span>
+                <Autocomplete
+                  sx={{ minWidth: 350 }}
+                  onChange={(e, order) =>
+                    handleSearchOrders(e, order?.orderId!)
+                  }
+                  onFocus={() => {
+                    setValue(0)
+                    setPage(0);
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    value == undefined || option.orderId == value.orderId
+                  }
+                  options={orders}
+                  getOptionLabel={(option) => option.orderId.toString()}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Đơn hàng" />
+                  )}
+                  renderOption={(props, option) => {
+                    return (
+                      <li
+                        {...props}
+                        key={option.orderId}
+                        className="flex justify-between items-center gap-x-4 px-3 py-2 border-b border-border-color"
+                      >
+                        <span key={`order-id-${option.orderId}`}>
+                          {option.orderId}
+                        </span>
+                      </li>
+                    );
+                  }}
+                  renderTags={(tagValue, getTagProps) => {
+                    return tagValue.map((option, index) => (
+                      <Chip
+                        {...getTagProps({ index })}
+                        key={option.orderId}
+                        label={option.orderId}
+                      />
+                    ));
+                  }}
+                />
               </div>
             </Title>
             <Box
