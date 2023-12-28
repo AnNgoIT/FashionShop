@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
 import {
   faSearch,
@@ -98,6 +98,9 @@ const TopNav = (props: NavProps) => {
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
+  const [isHidden, setIsHidden] = useState(true);
+  const ref = useRef<any>(null);
+
   const cookies = getCookies();
 
   useEffect(() => {
@@ -150,6 +153,17 @@ const TopNav = (props: NavProps) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  const handleBlur = () => {
+    // Logic để ẩn thẻ khi focus ra khỏi input
+    setIsHidden(true);
+  };
+
+  const handleFocus = () => {
+    setOnSearch(true);
+    // Logic khi focus vào input, có thể làm gì đó tại đây nếu cần
+    setIsHidden(false);
+  };
 
   let isProcessing = false;
 
@@ -304,7 +318,13 @@ const TopNav = (props: NavProps) => {
                   <Input
                     value={keyword}
                     onChange={(e) => handleChange(e.target.value)}
-                    onFocus={() => setOnSearch(true)}
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSearchProducts();
+                      }
+                    }}
                     name="keyword"
                     autoComplete="off"
                     className="outline-none px-4 py-3 text-sm truncate flex-1 rounded-lg"
@@ -323,12 +343,14 @@ const TopNav = (props: NavProps) => {
                       icon={faSearch}
                     ></FontAwesomeIcon>
                   </button>
-                  {onSearch && keyword.length > 0 && (
+                  {!isHidden && onSearch && keyword.length > 0 && (
                     <Listbox
                       key={"listbox"}
                       sx={{
-                        width: "100%",
-                        maxHeight: "14rem",
+                        width: "88.5%",
+                        top: "101%",
+                        maxHeight: "18rem",
+                        transform: "translateX(13%)",
                         overflow: "auto",
                       }}
                     >
@@ -336,7 +358,7 @@ const TopNav = (props: NavProps) => {
                       products.filter((product) => {
                         const value = keyword.toLowerCase();
                         const name = product.name.toLowerCase();
-                        return value && name.includes(value) && name !== value;
+                        return value && name.includes(value);
                       }).length == 0 ? (
                         <div className="w-full h-[8rem] flex justify-center items-center text-xl text-text-color">
                           Không tìm thấy sản phẩm
@@ -347,15 +369,18 @@ const TopNav = (props: NavProps) => {
                           .filter((product) => {
                             const value = keyword.toLowerCase();
                             const name = product.name.toLowerCase();
-                            return (
-                              value && name.includes(value) && name !== value
-                            );
+                            return value && name.includes(value);
                           })
                           .map((product) => {
                             return (
                               <Link
                                 key={product.productId}
                                 href={`/product/${product.productId}`}
+                                onMouseDown={(e) => {
+                                  router.push(`/product/${product.productId}`);
+                                  setOnSearch(false);
+                                  setKeyword("");
+                                }}
                               >
                                 <li
                                   className="flex item-center p-3 max-h-max gap-x-2

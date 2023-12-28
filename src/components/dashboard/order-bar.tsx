@@ -44,7 +44,7 @@ export default function ExportDefaultToolbar({
   ];
 
   return (
-    <div style={{ height: 300, width: "100%" }}>
+    <div style={{ height: 560, width: "100%" }}>
       <DataGrid
         rows={rows}
         columns={columns}

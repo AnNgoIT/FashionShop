@@ -41,7 +41,7 @@ const ProductDetailLoading = () => {
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px]">/</span>
+                          <span className="px-2.5">/</span>
                         </>
                       );
                     } else if (value === "home") {
@@ -54,7 +54,7 @@ const ProductDetailLoading = () => {
                           >
                             {value}
                           </Link>
-                          <span className="px-[10px]">/</span>
+                          <span className="px-2.5">/</span>
                         </>
                       );
                     } else
@@ -170,9 +170,7 @@ const ProductDetailLoading = () => {
             </div>
           </div>
         </div>
-        <div
-          className={`col-span-full md:col-span-10 md:col-start-2 grid grid-cols-12 place-items-center p-4`}
-        >
+        <div className={`col-span-full grid place-items-center p-8`}>
           <CircularProgress />
         </div>
       </section>
