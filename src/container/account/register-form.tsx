@@ -58,6 +58,12 @@ const RegisterForm = () => {
       ...errors,
       [e.target.name]: "",
     });
+    if(e.target.name =="password"){
+      setErrors({
+        ...errors,
+        "confirmPassword": "",
+      });
+    }
   };
 
   const handlePhone = (value: any) => {
@@ -75,7 +81,7 @@ const RegisterForm = () => {
 
   const isError = (error: Account) => {
     for (const key in error) {
-      if (error[key as keyof Account] !== "") {
+      if (key !== "address" && error[key as keyof Account] !== "") {
         return false; // Nếu có ít nhất một giá trị trống, trả về true
       }
     }
@@ -128,21 +134,27 @@ const RegisterForm = () => {
             }
           }
         } else {
-          toast.update(id, {
-            render: response.message,
-            type: "error",
-            autoClose: 2000,
-            isLoading: false,
-          });
-          if (response.message === "Tài khoản đã được sử dụng") {
-            setErrors({
-              ...errors,
-              email: response.message,
+          if (response.message === "Email already in use") {
+            toast.update(id, {
+              render: "Email này đã được sử dụng",
+              type: "error",
+              autoClose: 2000,
+              isLoading: false,
             });
-          } else if (response.message === "Số điện thoại đã được sử dụng") {
             setErrors({
               ...errors,
-              phone: response.message,
+              email: "Email này đã được sử dụng",
+            });
+          } else if (response.message === "Phone number already in use") {
+            toast.update(id, {
+              render: "Số điện thoại này đã được sử dụng",
+              type: "error",
+              autoClose: 2000,
+              isLoading: false,
+            });
+            setErrors({
+              ...errors,
+              phone: "Số điện thoại này đã được sử dụng",
             });
           }
         }
