@@ -129,6 +129,8 @@ const Shipper = ({
 
   const handleClose = () => {
     setOpen(false);
+    setOrder(null);
+    setDeliveryDetail(null);
   };
 
   const handleLogout = async () => {
@@ -352,9 +354,14 @@ const Shipper = ({
                               height={100}
                               alt={"orderItemImg"}
                             ></Image>
-                            <h1 className="text-sm text-secondary-color font-bold">
-                              {productItem.productName}
-                            </h1>
+                            <div className="flex flex-col gap-y-2 p-0.5">
+                              <h1 className="text-sm text-secondary-color font-bold">
+                                {productItem.productName}
+                              </h1>
+                              <h2 className="text-sm text-secondary-color font-bold">
+                                Phân loại: {productItem.styleValues.join(", ")}
+                              </h2>
+                            </div>
                           </div>
                           <span className="text-text-light-color text-md">{`x${productItem.quantity}`}</span>
                         </div>
