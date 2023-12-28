@@ -181,6 +181,7 @@ const AdminOrders = ({
     try {
       setOrder(changeOrder);
       setOpenShippingModal(true);
+      console.log(changeOrder);
       const res = await getAuthenticated(
         `/api/v1/users/admin/user-management/users/address?address=${changeOrder.address
           .split("-")[1]
@@ -427,9 +428,10 @@ const AdminOrders = ({
                       </strong>
                     </div>
                     <div className="flex justify-between text-text-light-color text-base p-1">
-                      <span> Nơi giao hàng: </span>
-                      <strong className="font-black">
-                        {deliveryDetail.address?.split(" - ")[1] || "Không có"}
+                      <span className=""> Nơi giao hàng: </span>
+                      <strong className="font-black max-w-[18rem] text-right">
+                        {deliveryDetail.address?.split(" - ").join(", ") ||
+                          "Không có"}
                       </strong>
                     </div>
                     <div className="flex justify-between text-text-light-color text-base p-1">
@@ -654,15 +656,18 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Tên Người Nhận
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Người Nhận
                     </TableCell>
-                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
+                    <TableCell sx={{ minWidth: "5.5rem" }}>Mã Đơn</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
                     </TableCell>
-                    <TableCell sx={{ minWidth: "12rem" }} align="left">
-                      Phương thức thanh toán
+                    <TableCell sx={{ minWidth: "10rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      PTTT
                     </TableCell>
                     <TableCell sx={{ minWidth: "7.5rem" }} align="left">
                       Tổng tiền
@@ -682,13 +687,13 @@ const AdminOrders = ({
                             "DD/MM/YYYY"
                           )}
                         </TableCell>
-                        {/* <TableCell align="left">
+                        <TableCell align="left">
                           {item.address.split("-").length == 1
                             ? `${item.address}`
                             : `${item.address.split("-")[1]}, ${
                                 item.address.split("-")[2]
                               }`}
-                        </TableCell> */}
+                        </TableCell>
                         <TableCell align="left">
                           {item.paymentMethod === "COD"
                             ? "Thanh toán khi nhận"
@@ -698,8 +703,8 @@ const AdminOrders = ({
                           // suppressHydrationWarning={true}
                           align="left"
                         >{`${FormatPrice(item.totalAmount)} VNĐ`}</TableCell>
-                        <TableCell sx={{ width: "10rem" }} align="left">
-                          <FormControl sx={{ minWidth: "10rem" }}>
+                        <TableCell sx={{ width: "8.5rem" }} align="left">
+                          <FormControl sx={{ minWidth: "8.5rem" }}>
                             <div
                               className={`
                             p-2 text-white text-sm font-bold rounded-md ${
@@ -787,15 +792,18 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Tên Người Nhận
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Người Nhận
                     </TableCell>
-                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
+                    <TableCell sx={{ minWidth: "5.5rem" }}>Mã Đơn</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
                     </TableCell>
-                    <TableCell sx={{ minWidth: "12rem" }} align="left">
-                      Phương thức thanh toán
+                    <TableCell sx={{ minWidth: "10rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      PTTT
                     </TableCell>
                     <TableCell sx={{ minWidth: "7.5rem" }} align="left">
                       Tổng tiền
@@ -818,13 +826,13 @@ const AdminOrders = ({
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          {/* <TableCell align="left">
+                          <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell> */}
+                          </TableCell>
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -833,8 +841,8 @@ const AdminOrders = ({
                           <TableCell align="left">{`${FormatPrice(
                             item.totalAmount
                           )} VNĐ`}</TableCell>
-                          <TableCell sx={{ width: "10rem" }} align="left">
-                            <FormControl sx={{ minWidth: "10rem" }}>
+                          <TableCell sx={{ width: "8.5rem" }} align="left">
+                            <FormControl sx={{ minWidth: "8.5rem" }}>
                               <div
                                 className={`
                             p-2 text-white text-sm font-bold rounded-md bg-text-light-color`}
@@ -911,15 +919,18 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Tên Người Nhận
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Người Nhận
                     </TableCell>
-                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
+                    <TableCell sx={{ minWidth: "5.5rem" }}>Mã Đơn</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
                     </TableCell>
-                    <TableCell sx={{ minWidth: "12rem" }} align="left">
-                      Phương thức thanh toán
+                    <TableCell sx={{ minWidth: "10rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      PTTT
                     </TableCell>
                     <TableCell sx={{ minWidth: "7.5rem" }} align="left">
                       Tổng tiền
@@ -942,13 +953,13 @@ const AdminOrders = ({
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          {/* <TableCell align="left">
+                          <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell> */}
+                          </TableCell>
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -957,8 +968,8 @@ const AdminOrders = ({
                           <TableCell align="left">
                             {`${FormatPrice(item.totalAmount)} VNĐ`}
                           </TableCell>
-                          <TableCell sx={{ width: "10rem" }} align="left">
-                            <FormControl sx={{ minWidth: "10rem" }}>
+                          <TableCell sx={{ width: "8.5rem" }} align="left">
+                            <FormControl sx={{ minWidth: "8.5rem" }}>
                               <div
                                 className={`
                             p-2 text-white text-sm font-bold rounded-md bg-yellow-400`}
@@ -1034,15 +1045,18 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Tên Người Nhận
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Người Nhận
                     </TableCell>
-                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
+                    <TableCell sx={{ minWidth: "5.5rem" }}>Mã Đơn</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
                     </TableCell>
-                    <TableCell sx={{ minWidth: "12rem" }} align="left">
-                      Phương thức thanh toán
+                    <TableCell sx={{ minWidth: "10rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      PTTT
                     </TableCell>
                     <TableCell sx={{ minWidth: "7.5rem" }} align="left">
                       Tổng tiền
@@ -1065,13 +1079,13 @@ const AdminOrders = ({
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          {/* <TableCell align="left">
+                          <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell> */}
+                          </TableCell>
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -1080,8 +1094,8 @@ const AdminOrders = ({
                           <TableCell align="left">{`${FormatPrice(
                             item.totalAmount
                           )} VNĐ`}</TableCell>
-                          <TableCell sx={{ width: "10rem" }} align="left">
-                            <FormControl sx={{ minWidth: "10rem" }}>
+                          <TableCell sx={{ width: "8.5rem" }} align="left">
+                            <FormControl sx={{ minWidth: "8.5rem" }}>
                               <div
                                 className={`
                             p-2 text-white text-sm font-bold rounded-md bg-purple-400`}
@@ -1139,15 +1153,18 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Tên Người Nhận
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Người Nhận
                     </TableCell>
-                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
+                    <TableCell sx={{ minWidth: "5.5rem" }}>Mã Đơn</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
                     </TableCell>
-                    <TableCell sx={{ minWidth: "12rem" }} align="left">
-                      Phương thức thanh toán
+                    <TableCell sx={{ minWidth: "10rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      PTTT
                     </TableCell>
                     <TableCell sx={{ minWidth: "7.5rem" }} align="left">
                       Tổng tiền
@@ -1170,13 +1187,13 @@ const AdminOrders = ({
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          {/* <TableCell align="left">
+                          <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell> */}
+                          </TableCell>
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -1185,8 +1202,8 @@ const AdminOrders = ({
                           <TableCell align="left">{`${FormatPrice(
                             item.totalAmount
                           )} VNĐ`}</TableCell>
-                          <TableCell sx={{ width: "10rem" }} align="left">
-                            <FormControl sx={{ minWidth: "10rem" }}>
+                          <TableCell sx={{ width: "8.5rem" }} align="left">
+                            <FormControl sx={{ minWidth: "8.5rem" }}>
                               <div
                                 className={`p-2 text-white text-sm font-bold rounded-md bg-green-400`}
                                 id="status-select"
@@ -1243,15 +1260,18 @@ const AdminOrders = ({
               <Table size="medium">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ minWidth: "9rem" }} align="left">
-                      Tên Người Nhận
+                    <TableCell sx={{ minWidth: "8rem" }} align="left">
+                      Người Nhận
                     </TableCell>
-                    <TableCell sx={{ minWidth: "8rem" }}>Mã Đơn hàng</TableCell>
+                    <TableCell sx={{ minWidth: "5.5rem" }}>Mã Đơn</TableCell>
                     <TableCell sx={{ minWidth: "7rem" }} align="left">
                       Ngày đặt
                     </TableCell>
-                    <TableCell sx={{ minWidth: "12rem" }} align="left">
-                      Phương thức thanh toán
+                    <TableCell sx={{ minWidth: "10rem" }} align="left">
+                      Địa chỉ
+                    </TableCell>
+                    <TableCell sx={{ minWidth: "7rem" }} align="left">
+                      PTTT
                     </TableCell>
                     <TableCell sx={{ minWidth: "7.5rem" }} align="left">
                       Tổng tiền
@@ -1274,13 +1294,13 @@ const AdminOrders = ({
                               "DD/MM/YYYY"
                             )}
                           </TableCell>
-                          {/* <TableCell align="left">
+                          <TableCell align="left">
                             {item.address.split("-").length == 1
                               ? `${item.address}`
                               : `${item.address.split("-")[1]}, ${
                                   item.address.split("-")[2]
                                 }`}
-                          </TableCell> */}
+                          </TableCell>
                           <TableCell align="left">
                             {item.paymentMethod === "COD"
                               ? "Thanh toán khi nhận"
@@ -1289,8 +1309,8 @@ const AdminOrders = ({
                           <TableCell align="left">{`${FormatPrice(
                             item.totalAmount
                           )} VNĐ`}</TableCell>
-                          <TableCell sx={{ width: "10rem" }} align="left">
-                            <FormControl sx={{ minWidth: "10rem" }}>
+                          <TableCell sx={{ width: "8.5rem" }} align="left">
+                            <FormControl sx={{ minWidth: "8.5rem" }}>
                               <div
                                 className={`p-2 text-white text-sm font-bold rounded-md bg-secondary-color`}
                                 id="status-select"

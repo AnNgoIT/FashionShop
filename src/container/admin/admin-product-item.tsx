@@ -14,7 +14,13 @@ import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Product, StyleValue, productItem } from "@/features/types";
 import Image from "next/image";
 import EditIcon from "@mui/icons-material/Edit";
@@ -90,6 +96,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
   >(undefined);
   const [styleValueNames, setStyleValueNames] = useState<string[]>([]);
   const [styleList, setStyleList] = useState<StyleList | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleProductName = (name: string, id: number) => {
@@ -202,7 +209,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-
     if (files && files.length > 0) {
       const file = files[0];
       setImage(file);
@@ -222,7 +228,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
           });
         }
       };
-
       reader.readAsDataURL(file);
     }
   };
@@ -282,8 +287,8 @@ const AdminProductItem = (props: AdminProductItemProps) => {
           resetProductItem();
           productItemList &&
             setProductItemList([...productItemList, res.result]);
-          // handleClose();
           router.refresh();
+          // handleClose();
         } else if (res.statusCode == 403 || res.statusCode == 401) {
           toast.update(id, {
             render: `Phiên đăng nhập hết hạn, đang tạo phiên mới`,
@@ -300,6 +305,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             autoClose: 500,
             isLoading: false,
           });
+          router.refresh();
         } else if (res.status == 500) {
           handleClose();
           toast.update(id, {
@@ -331,7 +337,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
       styleValueNames: [],
       sku: "",
     });
-    setUpdate(false);
     setImage("");
   }
 
@@ -376,6 +381,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
           formData,
           "multipart/form-data"
         );
+        setUpdate(false);
         setProductItemList((productList: productItem[]) =>
           productList.map((item: productItem) =>
             item.productItemId === productItem.productItemId
@@ -384,6 +390,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                   image: res.result.image,
                   quantity: res.result.quantity,
                   price: res.result.price,
+                  promotionalPrice: res.result.promotionalPrice,
                 }
               : item
           )
@@ -396,7 +403,6 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             autoClose: 500,
             isLoading: false,
           });
-
           router.refresh();
         } else if (res.statusCode == 409) {
           toast.update(id, {
@@ -537,8 +543,8 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                             </TableCell>
                             <TableCell
                               sx={{
-                                minWidth: "7rem",
-                                maxWidth: "8rem",
+                                minWidth: "8.5rem",
+                                maxWidth: "10rem",
                                 overflow: "hidden",
                                 whiteSpace: "nowrap",
                                 textOverflow: "ellipsis",
@@ -716,7 +722,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
             })}
           <div className="col-span-full grid place-items-center text-sm text-[#999] font-medium my-4">
             <div className="grid grid-flow-col w-fit gap-x-2">
-              {productItem && productItem.image ? (
+              {productItem && productItem.image !== "" ? (
                 <Image
                   loader={imageLoader}
                   className="w-[6.25rem] h-[6.25rem] rounded-md"
@@ -725,7 +731,7 @@ const AdminProductItem = (props: AdminProductItemProps) => {
                   src={productItem.image}
                   alt="Uploaded Image"
                   priority
-                ></Image>
+                />
               ) : (
                 <p className="grid place-content-center text-xl text-text-color">
                   Không có ảnh nào
@@ -741,11 +747,14 @@ const AdminProductItem = (props: AdminProductItemProps) => {
               Tải ảnh lên
               <VisuallyHiddenInput
                 required={!isUpdate}
+                onClick={(event: any) => (event.target.value = null)}
                 onChange={(e) => handleImageUpload(e)}
                 type="file"
+                ref={fileInputRef}
               />
             </Button>
           </div>
+
           <div
             className={`col-span-8 col-start-3 ${
               isUpdate ? "flex gap-x-2 justify-end" : ""

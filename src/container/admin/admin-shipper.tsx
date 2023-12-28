@@ -200,18 +200,25 @@ const AdminShipper = ({
           newAccount,
           "application/json"
         );
-        resetUser();
-        handleClose();
         if (res.success) {
           successMessage("Tạo người vận chuyển mới thành công");
-          router.refresh();
-        } else if (res.statusCode == 401) {
-          warningMessage(
-            "Phiên đăng nhập của bạn hết hạn, đang đặt lại phiên mới"
-          );
           resetUser();
           handleClose();
           router.refresh();
+        } else if (res.statusCode == 409) {
+          if (res.message === "Email already in use") {
+            errorMessage("Email này đã được sử dụng");
+            setErrors({
+              ...errors,
+              email: "Email này đã được sử dụng",
+            });
+          } else if (res.message === "Phone number already in use") {
+            errorMessage("Số điện thoại này đã được sử dụng");
+            setErrors({
+              ...errors,
+              phone: "Số điện thoại này đã được sử dụng",
+            });
+          }
         } else if (res.status == 500) {
           errorMessage("Lỗi hệ thống");
           resetUser();
@@ -229,17 +236,6 @@ const AdminShipper = ({
     } else setErrors(formErrors);
   }
 
-  const handleSearchshippers = (
-    e: { preventDefault: () => void },
-    email: string
-  ) => {
-    e.preventDefault();
-    if (email == undefined) setUserList(shippers.slice(0, rowsPerPage));
-    else {
-      const newUserList = shippers.filter((item) => item.email.includes(email));
-      setUserList(newUserList);
-    }
-  };
   function resetUser() {
     setShipper({
       fullname: "",
