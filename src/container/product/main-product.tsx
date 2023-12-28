@@ -28,7 +28,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputBase from "@mui/material/InputBase";
 import { ThemeProvider, styled } from "@mui/material/styles";
-import { main_product_banner, sale_banner2 } from "@/assests/images";
+import { sale_banner2 } from "@/assests/images";
 import Box from "@mui/material/Box";
 import MenuIcon from "@mui/icons-material/Menu";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -85,6 +85,14 @@ const MainProduct = (props: MainProductProps) => {
     if (products) {
       setFitlerProductList(products);
     }
+    if (searchParams.get("query")?.trim().length! > 0) {
+      setFilterValues({
+        brand: "",
+        category: "",
+        price: [0, 5000000],
+      });
+      setIsFiltering(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products]);
 
@@ -132,6 +140,10 @@ const MainProduct = (props: MainProductProps) => {
 
   function handlePriceList(event: Event, newValue: number | number[]) {
     setFilterValues({ ...filterValues, price: newValue as number[] });
+    setIsSearching(true);
+    if (searchParams.get("query")?.trim().length! > 0) {
+      router.replace("/product", { scroll: false });
+    }
   }
 
   function handleFilter(e: any) {
@@ -141,6 +153,9 @@ const MainProduct = (props: MainProductProps) => {
       [e.target.name]: value,
     });
     setIsSearching(true);
+    if (searchParams.get("query")?.trim().length! > 0) {
+      router.replace("/product", { scroll: false });
+    }
   }
 
   function handleSort(value: string) {
@@ -164,7 +179,6 @@ const MainProduct = (props: MainProductProps) => {
 
   async function handleSearchByFilter(event: { preventDefault: () => void }) {
     event.preventDefault();
-
     if (isSearching) {
       const name = `${
         searchParams.get("query")?.trim()
@@ -182,13 +196,13 @@ const MainProduct = (props: MainProductProps) => {
           : ""
       }`;
       const price = filterValues.price || [0, 240000];
+
       const id = toast.loading("Đang tìm kiếm...");
       try {
         const res = await getData(
           `${HTTP_PORT}/api/v1/products?priceFrom=${price[0]}&priceTo=${price[1]}&${name}
           &${categoryName}&${brandName}`
         );
-        console.log(res);
         if (res.success) {
           toast.update(id, {
             render: `Hoàn tất`,
@@ -196,13 +210,9 @@ const MainProduct = (props: MainProductProps) => {
             autoClose: 500,
             isLoading: false,
           });
+
           setIsFiltering(true);
           setFitlerProductList(res.result.content);
-          setFilterValues({
-            brand: "",
-            category: "",
-            price: [0, 5000000],
-          });
         }
       } catch (error: any) {
         toast.update(id, {
@@ -536,11 +546,25 @@ const MainProduct = (props: MainProductProps) => {
               </div>
             </div>
             {isFiltering && (
-              <div
-                className="col-span-full bg-[#f5f5f5] text-lg text-text-color py-4 rounded-sm flex items-center px-4
-                shadow-md"
-              >
-                Kết quả tìm kiếm : {filterProductList.length}
+              <div className="col-span-full bg-[#f5f5f5] text-lg text-text-color py-4 rounded-sm flex items-center px-4 shadow-md">
+                Kết quả tìm kiếm cho{" "}
+                {filterValues.brand !== ""
+                  ? `thương hiệu "${filterValues.brand}", `
+                  : ""}
+                {filterValues.category !== ""
+                  ? `danh mục "${filterValues.category}", `
+                  : ""}
+                {`giá từ ${FormatPrice(
+                  filterValues.price[0]
+                )} VNĐ tới ${FormatPrice(filterValues.price[1])} VNĐ `}
+              </div>
+            )}
+            {searchParams.get("query") && !isFiltering && (
+              <div className="col-span-full bg-[#f5f5f5] text-lg text-text-color py-4 rounded-sm flex items-center px-4 shadow-md">
+                Kết quả tìm kiếm{" "}
+                {searchParams.get("query")
+                  ? `cho từ khóa "${searchParams.get("query")}"`
+                  : ""}{" "}
               </div>
             )}
             {filterProductList && filterProductList.length > 0 ? (
