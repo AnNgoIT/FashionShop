@@ -87,19 +87,18 @@ const TopNav = (props: NavProps) => {
   const tokenParams = useSearchParams();
 
   const { info, token, products, categories } = props;
-  const { replace } = useRouter();
+  const { replace, refresh } = useRouter();
   const router = useRouter();
   const pathName = usePathname();
 
   const searchParams = useSearchParams();
-  const [keyword, setKeyword] = useState("");
+  const [keyword, setKeyword] = useState(searchParams.get("query") || "");
   const [onSearch, setOnSearch] = useState(false);
   const local = useLocal();
   // Create inline loading UI
   const { user, setUser } = useContext(UserContext);
   const { cartItems, setCartItems } = useContext(CartContext);
   const [isHidden, setIsHidden] = useState(true);
-  const ref = useRef<any>(null);
 
   const cookies = getCookies();
 
@@ -226,10 +225,10 @@ const TopNav = (props: NavProps) => {
       params.set("query", keyword.trim());
       try {
         replace(`/product?${params.toString()}`);
-        setKeyword("");
+        // setKeyword("");
         successMessage("Tìm kiếm thành công");
       } catch (error) {
-        setKeyword("");
+        // setKeyword("");
         errorMessage("Tìm kiếm thất bại");
       }
     } else {
