@@ -811,7 +811,7 @@ const AdminProduct = (props: AdminProductProps) => {
                       <li
                         {...props}
                         key={option.productId}
-                        className="flex justify-between items-center gap-x-4 px-3 py-2 border-b border-border-color"
+                        className="flex justify-start items-center gap-x-4 px-3 py-2 border-b border-border-color"
                       >
                         <Image
                           loader={imageLoader}

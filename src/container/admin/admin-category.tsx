@@ -246,27 +246,41 @@ const AdminCategory = (props: AdminCategoryProps) => {
     }
     if (isUpdating) return;
     isUpdating = true;
+    console.log(category?.parentName);
+    console.log(updateCategory?.parentName);
     const updatePayload: UpdateCategory = {
-      name: category?.name,
+      name: category?.name === updateCategory?.name ? "" : category?.name,
       parentId:
-        categories.find(
-          (category) => category.name === updateCategory?.parentName
-        )?.categoryId || null,
+        category?.parentName === updateCategory?.parentName
+          ? -1
+          : categories.find(
+              (category) => category.name === updateCategory?.parentName
+            )?.categoryId || -1,
       imageFile: image,
     };
 
-    const formData = new FormData();
-    formData.append("name", updatePayload.name);
-    updatePayload.parentId &&
-      formData.append("parentId", updatePayload.parentId.toString());
-    if (image instanceof File) {
-      formData.append("imageFile", updatePayload.imageFile);
+    if (
+      category?.name === updateCategory?.name &&
+      updateCategory?.parentName === category?.parentName &&
+      image == ""
+    ) {
+      successMessage("Cập nhật thành công");
+      handleClose();
+      return;
     }
+
+    console.log(updatePayload);
+    const formData = new FormData();
+    if (updatePayload.name != "") formData.append("name", updatePayload.name);
+    if (updatePayload.parentId !== -1 && updatePayload.parentId)
+      formData.append("parentId", updatePayload.parentId.toString());
+    if (image != "") formData.append("imageFile", updatePayload.imageFile);
+
     try {
       const update = await patchData(
         `/api/v1/users/admin/categories/${updateCategory?.categoryId}`,
         getCookie("accessToken")!,
-        updatePayload,
+        formData,
         "multipart/form-data"
       );
       handleClose();

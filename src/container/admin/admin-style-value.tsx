@@ -452,7 +452,7 @@ const AdminStyleValue = (props: AdminStyleValueProps) => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>thuộc tính</TableCell>
+                  <TableCell>Thuộc tính</TableCell>
                   <TableCell>Tên</TableCell>
                   <TableCell></TableCell>
                 </TableRow>

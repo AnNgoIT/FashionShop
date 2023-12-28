@@ -180,24 +180,43 @@ const AdminBrand = (props: AdminBrandProps) => {
     if (isUpdating) return;
     isUpdating = true;
 
-    const updatePayload: UpdateBrand = {
-      name: updateBrand ? brand.name : null,
-      nation: updateBrand ? brand.nation : null,
+    let updatePayload: any = {
+      name: brand?.name || "",
+      nation: brand?.nation || "",
     };
+    let checkUpdateName = true;
+    let checkUpdateNation = true;
+    if (updateBrand && brand.name == updateBrand.name) {
+      checkUpdateName = false;
+    }
+
+    if (updateBrand && brand.nation == updateBrand.nation) {
+      checkUpdateNation = false;
+    }
+    if (checkUpdateName == false && checkUpdateNation == true) {
+      updatePayload = {
+        nation: brand?.nation || "",
+      };
+    }
+    if (checkUpdateNation == false && checkUpdateName == true) {
+      updatePayload = {
+        name: brand?.name || "",
+      };
+    }
+    if (!checkUpdateName && !checkUpdateNation) {
+      successMessage("Cập nhật thành công");
+      handleClose();
+      return;
+    }
     try {
       const update = await patchData(
         `/api/v1/users/admin/brands/${updateBrand?.brandId}`,
         getCookie("accessToken")!,
         updatePayload
       );
-      handleClose();
       if (update.success) {
+        handleClose();
         successMessage("Đổi thương hiệu thành công");
-        // setOrderList((prevOrderItems) =>
-        //   prevOrderItems.map((item) =>
-        //     item.orderId === order.orderId ? { ...item, status: newStatus } : item
-        //   )
-        // );
         router.refresh();
       } else if (update.statusCode == 401) {
         warningMessage(
@@ -210,17 +229,13 @@ const AdminBrand = (props: AdminBrandProps) => {
       } else if (update.status == 404) {
         errorMessage("Không tìm thấy thương hiệu này");
         router.refresh();
-      } else
-        errorMessage(
-          "Tên thương hiệu và quốc gia mới phải khác với các tên thương hiệu và quốc gia cũ"
-        );
+      } else errorMessage("Yêu cầu thay đổi tên hoặc quốc gia mới");
     } catch (e) {
       console.error(e);
     } finally {
       isUpdating = false;
     }
   }
-
   let isCreating = false;
   async function handleCreateBrand(e: { preventDefault: () => void }) {
     e.preventDefault();

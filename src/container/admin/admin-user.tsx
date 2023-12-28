@@ -357,68 +357,6 @@ const AdminUser = ({
             <Title>
               <div className="grid grid-flow-col items-center min-w-[768px]">
                 <span className="">Danh sách người dùng</span>
-                <Autocomplete
-                  sx={{
-                    minWidth: 350,
-                    justifySelf: "start",
-                    marginRight: "8rem",
-                    display: "flex",
-                  }}
-                  onChange={(e, newUser) =>
-                    handleSearchUsers(e, newUser?.email!)
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    value == undefined ||
-                    value.email == "" ||
-                    option.email == value.email
-                  }
-                  options={users}
-                  getOptionLabel={(option) => option.email!}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Người dùng" />
-                  )}
-                  renderOption={(props, option) => {
-                    return (
-                      <li
-                        {...props}
-                        key={option.userId}
-                        className="flex justify-between items-center px-3 py-2 border-b border-border-color"
-                      >
-                        <Image
-                          // loader={imageLoader}
-                          key={`product-img-${option.userId}`}
-                          // placeholder="blur"
-                          className="w-[4.25rem] h-[4.25rem] outline outline-1 outline-border-color"
-                          width={120}
-                          height={120}
-                          alt="productImg"
-                          src={
-                            option.avatar == "" || option.avatar == null
-                              ? user_img2.src
-                              : option.avatar
-                          }
-                          priority
-                        ></Image>
-
-                        <span
-                          className="max-w-[1rem]"
-                          key={`product-name-${option.userId}`}
-                        >
-                          {option.email}
-                        </span>
-                      </li>
-                    );
-                  }}
-                  renderTags={(tagValue, getTagProps) => {
-                    return tagValue.map((option, index) => (
-                      <Chip
-                        {...getTagProps({ index })}
-                        key={option.userId}
-                        label={option.userId}
-                      />
-                    ));
-                  }}
-                />
               </div>
             </Title>
             <Table size="small">
