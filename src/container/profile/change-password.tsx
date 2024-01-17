@@ -125,10 +125,10 @@ const ChangePassword = () => {
   return (
     <div
       className={`col-span-full sm:col-span-10 sm:col-start-2 lg:col-span-9 xl:col-span-8 grid grid-cols-12 shadow-hd
-    bg-white p-5 max-lg:px-10 rounded-sm mb-8 h-fit gap-y-1`}
+    bg-white p-5 rounded-sm mb-8 h-fit gap-y-1`}
     >
       <div className="col-span-full grid grid-flow-col max-md:grid-flow-row gap-4 place-content-center md:items-center md:place-content-between pb-4 border-b-[0] lg:border-b border-border-color">
-        <h2 className="text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center">
+        <h2 className="max-sm:text-xl text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center">
           Đổi mật khẩu
         </h2>
       </div>

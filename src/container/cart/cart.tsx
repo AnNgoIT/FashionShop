@@ -425,7 +425,7 @@ const Cart = (props: CartProps) => {
             </Link>
           </div>
           <div className="col-span-full grid grid-cols-12 place-items-center max-lg:mt-[2rem]">
-            <table className="col-span-full min-w-[400px]">
+            <table className="col-span-full min-w-[330px] md:min-w-[400px]">
               <thead className="text-center">
                 <tr className="border border-border-color text-text-color">
                   <th className=" border border-border-color min-w-[100px] p-3 text-center">

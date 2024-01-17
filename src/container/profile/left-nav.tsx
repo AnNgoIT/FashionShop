@@ -20,7 +20,7 @@ import FeedbackIcon from "@mui/icons-material/Feedback";
 const theme = createTheme({
   breakpoints: {
     values: {
-      xs: 499,
+      xs: 300,
       sm: 576,
       md: 800,
       lg: 992,

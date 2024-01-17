@@ -58,10 +58,10 @@ const RegisterForm = () => {
       ...errors,
       [e.target.name]: "",
     });
-    if(e.target.name =="password"){
+    if (e.target.name == "password") {
       setErrors({
         ...errors,
-        "confirmPassword": "",
+        confirmPassword: "",
       });
     }
   };
@@ -169,7 +169,7 @@ const RegisterForm = () => {
   return (
     <div
       className={`col-span-full md:col-span-10 md:col-start-2 lg:col-span-6 lg:col-start-4 grid grid-cols-12 gap-x-8 shadow-hd
-         bg-white py-5 max-lg:px-10 rounded-md`}
+         bg-white py-5 rounded-md overflow-hidden`}
     >
       <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold mb-6 text-center">
         đăng ký
@@ -177,9 +177,9 @@ const RegisterForm = () => {
       <Box
         component="form"
         onSubmit={handleRegister}
-        className="col-span-full lg:col-span-10 lg:col-start-2"
+        className="col-span-full px-8"
       >
-        <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
+        <div className="text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.fullname != ""}>
             <InputLabel htmlFor="fullname">Tên đầy đủ *</InputLabel>
             <OutlinedInput
@@ -197,7 +197,7 @@ const RegisterForm = () => {
             </FormHelperText>
           </FormControl>
         </div>
-        <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
+        <div className="text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.email != ""}>
             <InputLabel htmlFor="email">Email *</InputLabel>
             <OutlinedInput
@@ -212,7 +212,7 @@ const RegisterForm = () => {
             <FormHelperText id="email-error">{errors.email}</FormHelperText>
           </FormControl>
         </div>
-        <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
+        <div className="text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.phone != ""}>
             <MuiPhoneNumber
               inputProps={{ maxLength: 10 }}
@@ -225,7 +225,7 @@ const RegisterForm = () => {
             <FormHelperText id="phone-error">{errors.phone}</FormHelperText>
           </FormControl>
         </div>
-        <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
+        <div className="text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.password != ""}>
             <InputLabel htmlFor="password">Mật khẩu *</InputLabel>
             <OutlinedInput
@@ -252,7 +252,7 @@ const RegisterForm = () => {
             </FormHelperText>
           </FormControl>
         </div>
-        <div className="flex flex-col text-sm text-text-light-color font-medium mb-5">
+        <div className="text-sm text-text-light-color font-medium mb-5">
           <FormControl fullWidth error={errors.confirmPassword != ""}>
             <InputLabel htmlFor="confirmPassword">
               Xác nhận mật khẩu *

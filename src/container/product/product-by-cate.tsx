@@ -143,16 +143,17 @@ export const ProductByCate = (props: ProductByCateProps) => {
           </Carousel>
         </div>
       </div> */}
-      <section className="container grid grid-cols-12 max-md:px-4 my-8">
+      <section className="container grid grid-cols-12 max-md:px-4 p-4 my-8">
         <div className="col-span-full grid grid-cols-1 md:grid-cols-12 gap-x-[30px]">
           <ul className="col-span-full md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-[30px] h-fit">
             <div
               className="col-span-full bg-[#f5f5f5] text-base text-text-color py-4 rounded-sm flex items-center px-4
-                shadow-md"
+                shadow-md truncate"
             >
               <span className="hidden md:block">Sắp xếp theo</span>
-              <div className="ml-2 flex gap-x-2">
+              <div className="ml-2 flex gap-x-2 truncate">
                 <button
+                  title="Phổ biến"
                   onClick={() => handleSort("Phổ biến")}
                   className={`${
                     isActive === "Phổ biến"
@@ -163,6 +164,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                   Phổ biến
                 </button>
                 <button
+                  title="Mới nhất"
                   onClick={() => handleSort("Mới nhất")}
                   className={`${
                     isActive === "Mới nhất"
@@ -173,6 +175,7 @@ export const ProductByCate = (props: ProductByCateProps) => {
                   Mới nhất
                 </button>
                 <button
+                  title="Bán chạy"
                   onClick={() => handleSort("Bán chạy")}
                   className={`${
                     isActive === "Bán chạy"
@@ -258,22 +261,21 @@ export const ProductByCate = (props: ProductByCateProps) => {
                               ></Image>
                               <div className="relative w-full">
                                 <div className="px-2 py-1">
-                                  <p
-                                    className="text-text-color text-base pt-[10px] overflow-hidden font-medium
-                       text-ellipsis whitespace-nowrap "
-                                  >
+                                  <p className="text-text-color text-base pt-[10px] truncate font-medium">
                                     {product.name}
                                   </p>
-                                  <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                                    {FormatPrice(product.promotionalPriceMin)}{" "}
-                                    VNĐ
+                                  <div className="text-text-light-color font-bold truncate">
+                                    <span className="text-primary-color">
+                                      {FormatPrice(product.promotionalPriceMin)}{" "}
+                                      VNĐ
+                                    </span>
                                     {product.priceMin !=
                                       product.promotionalPriceMin && (
-                                      <span className="line-through text-text-light-color ml-2 text-sm">
+                                      <span className="line-through ml-2 text-sm">
                                         {FormatPrice(product.priceMin)} VNĐ
                                       </span>
                                     )}
-                                  </h3>
+                                  </div>
                                 </div>
                               </div>
                             </>

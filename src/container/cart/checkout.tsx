@@ -364,7 +364,7 @@ const Checkout = (props: CheckOutProps) => {
                 <tbody className="">
                   <tr className="w-full border border-[#dee2e6]">
                     <td className="p-3">
-                      <h1 className="text-text-color font-bold">
+                      <h1 className="text-text-color font-bold truncate">
                         Tổng tiền hàng :
                       </h1>
                     </td>
@@ -377,7 +377,7 @@ const Checkout = (props: CheckOutProps) => {
                   </tr>
                   <tr className="w-full border border-[#dee2e6]">
                     <td className="p-3">
-                      <h1 className="text-text-color font-bold">
+                      <h1 className="text-text-color font-bold truncate">
                         Phí vận chuyển :
                       </h1>
                     </td>
@@ -403,7 +403,7 @@ const Checkout = (props: CheckOutProps) => {
                   </tr>
                   <tr className="w-full border border-[#dee2e6]">
                     <td className="p-3">
-                      <h1 className="text-text-color font-bold">
+                      <h1 className="text-text-color font-bold truncate">
                         Tổng thanh toán:
                       </h1>
                     </td>

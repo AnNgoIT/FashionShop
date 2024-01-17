@@ -99,7 +99,7 @@ const LoginForm = () => {
   return (
     <div
       className={`col-span-full md:col-span-10 md:col-start-2 lg:col-span-6 lg:col-start-4 grid grid-cols-12 gap-x-8 shadow-hd
-         bg-white py-5 max-lg:px-10 rounded-md`}
+         bg-white py-5 rounded-md`}
     >
       <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold mb-6 text-center">
         ĐĂNG NHẬP
@@ -109,8 +109,8 @@ const LoginForm = () => {
           {error}
         </div>
       )}
-      <form className="col-span-full lg:col-span-10 lg:col-start-2">
-        <div className="flex flex-col text-sm text-text-light-color font-medium mb-7">
+      <form className="col-span-full grid-cols-12 px-6">
+        <div className="text-sm text-text-light-color font-medium mb-7">
           <FormControl fullWidth error={errors.email !== ""}>
             <InputLabel htmlFor="email">Email</InputLabel>
             <OutlinedInput
@@ -126,8 +126,7 @@ const LoginForm = () => {
             />
           </FormControl>
         </div>
-
-        <div className="flex flex-col text-sm text-text-light-color font-medium mb-7">
+        <div className="text-sm text-text-light-color font-medium mb-7">
           <FormControl fullWidth error={errors.password !== ""}>
             <InputLabel htmlFor="password">Mật Khẩu</InputLabel>
             <OutlinedInput

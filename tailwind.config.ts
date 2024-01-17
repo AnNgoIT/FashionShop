@@ -14,6 +14,7 @@ const config: Config = {
   blocklist: [],
   theme: {
     screens: {
+      sssm: "360px",
       ssm: "499px",
       sm: "576px",
       md: "800px",

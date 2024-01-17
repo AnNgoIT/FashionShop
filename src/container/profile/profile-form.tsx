@@ -244,9 +244,9 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
     <>
       <div
         className={`col-span-full sm:col-span-10 sm:col-start-2 lg:col-span-9 xl:col-span-8 grid grid-cols-12 shadow-hd
-        bg-white p-5 max-lg:px-10 rounded-sm mb-8 h-fit`}
+        bg-white p-5 rounded-sm mb-8 h-fit`}
       >
-        <h2 className="col-span-full text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center pb-4 border-b-[0] lg:border-b border-border-color">
+        <h2 className="col-span-full max-sm:text-xl text-3xl tracking-[0] text-text-color uppercase font-semibold text-left max-lg:text-center pb-4 border-b-[0] lg:border-b border-border-color">
           Thông tin cá nhân
         </h2>
         <form
@@ -354,12 +354,12 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
             </button>
           </div>
         </form>
-        <div className="col-span-full lg:col-span-3 xl:col-span-5 min-w-max max-lg:order-1 mt-4">
+        <div className="col-span-full lg:col-span-5 min-w-max max-lg:order-1 mt-4">
           <div className="grid place-items-center text-sm text-[#999] font-medium">
             {userInfo.avatar == "" ? (
               <Skeleton variant="circular" width={112} height={112} />
             ) : userInfo.avatar == "no avatar" ? (
-              <div className="text-[16px] pb-4 text-center">
+              <div className="text-base pb-4 text-center">
                 Không có ảnh đại diện nào
               </div>
             ) : (
@@ -389,10 +389,10 @@ const ProfileForm = ({ info }: { info?: UserInfo }) => {
                 type="file"
               />
             </Button>
-            <p className="text-[1rem] pt-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
+            <p className="text-[1rem] flex pt-4 justify-center items-center w-full">
               Dung lượng tệp không quá 20MB
             </p>
-            <p className="text-[1rem] pb-4 pl-20 sm:pl-24 md:pl-40 lg:pl-20 justify-self-center lg:justify-self-start w-full">
+            <p className="text-[1rem] flex pb-4 justify-center items-center w-full">
               Định dạng tệp: JPG, PNG,...
             </p>
           </div>
