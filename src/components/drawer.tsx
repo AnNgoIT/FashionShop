@@ -101,7 +101,7 @@ export default function SwipeableTemporaryDrawer() {
       onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        <Link href={"/login"}>
+        <Link href={user.email !== "" ? "/profile" : "/login"}>
           <ListItem disablePadding>
             <ListItemButton>
               <ListItemIcon sx={{ display: "flex", alignItems: "center" }}>
@@ -120,14 +120,6 @@ export default function SwipeableTemporaryDrawer() {
             </ListItemButton>
           </ListItem>
         </Link>
-        <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemIcon>
-              <NotificationsIcon />
-            </ListItemIcon>
-            <ListItemText primary={"Thông báo"} />
-          </ListItemButton>
-        </ListItem>
         <Link href="/cart">
           <ListItem disablePadding>
             <ListItemButton>

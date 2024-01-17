@@ -299,12 +299,12 @@ const ProductDetail = (props: ProductDetailProps) => {
       }
       if (isAddingToCart) return; // Nếu đang xử lý, không cho phép gọi API mới
       isAddingToCart = true; // Đánh dấu đang xử lý
-
       try {
-        const res = await addProductItemToCart(
-          getCookie("accessToken") || "",
-          payload
-        );
+        const accessToken = getCookie("accessToken")!;
+        console.log(accessToken);
+        const res = await addProductItemToCart(accessToken, payload);
+        console.log(res);
+
         if (res.success) {
           successMessage("Thêm vào giỏ hàng thành công");
           setSelected(false);
@@ -571,7 +571,9 @@ const ProductDetail = (props: ProductDetailProps) => {
               </div>
             )}
           </div>
-          <div className={`col-span-full md:col-span-7 lg:col-span-5`}>
+          <div
+            className={`col-span-full md:col-span-7  lg:col-span-7 xl:col-span-6`}
+          >
             <h3 className="pb-1 text-[1.5rem] leading-7 font-semibold text-text-color">
               {productDetail && productDetail.name}
             </h3>
@@ -584,7 +586,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                     value={productDetail.rating}
                     readOnly
                   />{" "}
-                  <p className="border-r border-border-color pr-2">
+                  <p className="border-r border-border-color pr-2 max-lg:hidden">
                     {" "}
                     {`(${productDetail.rating} sao)`}
                   </p>
@@ -709,6 +711,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                         handleColorList(item.name);
                         // increasePriceBySize(item.price);
                       }}
+                      title={item.name}
                       key={item.styleValueId}
                       className={`outline outline-1 outline-border-color px-4 py-2 cursor-pointer hover:bg-primary-color hover:text-white transition-all truncate
                               ${
@@ -761,7 +764,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                 Vui lòng chọn phân loại sản phẩm
               </p>
             )}
-            <div className="pt-5 flex">
+            <div className="pt-5 flex max-ssm:flex-col max-ssm:gap-y-2">
               <button
                 onClick={(e) => {
                   handleAddToCart(e, productItem.productItemId);
@@ -771,7 +774,7 @@ const ProductDetail = (props: ProductDetailProps) => {
                                   transition-all duration-200  text-ellipsis whitespace-nowrap"
               >
                 <FontAwesomeIcon
-                  className="pr-2 text-[20px]"
+                  className="pr-2 text-xl"
                   icon={faBagShopping}
                 ></FontAwesomeIcon>
                 Thêm vào giỏ hàng
@@ -782,10 +785,10 @@ const ProductDetail = (props: ProductDetailProps) => {
                 }}
                 className="rounded-[4px] bg-primary-color text-white px-[15px] py-[11px] 
                                   font-medium flex justify-center items-center hover:bg-text-color
-                                  transition-all duration-200 ml-6  text-ellipsis whitespace-nowrap"
+                                  transition-all duration-200 ssm:ml-6  text-ellipsis whitespace-nowrap"
               >
                 <FontAwesomeIcon
-                  className="pr-2 text-[20px]"
+                  className="pr-2 text-xl"
                   icon={faCheck}
                 ></FontAwesomeIcon>
                 Mua hàng ngay

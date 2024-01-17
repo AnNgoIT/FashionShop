@@ -488,8 +488,9 @@ const MainProduct = (props: MainProductProps) => {
                 shadow-md"
             >
               <span className="hidden md:block">Sắp xếp theo</span>
-              <div className="ml-2 flex gap-x-2">
+              <div className="ml-2 flex gap-x-2 truncate">
                 <button
+                  title="Phổ biến"
                   onClick={() => handleSort("Phổ biến")}
                   className={`${
                     isActive === "Phổ biến"
@@ -500,6 +501,7 @@ const MainProduct = (props: MainProductProps) => {
                   Phổ biến
                 </button>
                 <button
+                  title="Mới nhất"
                   onClick={() => handleSort("Mới nhất")}
                   className={`${
                     isActive === "Mới nhất"
@@ -510,6 +512,7 @@ const MainProduct = (props: MainProductProps) => {
                   Mới nhất
                 </button>
                 <button
+                  title="Bán chạy"
                   onClick={() => handleSort("Bán chạy")}
                   className={`${
                     isActive === "Bán chạy"
@@ -531,6 +534,7 @@ const MainProduct = (props: MainProductProps) => {
                     // variant="standard"
                   >
                     <Select
+                      title="Giá"
                       id="sort-id"
                       name="price"
                       value={sortPrice}
@@ -612,22 +616,21 @@ const MainProduct = (props: MainProductProps) => {
                               ></Image>
                               <div className="relative w-full">
                                 <div className="px-2 py-1">
-                                  <p
-                                    className="text-text-color text-base pt-[10px] overflow-hidden font-medium
-                           text-ellipsis whitespace-nowrap "
-                                  >
+                                  <p className="text-text-color text-base pt-[10px] truncate font-medium">
                                     {product.name}
                                   </p>
-                                  <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                                    {FormatPrice(product.promotionalPriceMin)}{" "}
-                                    VNĐ
+                                  <div className="text-text-light-color font-bold truncate">
+                                    <span className="text-primary-color">
+                                      {FormatPrice(product.promotionalPriceMin)}{" "}
+                                      VNĐ
+                                    </span>
                                     {product.priceMin !=
                                       product.promotionalPriceMin && (
-                                      <span className="line-through text-text-light-color ml-2 text-sm">
+                                      <span className="line-through ml-2 text-sm">
                                         {FormatPrice(product.priceMin)} VNĐ
                                       </span>
                                     )}
-                                  </h3>
+                                  </div>
                                 </div>
                               </div>
                             </>

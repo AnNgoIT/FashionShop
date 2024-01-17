@@ -3,7 +3,6 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Height } from "@mui/icons-material";
 import { createTheme, styled } from "@mui/material/styles";
 
 export const imageLoader = ({ src, width }: { src: string; width: number }) => {
@@ -35,7 +34,7 @@ export const responsive = {
   },
   mobile: {
     breakpoint: { max: 768, min: 0 },
-    items: 4,
+    items: 2,
   },
 };
 export const defaulResponsive3 = {
@@ -62,8 +61,8 @@ export const defaulResponsive8 = {
     items: 4,
   },
   mobile: {
-    breakpoint: { max: 768, min: 500 },
-    items: 3,
+    breakpoint: { max: 767, min: 0 },
+    items: 2,
   },
 };
 

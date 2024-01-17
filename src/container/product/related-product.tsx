@@ -27,7 +27,7 @@ const RelatedProduct = (props: RelateProductProps) => {
           <div className={`col-span-full text-center mb-4 md:mb-8`}>
             <span className="product-title">Sản phẩm liên quan</span>
           </div>
-          <div className="col-span-full">
+          <div className="col-span-full mb-8">
             <Carousel
               swipeable={true}
               draggable={false}
@@ -78,24 +78,20 @@ const RelatedProduct = (props: RelateProductProps) => {
                           ></Image>
                           <div className="relative w-full">
                             <div className="px-2 py-1">
-                              <p
-                                className="text-text-color text-base pt-2.5 overflow-hidden font-medium
-                   text-ellipsis whitespace-nowrap "
-                              >
+                              <p className="text-text-color text-base pt-[10px] truncate font-medium">
                                 {product.name}
                               </p>
-                              <h3 className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                                {product &&
-                                  FormatPrice(product.promotionalPriceMin)}{" "}
-                                VNĐ
-                                {product &&
-                                  product.priceMin !=
-                                    product.promotionalPriceMin && (
-                                    <span className="line-through text-text-light-color ml-2 text-sm">
-                                      {FormatPrice(product.priceMin)} VNĐ
-                                    </span>
-                                  )}
-                              </h3>
+                              <div className="text-text-light-color font-bold truncate">
+                                <span className="text-primary-color">
+                                  {FormatPrice(product.promotionalPriceMin)} VNĐ
+                                </span>
+                                {product.priceMin !=
+                                  product.promotionalPriceMin && (
+                                  <span className="line-through ml-2 text-sm">
+                                    {FormatPrice(product.priceMin)} VNĐ
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </Link>

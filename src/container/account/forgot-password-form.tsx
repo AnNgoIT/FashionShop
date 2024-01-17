@@ -69,8 +69,8 @@ const ForgotPasswordForm = () => {
 
   return (
     <div
-      className={`col-span-full md:col-span-10 md:col-start-2 lg:col-span-4 lg:col-start-5 grid grid-cols-12 gap-x-8 shadow-hd
-         bg-white py-5 max-lg:px-10 min-h-[40px]`}
+      className={`col-span-full md:col-span-10 md:col-start-2 lg:col-span-6 lg:col-start-4 grid grid-cols-12 gap-x-8 shadow-hd
+         bg-white py-5 min-h-[40px]`}
     >
       <h2
         className="col-span-full text-xl leading-10 tracking-[0] text-text-color uppercase font-semibold mb-[30px] 
@@ -78,11 +78,8 @@ const ForgotPasswordForm = () => {
       >
         quên mật khẩu
       </h2>
-      <form
-        className="col-span-full lg:col-span-10 lg:col-start-2"
-        onSubmit={handleSubmit}
-      >
-        <div className="flex flex-col text-sm text-[#999] font-medium mb-[29px]">
+      <form className="col-span-full px-6" onSubmit={handleSubmit}>
+        <div className="text-sm text-[#999] font-medium mb-[29px]">
           <FormControl fullWidth error={error != ""}>
             <InputLabel htmlFor="email">Nhập email của bạn</InputLabel>
             <OutlinedInput

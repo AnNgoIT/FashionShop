@@ -39,11 +39,11 @@ const Footer = () => {
               hàng thành công
             </p>
           </div>
-          <div className="col-span-12 md:col-span-4 p-4 grid items-center">
+          <div className="col-span-12 md:col-span-4 p-4 grid max-md:place-items-center items-center">
             <span className="uppercase text-[1.375rem] leading-6">
               THÔNG TIN
             </span>
-            <ul className="grid place-items-start py-4">
+            <ul className="grid place-items-start py-4 max-md:place-items-center">
               <li className="transition-opacity hover:opacity-60 p-1">
                 <Link href="#">Về chúng tôi</Link>
               </li>
@@ -55,11 +55,11 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          <div className="col-span-12 md:col-span-4 p-4 grid items-center">
+          <div className="col-span-12 md:col-span-4 p-4 grid max-md:place-items-center items-center">
             <span className="uppercase text-[1.375rem] leading-6">
               LIÊN LẠC
             </span>
-            <ul className="grid place-items-start py-4">
+            <ul className="grid place-items-start py-4 max-md:place-items-center">
               <li className="p-1">
                 <FontAwesomeIcon icon={faLocationDot} />
                 <span className="ml-2">3/32A Đường 182 Quận 9</span>

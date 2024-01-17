@@ -234,10 +234,10 @@ const OrderFeedback = ({ orders }: { orders: orderItem[] }) => {
   return (
     <div
       className={`col-span-full sm:col-span-10 sm:col-start-2 lg:col-span-9 xl:col-span-8 grid grid-cols-12 shadow-hd
-bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
+bg-white ssm:p-1 md:p-5 rounded-sm mb-8 gap-y-1 h-fit`}
     >
       <h2
-        className="col-span-full text-3xl tracking-[0] text-text-color 
+        className="col-span-full max-sm:text-xl text-3xl tracking-[0] text-text-color 
         uppercase font-semibold text-left max-lg:text-center max-md:p-4 pb-4 border-b-[0] lg:border-b border-border-color
       h-fit"
       >
@@ -627,7 +627,7 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                       Mã Đơn mua: {item.orderId}
                     </h1>
                     <h2>
-                      Ngày đặt hàng:
+                      Ngày đặt:
                       {` ${dayjs(new Date(item.createdAt!)).format(
                         "DD/MM/YYYY"
                       )}`}
@@ -638,7 +638,7 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                   >
                     Giao hàng thành công
                   </div>
-                  <div className="flex items-center gap-x-4 col-span-full md:col-span-4 md:col-start-9">
+                  <div className="flex items-center col-span-full md:col-span-4 md:col-start-9">
                     <Button
                       onClick={() => handleOpen(item)}
                       sx={{
@@ -651,7 +651,9 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                       }}
                     >
                       <InfoIcon />
-                      <span className="text-lg pl-1">Chi tiết</span>
+                      <span className="text-lg pl-1 max-xl:hidden">
+                        Chi tiết
+                      </span>
                     </Button>
                     {!item.isRated ? (
                       <Button
@@ -667,7 +669,9 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                         }}
                       >
                         <FeedbackIcon />
-                        <span className="text-lg pl-1">Đánh giá</span>
+                        <span className="text-lg pl-1 max-xl:hidden">
+                          Đánh giá
+                        </span>
                       </Button>
                     ) : (
                       <Button
@@ -683,7 +687,9 @@ bg-white ssm:p-1 md:p-5 max-lg:px-10 rounded-sm mb-8 gap-y-1 h-fit`}
                         }}
                       >
                         <FeedbackIcon />
-                        <span className="text-lg pl-1">Xem đánh giá</span>
+                        <span className="text-lg pl-1 max-xl:hidden">
+                          Xem ĐGiá
+                        </span>
                       </Button>
                     )}
                   </div>

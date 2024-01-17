@@ -61,17 +61,16 @@ const Products = ({
                       ></Image>
                       <div className="relative w-full">
                         <div className="px-2 py-1">
-                          <p
-                            className="text-text-color text-base pt-[10px] overflow-hidden font-medium
-                     text-ellipsis whitespace-nowrap "
-                          >
+                          <p className="text-text-color text-base pt-[10px] truncate font-medium">
                             {product.name}
                           </p>
-                          <div className="text-primary-color font-bold text-ellipsis whitespace-nowrap">
-                            {FormatPrice(product.promotionalPriceMin)} VNĐ
+                          <div className="text-text-light-color font-bold truncate">
+                            <span className="text-primary-color">
+                              {FormatPrice(product.promotionalPriceMin)} VNĐ
+                            </span>
                             {product.priceMin !=
                               product.promotionalPriceMin && (
-                              <span className="line-through text-text-light-color ml-2 text-sm">
+                              <span className="line-through ml-2 text-sm">
                                 {FormatPrice(product.priceMin)} VNĐ
                               </span>
                             )}

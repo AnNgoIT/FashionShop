@@ -190,18 +190,18 @@ const TopNav = (props: NavProps) => {
         local.removeItem("viewedProducts");
         // Refresh the current route and fetch new data from the server without
         // losing client-side browser or React state.
-        // setUser({
-        //   fullname: null,
-        //   email: "",
-        //   phone: "",
-        //   dob: null,
-        //   gender: null,
-        //   address: null,
-        //   avatar: "",
-        //   ewallet: 0,
-        //   role: "GUEST",
-        // });
-        // setCartItems([]);
+        setUser({
+          fullname: null,
+          email: "",
+          phone: "",
+          dob: null,
+          gender: null,
+          address: null,
+          avatar: "",
+          ewallet: 0,
+          role: "GUEST",
+        });
+        setCartItems([]);
         router.push("/login");
         router.refresh();
       }
